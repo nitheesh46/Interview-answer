@@ -3,14 +3,23 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Parakeet AI Overlay Replica</title>
-  <!-- Tesseract.js for In-Browser Optical Screen Analysis -->
+  <title>Parakeet AI | Interview Copilot</title>
+
+  <!-- PWA Manifest and Capabilities -->
+  <link rel="manifest" href="manifest.json" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="theme-color" content="#07090e" />
+
+  <!-- In-Browser OCR for Screen Analysis (Ctrl+K) -->
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+
   <style>
     :root {
-      --bg: #0b0f19;
-      --card-bg: rgba(15, 23, 42, 0.95);
-      --border: rgba(255, 255, 255, 0.12);
+      --bg: #07090e;
+      --card-bg: rgba(15, 23, 42, 0.94);
+      --border: rgba(255, 255, 255, 0.1);
       --primary: #38bdf8;
       --accent: #10b981;
       --warning: #f59e0b;
@@ -29,57 +38,55 @@
     }
 
     body {
-      background: #020617;
+      background: var(--bg);
       color: var(--text);
       min-height: 100vh;
       display: flex;
       justify-content: center;
       align-items: flex-start;
-      padding: 30px;
+      padding: 16px;
       overflow-x: hidden;
-      background-image: radial-gradient(circle at top, #1e1b4b 0%, #020617 70%);
+      background-image: radial-gradient(circle at top, #1e1b4b 0%, #07090e 75%);
     }
 
-    /* FLOATING PARAKEET OVERLAY WIDGET */
-    .parakeet-widget {
-      width: 780px;
-      max-width: 95vw;
+    .copilot-widget {
+      width: 840px;
+      max-width: 98vw;
       background: var(--card-bg);
       border: 1.5px solid rgba(129, 140, 248, 0.35);
       border-radius: 14px;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7), 0 0 25px rgba(99, 102, 241, 0.2);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8), 0 0 25px rgba(99, 102, 241, 0.2);
       backdrop-filter: blur(20px);
       display: flex;
       flex-direction: column;
       overflow: hidden;
-      position: relative;
       transition: opacity 0.2s ease, transform 0.2s ease;
     }
 
-    /* Top Control & Drag Bar */
-    .widget-bar {
-      background: rgba(11, 15, 25, 0.95);
+    .widget-header {
+      background: rgba(11, 15, 25, 0.96);
       border-bottom: 1px solid var(--border);
       padding: 10px 14px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      cursor: grab;
+      flex-wrap: wrap;
+      gap: 8px;
     }
 
-    .widget-left {
+    .brand-wrap {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
     }
 
-    /* 3-Dots Move Handle as shown in video */
     .drag-handle {
       display: flex;
       gap: 3px;
       padding: 4px;
       cursor: grab;
     }
+
     .drag-dot {
       width: 5px;
       height: 5px;
@@ -87,31 +94,23 @@
       background: #64748b;
     }
 
-    .app-brand {
-      display: flex;
-      align-items: center;
-      gap: 7px;
-      font-size: 0.86rem;
+    .brand-title {
+      font-size: 0.88rem;
       font-weight: 800;
       letter-spacing: 0.04em;
       color: #fff;
     }
 
-    .status-indicator {
-      display: flex;
-      align-items: center;
-      gap: 5px;
+    .status-pill {
       font-size: 0.72rem;
       padding: 2px 8px;
       border-radius: 10px;
       background: rgba(16, 185, 129, 0.15);
       color: var(--accent);
       font-weight: 700;
-    }
-
-    .status-indicator.listening {
-      background: rgba(2, 132, 199, 0.2);
-      color: var(--primary);
+      display: flex;
+      align-items: center;
+      gap: 5px;
     }
 
     .pulse-dot {
@@ -120,7 +119,13 @@
       border-radius: 50%;
       background: var(--accent);
     }
-    .status-indicator.listening .pulse-dot {
+
+    .status-pill.active-listening {
+      background: rgba(2, 132, 199, 0.25);
+      color: var(--primary);
+    }
+
+    .status-pill.active-listening .pulse-dot {
       background: var(--primary);
       animation: pulse 1.2s infinite;
     }
@@ -131,10 +136,11 @@
       100% { transform: scale(0.9); opacity: 0.7; }
     }
 
-    .widget-actions {
+    .btn-group {
       display: flex;
       align-items: center;
       gap: 6px;
+      flex-wrap: wrap;
     }
 
     .btn {
@@ -162,8 +168,12 @@
       color: #fff;
       border: none;
     }
-    .btn-glow:hover {
-      background: #4338ca;
+    .btn-glow:hover { background: #4338ca; }
+
+    .btn-mic.listening {
+      background: #0284c7;
+      color: #fff;
+      box-shadow: 0 0 10px rgba(2, 132, 199, 0.4);
     }
 
     .btn-danger {
@@ -171,18 +181,14 @@
       color: #f87171;
       border-color: rgba(239, 68, 68, 0.3);
     }
-    .btn-danger:hover {
-      background: var(--danger);
-      color: #fff;
-    }
 
-    /* Live Audio Level Wave */
-    .waveform-strip {
+    .waveform-bar {
       height: 3px;
       width: 100%;
       background: rgba(255, 255, 255, 0.05);
       overflow: hidden;
     }
+
     .waveform-fill {
       height: 100%;
       width: 0%;
@@ -190,16 +196,20 @@
       transition: width 0.08s ease;
     }
 
-    /* Live Hearing Feed */
-    .feed-container {
-      background: rgba(8, 12, 22, 0.75);
+    .feed-bar {
+      background: rgba(8, 12, 22, 0.85);
       border-bottom: 1px solid var(--border);
       padding: 8px 14px;
       display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .feed-ticker {
+      display: flex;
       align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      font-size: 0.82rem;
+      gap: 8px;
+      font-size: 0.78rem;
     }
 
     .feed-text {
@@ -208,38 +218,48 @@
       overflow: hidden;
       text-overflow: ellipsis;
       flex: 1;
+      font-style: italic;
     }
 
-    .shortcut-badge {
-      font-size: 0.7rem;
+    .hotkey-tag {
+      font-size: 0.68rem;
       color: #94a3b8;
       background: rgba(255, 255, 255, 0.06);
       padding: 2px 6px;
       border-radius: 4px;
       border: 1px solid var(--border);
       font-family: monospace;
-      white-space: nowrap;
     }
 
-    /* Main Answer Prompter Display */
-    .prompter-body {
+    .search-input {
+      width: 100%;
+      background: rgba(18, 24, 38, 0.95);
+      border: 1.5px solid var(--border);
+      color: #fff;
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      outline: none;
+    }
+
+    .search-input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 8px rgba(56, 189, 248, 0.25);
+    }
+
+    .prompter-content {
       padding: 16px 20px;
       display: flex;
       flex-direction: column;
       gap: 12px;
-      max-height: 70vh;
+      max-height: 72vh;
       overflow-y: auto;
     }
 
-    .prompter-body::-webkit-scrollbar {
-      width: 6px;
-    }
-    .prompter-body::-webkit-scrollbar-thumb {
-      background: #334155;
-      border-radius: 4px;
-    }
+    .prompter-content::-webkit-scrollbar { width: 6px; }
+    .prompter-content::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
 
-    .topic-tag {
+    .tag-row {
       font-size: 0.72rem;
       font-weight: 800;
       color: var(--primary);
@@ -250,15 +270,14 @@
       align-items: center;
     }
 
-    .question-headline {
+    .question-title {
       font-size: 1.25rem;
       font-weight: 800;
       color: #fff;
       line-height: 1.35;
     }
 
-    /* Part 1: 2-Second Opener */
-    .box-opener {
+    .sec-opener {
       background: rgba(245, 158, 11, 0.12);
       border-left: 3px solid var(--warning);
       padding: 8px 12px;
@@ -268,8 +287,7 @@
       line-height: 1.45;
     }
 
-    /* Part 2: Bullets */
-    .box-bullets-title {
+    .sec-bullets-heading {
       font-size: 0.74rem;
       text-transform: uppercase;
       letter-spacing: 0.05em;
@@ -278,14 +296,14 @@
       margin-bottom: 4px;
     }
 
-    .box-bullets {
+    .sec-bullets {
       list-style: none;
       display: flex;
       flex-direction: column;
       gap: 6px;
     }
 
-    .box-bullets li {
+    .sec-bullets li {
       font-size: 0.98rem;
       line-height: 1.45;
       color: #f1f5f9;
@@ -294,22 +312,21 @@
       gap: 8px;
     }
 
-    .box-bullets li::before {
+    .sec-bullets li::before {
       content: "▶";
       color: var(--accent);
       font-size: 0.75rem;
       margin-top: 3px;
     }
 
-    /* Part 3: Spoken Script */
-    .box-script {
+    .sec-script {
       background: #090e18;
       border: 1px solid var(--border);
       border-radius: 8px;
       padding: 12px 14px;
     }
 
-    .box-script-title {
+    .sec-script-heading {
       font-size: 0.72rem;
       text-transform: uppercase;
       letter-spacing: 0.06em;
@@ -318,14 +335,13 @@
       margin-bottom: 6px;
     }
 
-    .box-script-text {
+    .sec-script-body {
       font-size: 0.92rem;
       color: #cbd5e1;
       line-height: 1.6;
     }
 
-    /* Part 4: Commands */
-    .box-commands {
+    .sec-commands {
       background: #04060a;
       border: 1px solid #1e293b;
       border-radius: 6px;
@@ -340,12 +356,11 @@
       gap: 6px;
     }
 
-    /* Floating Mini Pill when Hidden (Cmd+E) */
     .mini-pill {
       position: fixed;
       bottom: 20px;
       right: 20px;
-      background: rgba(15, 23, 42, 0.95);
+      background: rgba(15, 23, 42, 0.96);
       border: 1.5px solid var(--primary);
       padding: 8px 16px;
       border-radius: 30px;
@@ -360,114 +375,113 @@
       color: #fff;
     }
 
-    .hidden-mode .parakeet-widget {
-      display: none !important;
-    }
-    .hidden-mode .mini-pill {
-      display: flex !important;
-    }
+    .stealth-active .copilot-widget { display: none !important; }
+    .stealth-active .mini-pill { display: flex !important; }
   </style>
 </head>
 <body>
 
-  <!-- FLOATING WIDGET (Like Parakeet AI) -->
-  <div class="parakeet-widget" id="mainWidget">
-    <!-- Top Control Bar with 3-Dots and Action Buttons -->
-    <div class="widget-bar">
-      <div class="widget-left">
-        <div class="drag-handle" title="Move & Position">
+  <div class="copilot-widget" id="copilotWidget">
+    <div class="widget-header">
+      <div class="brand-wrap">
+        <div class="drag-handle" title="Drag / Move">
           <div class="drag-dot"></div>
           <div class="drag-dot"></div>
           <div class="drag-dot"></div>
         </div>
-        <div class="app-brand">
-          <span>Parakeet AI</span>
-        </div>
-        <div class="status-indicator" id="statusPill">
+        <span class="brand-title">Parakeet Copilot</span>
+        <div class="status-pill" id="statusPill">
           <div class="pulse-dot"></div>
           <span id="statusLabel">Ready</span>
         </div>
       </div>
 
-      <div class="widget-actions">
-        <button class="btn btn-glow" onclick="triggerAnswer()" title="Shortcuts: Ctrl+G / Cmd+G">
+      <div class="btn-group">
+        <button class="btn btn-glow" onclick="triggerAnswer()" title="Shortcut: Ctrl+G">
           ⚡ Answer Question
         </button>
-        <button class="btn" onclick="triggerScreenAnalysis()" title="Shortcuts: Ctrl+K / Cmd+K">
+        <button class="btn" onclick="triggerScreenAnalysis()" title="Shortcut: Ctrl+K">
           📷 Analyze Screen
         </button>
         <button class="btn" id="micBtn" onclick="toggleMic()">
-          🎙️ Listen
+          🎙️ Listen HR
         </button>
-        <button class="btn" onclick="toggleHide()" title="Shortcuts: Ctrl+E / Cmd+E">
-          👁️ Hide
+        <button class="btn" onclick="toggleStealth()" title="Shortcut: Ctrl+E or Esc">
+          👁️ Stealth Mode
         </button>
-        <button class="btn btn-danger" onclick="clearFeed()" title="Clear content">
-          ✕
+        <button class="btn btn-danger" onclick="resetIntro()" title="Reset to Intro">
+          ↺ Reset
         </button>
       </div>
     </div>
 
-    <!-- Live Audio Volume Meter -->
-    <div class="waveform-strip">
+    <div class="waveform-bar">
       <div class="waveform-fill" id="waveformBar"></div>
     </div>
 
-    <!-- Live Transcription Header -->
-    <div class="feed-container">
-      <span style="color: var(--primary); font-weight: 700; font-size: 0.75rem;">HEARING:</span>
-      <div class="feed-text" id="liveTranscript">Waiting for HR speech or press "Answer Question"...</div>
-      <div class="shortcut-badge">Ctrl+G: Answer | Ctrl+K: Screen | Ctrl+E: Hide</div>
+    <div class="feed-bar">
+      <div class="feed-ticker">
+        <span style="color: var(--primary); font-weight: 700; font-size: 0.75rem;">LIVE HEARD:</span>
+        <div class="feed-text" id="liveTranscript">Speech recognition ready or type keywords below...</div>
+        <div class="hotkey-tag">Ctrl+G: Answer | Ctrl+K: Screen | Ctrl+E: Hide</div>
+      </div>
+      <input 
+        type="text" 
+        id="quickSearch" 
+        class="search-input" 
+        placeholder="Type any word: e.g. cpu, memory, logs, 502, deadlock, oom, p1, autosys, curl, weakness..." 
+        autofocus 
+        oninput="handleSearch(this.value)" 
+      />
     </div>
 
-    <!-- Teleprompter Answer Card -->
     <div class="prompter-body" id="prompterBody">
-      <div class="topic-tag">
-        <span id="hudTag">INTRODUCTION & SUMMARY</span>
-        <span style="color: var(--accent);">● Verified Response</span>
-      </div>
-
-      <div class="question-headline" id="hudQuestion">
-        Tell me about yourself and your Application Support background.
-      </div>
-
-      <div class="box-opener" id="hudOpener">
-        <strong>💬 2-Second Opener:</strong> "Thank you for asking. I specialize in L1 and L2 Application Production Support, ensuring 24/7 high availability across business-critical environments."
-      </div>
-
-      <div>
-        <div class="box-bullets-title">📌 Key Bullet Points (Glance & Speak)</div>
-        <ul class="box-bullets" id="hudBullets">
-          <li><strong>Operational Scope:</strong> Monitoring real-time telemetry, handling P1-P4 incidents, and executing daily shift sanity health checks.</li>
-          <li><strong>Technical Foundation:</strong> Linux server diagnostics, Oracle/PostgreSQL SQL queries, Apache Tomcat/Nginx, and bash automation.</li>
-          <li><strong>Support Philosophy:</strong> Prioritizing immediate temporary workarounds to stop business downtime, followed by root cause analysis with L3.</li>
-        </ul>
-      </div>
-
-      <div class="box-script">
-        <div class="box-script-title">🗣️ Complete Spoken Script (Say This to HR)</div>
-        <div class="box-script-text" id="hudScript">
-          "My experience centers on L1 and L2 Application Production Support. On a daily basis, I monitor application health, handle inbound incidents through our ticketing system, and perform environment sanity checks during shift handovers. Technically, I work extensively on Linux servers analyzing logs, verifying process states, and troubleshooting system resource bottlenecks. I write SQL queries to validate data integrity, troubleshoot connection pools, and assist with application deployments during maintenance windows. When critical issues occur, I coordinate with development and infrastructure teams to restore service quickly and document the post-incident root cause."
+      <div class="prompter-content">
+        <div class="tag-row">
+          <span id="hudTag">INTRODUCTION & SUMMARY</span>
+          <span style="color: var(--accent);">● Verified Response</span>
         </div>
-      </div>
 
-      <div class="box-commands">
-        <span>⚙️ Commands & Tools:</span>
-        <strong id="hudCommands">top | ps -ef | tail -100f app.log | df -h | netstat -tulnp</strong>
+        <div class="question-title" id="hudQuestion">
+          Tell me about yourself and your background in Application Support.
+        </div>
+
+        <div class="sec-opener" id="hudOpener">
+          <strong>💬 2-Second Opener:</strong> "Thank you for asking. I specialize in L1 and L2 Application Production Support, ensuring 24/7 high availability across business-critical environments."
+        </div>
+
+        <div>
+          <div class="sec-bullets-heading">📌 Key Bullet Points (Glance & Speak)</div>
+          <ul class="sec-bullets" id="hudBullets">
+            <li><strong>Operational Scope:</strong> Monitoring real-time telemetry, handling P1-P4 incidents, and executing daily shift sanity health checks.</li>
+            <li><strong>Technical Foundation:</strong> Linux server diagnostics, Oracle/PostgreSQL SQL queries, Apache Tomcat/Nginx, and bash automation.</li>
+            <li><strong>Support Philosophy:</strong> Prioritizing immediate temporary workarounds to stop business downtime, followed by root cause analysis with L3.</li>
+          </ul>
+        </div>
+
+        <div class="sec-script">
+          <div class="sec-script-heading">🗣️ Complete Spoken Script (Say This to HR)</div>
+          <div class="sec-script-body" id="hudScript">
+            "My experience centers on L1 and L2 Application Production Support. On a daily basis, I monitor application health, handle inbound incidents through our ticketing system, and perform environment sanity checks during shift handovers. Technically, I work extensively on Linux servers analyzing logs, verifying process states, and troubleshooting system resource bottlenecks. I write SQL queries to validate data integrity, troubleshoot connection pools, and assist with application deployments during maintenance windows. When critical issues occur, I coordinate with development and infrastructure teams to restore service quickly and document the post-incident root cause."
+          </div>
+        </div>
+
+        <div class="sec-commands">
+          <span>⚙️ Commands & Tools:</span>
+          <strong id="hudCommands">top | ps -ef | tail -100f app.log | df -h | netstat -tulnp</strong>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- Hidden Mini Pill (Shows when widget is hidden) -->
-  <div class="mini-pill" id="miniPill" onclick="toggleHide()">
-    <span>⚡ Parakeet AI (Press Ctrl+E to Restore)</span>
+  <div class="mini-pill" id="miniPill" onclick="toggleStealth()">
+    <span>⚡ Parakeet Active (Click or Press Ctrl+E to Restore)</span>
   </div>
 
   <script>
-    // COMPLETE PRE-LOADED APPLICATION SUPPORT & CODING REPOSITORY
-    const MASTER_KNOWLEDGE = [
+    const MASTER_KB = [
       {
-        keys: ["tell me about yourself", "introduce yourself", "walk me through", "background", "experience"],
+        keys: ["tell me about yourself", "introduce yourself", "walk me through", "background", "experience", "profile"],
         tag: "Introduction & Profile",
         question: "Tell me about yourself and your background in Application Support.",
         opener: "Thank you for asking. I specialize in L1 and L2 Application Production Support, maintaining 24/7 high availability across business-critical environments.",
@@ -572,6 +586,45 @@
         ],
         script: "For a 500 error, I immediately inspect catalina.out to catch unhandled runtime exceptions or database pool connection drops. For a 502 Bad Gateway, the reverse proxy cannot connect to the backend daemon, so I verify that Tomcat is running using ps -ef and listening on its port with netstat. For a 504 Gateway Timeout, the proxy gave up waiting for the backend, which almost always points to an expensive database query or an unresponsive third-party API. I trace the request ID across the access and application logs to pinpoint the delay.",
         commands: "curl -Iv https://app.com | ps -ef | grep tomcat | netstat -tulnp"
+      },
+      {
+        keys: ["oom", "outofmemory", "heap", "heap dump", "garbage collection", "jvm", "jstack", "jmap"],
+        tag: "JVM & Memory Management",
+        question: "How do you troubleshoot Java OutOfMemoryError (OOM) and JVM Heap Exhaustion?",
+        opener: "When a JVM hits OutOfMemoryError, I identify whether it is Heap Space, Metaspace, or GC Overhead Limit Exceeded before extracting memory dumps.",
+        bullets: [
+          "Types of OOM: Java Heap Space (object memory leak), Metaspace (classloader leak), GC Overhead limit (98%+ time spent in GC).",
+          "Dump Extraction: Configure '-XX:+HeapDumpOnOutOfMemoryError' or extract manually using 'jmap -dump:format=b,file=heap.hprof <pid>'.",
+          "Analysis: Analyze the .hprof file using Eclipse Memory Analyzer (MAT) to identify memory leaks and dominator trees."
+        ],
+        script: "When an application crashes with OutOfMemoryError, simply restarting it is only a temporary fix. I check the exact error message: if it says Java Heap Space, it means memory allocation exceeded the maximum heap (-Xmx) due to a memory leak. I verify whether automated heap dump generation is enabled with -XX:+HeapDumpOnOutOfMemoryError, or manually generate one using jmap. Then I restart the service to recover production, and feed the heap dump into Eclipse Memory Analyzer (MAT) to find the leaking objects for development to patch.",
+        commands: "jmap -dump:format=b,file=heap.hprof <PID> | jstack <PID> > threads.txt"
+      },
+      {
+        keys: ["sla", "ola", "service level agreement", "operational level agreement"],
+        tag: "ITIL Service Agreements",
+        question: "What is SLA, OLA, and what are your SLA priority timelines?",
+        opener: "SLA governs our contractual commitment to business users, whereas OLA defines our internal operational agreements between technical teams.",
+        bullets: [
+          "SLA (Service Level Agreement): Contract between the IT service provider and the customer defining response and resolution times.",
+          "OLA (Operational Level Agreement): Internal agreement between internal teams (Support, DBA, Network, Dev) to support the SLA.",
+          "Priority SLAs: Standard enterprise benchmarks are P1 (5 Hours), P2 (10 Hours), P3 (24 Hours), and P4 (48 Hours)."
+        ],
+        script: "A Service Level Agreement (SLA) is the formal contract between our support organization and the end business users, specifying measurable targets like uptime and resolution timelines—for instance, 5 hours for P1 and 24 hours for P3. An Operational Level Agreement (OLA) is an internal operational agreement between our internal teams—such as how quickly the DBA or Network team must respond when L2 support escalates an issue—ensuring we do not breach the customer-facing SLA.",
+        commands: "P1: 5h | P2: 10h | P3: 24h | P4: 48h | MTTR Metrics"
+      },
+      {
+        keys: ["weakness", "areas of improvement", "struggle with", "greatest weakness"],
+        tag: "HR Behavioral",
+        question: "What is your biggest weakness?",
+        opener: "I consider self-awareness the foundation of professional growth, and early on my main challenge was hesitating to ask for help when blocked.",
+        bullets: [
+          "The Weakness: Tendency to spend too much time trying to solve difficult technical roadblocks alone.",
+          "The Fix: Implemented a strict '30-Minute Rule'—research independently first, then escalate with findings.",
+          "The Result: Faster issue resolution without risking SLA breaches or wasting team resources."
+        ],
+        script: "Earlier in my career, I had a tendency to spend too much time trying to figure out complex technical problems completely on my own because I wanted to be self-reliant. In production support, where SLAs are critical, waiting too long can create unnecessary risk. I recognized this and adopted a strict 30-minute rule: if I cannot make measurable progress on an issue within 30 minutes of checking logs and runbooks, I organize my findings, summarize what I tested, and consult a senior engineer. This ensures we resolve issues within SLA while keeping collaboration high.",
+        commands: "Behavioral: 30-Minute Rule | Structured Escalation | SLA Awareness"
       }
     ];
 
@@ -579,7 +632,6 @@
     let recognition = null;
     let isListening = false;
 
-    // Load Knowledge into Prompter
     function displayPrompterAnswer(data) {
       document.getElementById("hudTag").innerText = data.tag.toUpperCase();
       document.getElementById("hudQuestion").innerText = data.question;
@@ -588,15 +640,14 @@
       document.getElementById("hudScript").innerText = `"${data.script}"`;
       document.getElementById("hudCommands").innerText = data.commands;
 
-      const widget = document.getElementById("mainWidget");
+      const widget = document.getElementById("copilotWidget");
       widget.style.borderColor = "var(--accent)";
       setTimeout(() => widget.style.borderColor = "rgba(129, 140, 248, 0.35)", 400);
     }
 
-    // Match Query
     function findBestMatch(text) {
       const q = text.toLowerCase();
-      for (const item of MASTER_KNOWLEDGE) {
+      for (const item of MASTER_KB) {
         if (item.keys.some(k => q.includes(k))) return item;
       }
       return {
@@ -613,71 +664,67 @@
       };
     }
 
-    // Ctrl+G / Answer Question Action
     function triggerAnswer() {
       const answer = findBestMatch(currentTranscript);
       displayPrompterAnswer(answer);
     }
 
-    // Ctrl+K / Screen Analysis Action (Uses Screen Capture + OCR)
+    function handleSearch(term) {
+      if (!term.trim()) return;
+      currentTranscript = term.trim();
+      document.getElementById("liveTranscript").innerText = `Search: "${term}"`;
+      triggerAnswer();
+    }
+
     async function triggerScreenAnalysis() {
       const statusLabel = document.getElementById("statusLabel");
       const transcript = document.getElementById("liveTranscript");
 
       try {
         statusLabel.innerText = "Analyzing Screen...";
-        transcript.innerText = "Capturing screen region/window...";
+        transcript.innerText = "Selecting screen window...";
 
-        // Request display stream
         const stream = await navigator.mediaDevices.getDisplayMedia({ video: { cursor: "always" }, audio: false });
         const track = stream.getVideoTracks()[0];
         const imageCapture = new ImageCapture(track);
         const bitmap = await imageCapture.grabFrame();
-        track.stop(); // Stop sharing immediately
+        track.stop();
 
-        // Render to canvas for OCR
         const canvas = document.createElement("canvas");
         canvas.width = bitmap.width;
         canvas.height = bitmap.height;
         const ctx = canvas.getContext("2d");
         ctx.drawImage(bitmap, 0, 0);
 
-        transcript.innerText = "Extracting text from screen with OCR...";
-
-        // Perform in-browser OCR
+        transcript.innerText = "Extracting text with OCR...";
         const { data: { text } } = await Tesseract.recognize(canvas, 'eng');
         const cleanText = text.trim();
 
-        if (cleanText.length > 5) {
-          transcript.innerText = `Screen Detected: "${cleanText.substring(0, 70)}..."`;
+        if (cleanText.length > 4) {
+          transcript.innerText = `Screen Detected: "${cleanText.substring(0, 60)}..."`;
           currentTranscript = cleanText;
           const match = findBestMatch(cleanText);
           displayPrompterAnswer(match);
         } else {
-          transcript.innerText = "Screen captured, but no clear text found. Using general triage.";
-          triggerAnswer();
+          transcript.innerText = "No readable text found on screen.";
         }
-
         statusLabel.innerText = "Ready";
       } catch (err) {
-        console.warn("Screen capture cancelled or not supported:", err);
         statusLabel.innerText = "Ready";
         transcript.innerText = "Screen analysis cancelled.";
       }
     }
 
-    // Ctrl+E / Hide Action
-    function toggleHide() {
-      document.body.classList.toggle("hidden-mode");
+    function toggleStealth() {
+      document.body.classList.toggle("stealth-active");
     }
 
-    // Clear Feed
-    function clearFeed() {
-      document.getElementById("liveTranscript").innerText = "Waiting for HR speech or press 'Answer Question'...";
-      currentTranscript = "";
+    function resetIntro() {
+      displayPrompterAnswer(MASTER_KB[0]);
+      document.getElementById("quickSearch").value = "";
+      document.getElementById("liveTranscript").innerText = "Speech recognition ready or type keywords below...";
     }
 
-    // Audio & Speech Engine
     function initSpeech() {
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
       if (!SpeechRecognition) {
@@ -698,8 +745,8 @@
         if (transcript.trim().length > 0) {
           document.getElementById("liveTranscript").innerText = transcript;
           currentTranscript = transcript;
-          // Auto-update meter animation
           document.getElementById("waveformBar").style.width = Math.min(100, transcript.length * 4) + "%";
+          triggerAnswer();
         }
       };
 
@@ -724,47 +771,51 @@
         try {
           recognition.start();
           isListening = true;
-          btn.style.background = "#0284c7";
-          btn.innerText = "🛑 Stop";
-          pill.classList.add("listening");
+          btn.classList.add("listening");
+          btn.innerText = "🛑 Stop Mic";
+          pill.classList.add("active-listening");
           label.innerText = "Listening...";
         } catch(e) {}
       } else {
         isListening = false;
         recognition.stop();
-        btn.style.background = "rgba(255, 255, 255, 0.05)";
-        btn.innerText = "🎙️ Listen";
-        pill.classList.remove("listening");
+        btn.classList.remove("listening");
+        btn.innerText = "🎙️ Listen HR";
+        pill.classList.remove("active-listening");
         label.innerText = "Ready";
         document.getElementById("waveformBar").style.width = "0%";
       }
     }
 
-    // Hotkeys exactly matching Parakeet AI
     window.addEventListener("keydown", (e) => {
       const isCmdOrCtrl = e.metaKey || e.ctrlKey;
 
-      // Cmd/Ctrl + G: Answer Question
       if (isCmdOrCtrl && e.key.toLowerCase() === "g") {
         e.preventDefault();
         triggerAnswer();
       }
 
-      // Cmd/Ctrl + K: Analyze Screen
       if (isCmdOrCtrl && e.key.toLowerCase() === "k") {
         e.preventDefault();
         triggerScreenAnalysis();
       }
 
-      // Cmd/Ctrl + E: Hide / Unhide
-      if (isCmdOrCtrl && e.key.toLowerCase() === "e") {
+      if ((isCmdOrCtrl && e.key.toLowerCase() === "e") || e.key === "Escape") {
         e.preventDefault();
-        toggleHide();
+        toggleStealth();
+      }
+
+      if (e.key === "/" && document.activeElement !== document.getElementById("quickSearch")) {
+        e.preventDefault();
+        document.getElementById("quickSearch").focus();
       }
     });
 
-    // Load initial answer on start
-    displayPrompterAnswer(MASTER_KNOWLEDGE[0]);
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./sw.js').catch(() => {});
+    }
+
+    displayPrompterAnswer(MASTER_KB[0]);
   </script>
 </body>
 </html>
