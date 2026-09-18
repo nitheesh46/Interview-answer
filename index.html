@@ -3,96 +3,152 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Application Support AI Interview Chatbot</title>
+  <title>Parakeet AI Overlay Replica</title>
+  <!-- Tesseract.js for In-Browser Optical Screen Analysis -->
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
   <style>
     :root {
-      --bg: #07090e;
-      --panel: #0d1322;
-      --card-bg: rgba(18, 24, 38, 0.85);
-      --border: rgba(255, 255, 255, 0.08);
+      --bg: #0b0f19;
+      --card-bg: rgba(15, 23, 42, 0.95);
+      --border: rgba(255, 255, 255, 0.12);
       --primary: #38bdf8;
       --accent: #10b981;
       --warning: #f59e0b;
       --danger: #ef4444;
       --purple: #818cf8;
       --text: #f8fafc;
-      --text-muted: #94a3b8;
+      --text-dim: #94a3b8;
     }
 
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      user-select: none;
     }
 
     body {
-      background: var(--bg);
+      background: #020617;
       color: var(--text);
-      height: 100vh;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 30px;
+      overflow-x: hidden;
+      background-image: radial-gradient(circle at top, #1e1b4b 0%, #020617 70%);
+    }
+
+    /* FLOATING PARAKEET OVERLAY WIDGET */
+    .parakeet-widget {
+      width: 780px;
+      max-width: 95vw;
+      background: var(--card-bg);
+      border: 1.5px solid rgba(129, 140, 248, 0.35);
+      border-radius: 14px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7), 0 0 25px rgba(99, 102, 241, 0.2);
+      backdrop-filter: blur(20px);
       display: flex;
       flex-direction: column;
       overflow: hidden;
+      position: relative;
+      transition: opacity 0.2s ease, transform 0.2s ease;
     }
 
-    /* Top App Navigation */
-    header {
-      background: rgba(13, 19, 34, 0.95);
-      backdrop-filter: blur(12px);
+    /* Top Control & Drag Bar */
+    .widget-bar {
+      background: rgba(11, 15, 25, 0.95);
       border-bottom: 1px solid var(--border);
-      padding: 10px 18px;
+      padding: 10px 14px;
       display: flex;
       justify-content: space-between;
       align-items: center;
+      cursor: grab;
+    }
+
+    .widget-left {
+      display: flex;
+      align-items: center;
       gap: 10px;
-      flex-shrink: 0;
     }
 
-    .brand {
+    /* 3-Dots Move Handle as shown in video */
+    .drag-handle {
+      display: flex;
+      gap: 3px;
+      padding: 4px;
+      cursor: grab;
+    }
+    .drag-dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: #64748b;
+    }
+
+    .app-brand {
       display: flex;
       align-items: center;
-      gap: 8px;
-    }
-
-    .brand-badge {
-      width: 28px;
-      height: 28px;
-      background: linear-gradient(135deg, var(--primary), var(--purple));
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 900;
-      color: #07090e;
-      font-size: 0.9rem;
-    }
-
-    .brand-title {
-      font-size: 0.95rem;
+      gap: 7px;
+      font-size: 0.86rem;
       font-weight: 800;
       letter-spacing: 0.04em;
-      text-transform: uppercase;
       color: #fff;
     }
 
-    .header-actions {
+    .status-indicator {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 5px;
+      font-size: 0.72rem;
+      padding: 2px 8px;
+      border-radius: 10px;
+      background: rgba(16, 185, 129, 0.15);
+      color: var(--accent);
+      font-weight: 700;
+    }
+
+    .status-indicator.listening {
+      background: rgba(2, 132, 199, 0.2);
+      color: var(--primary);
+    }
+
+    .pulse-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--accent);
+    }
+    .status-indicator.listening .pulse-dot {
+      background: var(--primary);
+      animation: pulse 1.2s infinite;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(0.9); opacity: 0.7; }
+      50% { transform: scale(1.3); opacity: 1; }
+      100% { transform: scale(0.9); opacity: 0.7; }
+    }
+
+    .widget-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
     }
 
     .btn {
-      padding: 6px 12px;
+      padding: 5px 10px;
       border-radius: 6px;
-      font-size: 0.8rem;
+      font-size: 0.76rem;
       font-weight: 700;
       border: 1px solid var(--border);
       cursor: pointer;
       display: inline-flex;
       align-items: center;
-      gap: 6px;
-      background: rgba(255, 255, 255, 0.04);
-      color: var(--text-muted);
+      gap: 5px;
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-dim);
       transition: all 0.15s ease;
     }
 
@@ -101,125 +157,108 @@
       border-color: var(--primary);
     }
 
-    .btn-mic {
-      background: var(--danger);
+    .btn-glow {
+      background: #4f46e5;
       color: #fff;
       border: none;
     }
-
-    .btn-mic.active {
-      background: #0284c7;
-      box-shadow: 0 0 12px rgba(2, 132, 199, 0.5);
+    .btn-glow:hover {
+      background: #4338ca;
     }
 
-    /* Quick Starter Suggestion Chips */
-    .starter-strip {
-      background: rgba(15, 23, 42, 0.6);
-      border-bottom: 1px solid var(--border);
-      padding: 6px 16px;
-      display: flex;
-      gap: 6px;
-      overflow-x: auto;
-      white-space: nowrap;
-      flex-shrink: 0;
+    .btn-danger {
+      background: rgba(239, 68, 68, 0.15);
+      color: #f87171;
+      border-color: rgba(239, 68, 68, 0.3);
+    }
+    .btn-danger:hover {
+      background: var(--danger);
+      color: #fff;
     }
 
-    .starter-chip {
+    /* Live Audio Level Wave */
+    .waveform-strip {
+      height: 3px;
+      width: 100%;
       background: rgba(255, 255, 255, 0.05);
-      border: 1px solid var(--border);
-      color: var(--text-muted);
-      font-size: 0.72rem;
-      font-weight: 600;
-      padding: 3px 8px;
-      border-radius: 4px;
-      cursor: pointer;
+      overflow: hidden;
+    }
+    .waveform-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--primary), var(--purple));
+      transition: width 0.08s ease;
     }
 
-    .starter-chip:hover {
-      background: var(--primary);
-      color: #07090e;
-      border-color: var(--primary);
+    /* Live Hearing Feed */
+    .feed-container {
+      background: rgba(8, 12, 22, 0.75);
+      border-bottom: 1px solid var(--border);
+      padding: 8px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      font-size: 0.82rem;
     }
 
-    /* Chat Area */
-    .chat-container {
+    .feed-text {
+      color: #cbd5e1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
       flex: 1;
-      overflow-y: auto;
-      padding: 16px;
+    }
+
+    .shortcut-badge {
+      font-size: 0.7rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.06);
+      padding: 2px 6px;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+      font-family: monospace;
+      white-space: nowrap;
+    }
+
+    /* Main Answer Prompter Display */
+    .prompter-body {
+      padding: 16px 20px;
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      gap: 12px;
+      max-height: 70vh;
+      overflow-y: auto;
     }
 
-    .chat-container::-webkit-scrollbar {
+    .prompter-body::-webkit-scrollbar {
       width: 6px;
     }
-    .chat-container::-webkit-scrollbar-thumb {
+    .prompter-body::-webkit-scrollbar-thumb {
       background: #334155;
       border-radius: 4px;
     }
 
-    /* User Message Bubble */
-    .msg-user {
-      align-self: flex-end;
-      max-width: 80%;
-      background: #1e3a8a;
-      border: 1px solid #3b82f6;
-      border-radius: 12px 12px 2px 12px;
-      padding: 10px 14px;
-      font-size: 0.92rem;
-      color: #fff;
-      font-weight: 600;
-    }
-
-    /* Bot Structured 4-Part Response Card */
-    .msg-bot {
-      align-self: flex-start;
-      width: 100%;
-      max-width: 900px;
-      background: var(--card-bg);
-      border: 1.5px solid rgba(99, 102, 241, 0.35);
-      border-radius: 12px;
-      padding: 18px 20px;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
-      animation: fadeIn 0.2s ease-out;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(6px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    .card-meta {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-bottom: 1px solid var(--border);
-      padding-bottom: 8px;
-    }
-
-    .meta-tag {
+    .topic-tag {
       font-size: 0.72rem;
       font-weight: 800;
       color: var(--primary);
       text-transform: uppercase;
       letter-spacing: 0.06em;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
 
-    .btn-copy {
-      background: none;
-      border: none;
-      color: var(--text-muted);
-      cursor: pointer;
-      font-size: 0.78rem;
+    .question-headline {
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: #fff;
+      line-height: 1.35;
     }
-    .btn-copy:hover { color: var(--primary); }
 
-    /* Part 1: Opener */
-    .sec-opener {
+    /* Part 1: 2-Second Opener */
+    .box-opener {
       background: rgba(245, 158, 11, 0.12);
       border-left: 3px solid var(--warning);
       padding: 8px 12px;
@@ -230,8 +269,8 @@
     }
 
     /* Part 2: Bullets */
-    .sec-bullets-title {
-      font-size: 0.76rem;
+    .box-bullets-title {
+      font-size: 0.74rem;
       text-transform: uppercase;
       letter-spacing: 0.05em;
       color: var(--primary);
@@ -239,23 +278,23 @@
       margin-bottom: 4px;
     }
 
-    .sec-bullets {
-      list-style-type: none;
+    .box-bullets {
+      list-style: none;
       display: flex;
       flex-direction: column;
       gap: 6px;
     }
 
-    .sec-bullets li {
-      font-size: 0.95rem;
+    .box-bullets li {
+      font-size: 0.98rem;
+      line-height: 1.45;
       color: #f1f5f9;
-      line-height: 1.4;
       display: flex;
       align-items: flex-start;
       gap: 8px;
     }
 
-    .sec-bullets li::before {
+    .box-bullets li::before {
       content: "▶";
       color: var(--accent);
       font-size: 0.75rem;
@@ -263,15 +302,15 @@
     }
 
     /* Part 3: Spoken Script */
-    .sec-script-box {
+    .box-script {
       background: #090e18;
       border: 1px solid var(--border);
       border-radius: 8px;
       padding: 12px 14px;
     }
 
-    .sec-script-title {
-      font-size: 0.74rem;
+    .box-script-title {
+      font-size: 0.72rem;
       text-transform: uppercase;
       letter-spacing: 0.06em;
       font-weight: 800;
@@ -279,21 +318,20 @@
       margin-bottom: 6px;
     }
 
-    .sec-script-text {
+    .box-script-text {
       font-size: 0.92rem;
       color: #cbd5e1;
       line-height: 1.6;
-      font-style: italic;
     }
 
     /* Part 4: Commands */
-    .sec-commands {
+    .box-commands {
       background: #04060a;
       border: 1px solid #1e293b;
       border-radius: 6px;
       padding: 8px 12px;
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-      font-size: 0.84rem;
+      font-size: 0.82rem;
       color: #67e8f9;
       display: flex;
       justify-content: space-between;
@@ -302,108 +340,150 @@
       gap: 6px;
     }
 
-    /* Bottom Input Area */
-    .input-bar {
-      background: rgba(13, 19, 34, 0.98);
-      border-top: 1px solid var(--border);
-      padding: 12px 16px;
-      display: flex;
-      gap: 10px;
+    /* Floating Mini Pill when Hidden (Cmd+E) */
+    .mini-pill {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: rgba(15, 23, 42, 0.95);
+      border: 1.5px solid var(--primary);
+      padding: 8px 16px;
+      border-radius: 30px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+      display: none;
       align-items: center;
-      flex-shrink: 0;
-    }
-
-    #chatInput {
-      flex: 1;
-      background: #090d16;
-      border: 1.5px solid #334155;
-      color: #fff;
-      padding: 11px 16px;
-      border-radius: 8px;
-      font-size: 0.95rem;
-      outline: none;
-      transition: border-color 0.2s;
-    }
-
-    #chatInput:focus {
-      border-color: var(--primary);
-      box-shadow: 0 0 10px rgba(56, 189, 248, 0.25);
-    }
-
-    .btn-send {
-      background: var(--primary);
-      color: #07090e;
-      border: none;
-      font-weight: 800;
-      padding: 11px 20px;
-      border-radius: 8px;
+      gap: 8px;
       cursor: pointer;
-      font-size: 0.9rem;
+      z-index: 9999;
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: #fff;
     }
-    .btn-send:hover { background: #7dd3fc; }
+
+    .hidden-mode .parakeet-widget {
+      display: none !important;
+    }
+    .hidden-mode .mini-pill {
+      display: flex !important;
+    }
   </style>
 </head>
 <body>
 
-  <header>
-    <div class="brand">
-      <div class="brand-badge">⚡</div>
-      <span class="brand-title">Application Support Copilot</span>
+  <!-- FLOATING WIDGET (Like Parakeet AI) -->
+  <div class="parakeet-widget" id="mainWidget">
+    <!-- Top Control Bar with 3-Dots and Action Buttons -->
+    <div class="widget-bar">
+      <div class="widget-left">
+        <div class="drag-handle" title="Move & Position">
+          <div class="drag-dot"></div>
+          <div class="drag-dot"></div>
+          <div class="drag-dot"></div>
+        </div>
+        <div class="app-brand">
+          <span>Parakeet AI</span>
+        </div>
+        <div class="status-indicator" id="statusPill">
+          <div class="pulse-dot"></div>
+          <span id="statusLabel">Ready</span>
+        </div>
+      </div>
+
+      <div class="widget-actions">
+        <button class="btn btn-glow" onclick="triggerAnswer()" title="Shortcuts: Ctrl+G / Cmd+G">
+          ⚡ Answer Question
+        </button>
+        <button class="btn" onclick="triggerScreenAnalysis()" title="Shortcuts: Ctrl+K / Cmd+K">
+          📷 Analyze Screen
+        </button>
+        <button class="btn" id="micBtn" onclick="toggleMic()">
+          🎙️ Listen
+        </button>
+        <button class="btn" onclick="toggleHide()" title="Shortcuts: Ctrl+E / Cmd+E">
+          👁️ Hide
+        </button>
+        <button class="btn btn-danger" onclick="clearFeed()" title="Clear content">
+          ✕
+        </button>
+      </div>
     </div>
 
-    <div class="header-actions">
-      <button class="btn btn-mic" id="micBtn" onclick="toggleMic()">🎙️ Listen HR</button>
-      <button class="btn" onclick="clearChat()">🗑️ Clear</button>
+    <!-- Live Audio Volume Meter -->
+    <div class="waveform-strip">
+      <div class="waveform-fill" id="waveformBar"></div>
     </div>
-  </header>
 
-  <!-- Quick Starter Topic Chips -->
-  <div class="starter-strip">
-    <span style="font-size: 0.72rem; color: #64748b; line-height: 22px;">Try:</span>
-    <div class="starter-chip" onclick="submitQuickQuestion('Tell me about yourself')">Tell me about yourself</div>
-    <div class="starter-chip" onclick="submitQuickQuestion('How do you troubleshoot application slowness?')">App Slowness</div>
-    <div class="starter-chip" onclick="submitQuickQuestion('How do you troubleshoot high CPU on Linux?')">High CPU</div>
-    <div class="starter-chip" onclick="submitQuickQuestion('How do you investigate production application logs?')">Logs & Grep</div>
-    <div class="starter-chip" onclick="submitQuickQuestion('How do you resolve database deadlocks and session blockages?')">DB Locks</div>
-    <div class="starter-chip" onclick="submitQuickQuestion('How do you handle a P1 major incident?')">P1 Major Incident</div>
-    <div class="starter-chip" onclick="submitQuickQuestion('How do you fix HTTP 502 and 504 status codes?')">HTTP 502/504</div>
-    <div class="starter-chip" onclick="submitQuickQuestion('How do you troubleshoot a 100% full filesystem?')">Disk 100% Full</div>
-    <div class="starter-chip" onclick="submitQuickQuestion('What is your biggest weakness?')">Weakness</div>
+    <!-- Live Transcription Header -->
+    <div class="feed-container">
+      <span style="color: var(--primary); font-weight: 700; font-size: 0.75rem;">HEARING:</span>
+      <div class="feed-text" id="liveTranscript">Waiting for HR speech or press "Answer Question"...</div>
+      <div class="shortcut-badge">Ctrl+G: Answer | Ctrl+K: Screen | Ctrl+E: Hide</div>
+    </div>
+
+    <!-- Teleprompter Answer Card -->
+    <div class="prompter-body" id="prompterBody">
+      <div class="topic-tag">
+        <span id="hudTag">INTRODUCTION & SUMMARY</span>
+        <span style="color: var(--accent);">● Verified Response</span>
+      </div>
+
+      <div class="question-headline" id="hudQuestion">
+        Tell me about yourself and your Application Support background.
+      </div>
+
+      <div class="box-opener" id="hudOpener">
+        <strong>💬 2-Second Opener:</strong> "Thank you for asking. I specialize in L1 and L2 Application Production Support, ensuring 24/7 high availability across business-critical environments."
+      </div>
+
+      <div>
+        <div class="box-bullets-title">📌 Key Bullet Points (Glance & Speak)</div>
+        <ul class="box-bullets" id="hudBullets">
+          <li><strong>Operational Scope:</strong> Monitoring real-time telemetry, handling P1-P4 incidents, and executing daily shift sanity health checks.</li>
+          <li><strong>Technical Foundation:</strong> Linux server diagnostics, Oracle/PostgreSQL SQL queries, Apache Tomcat/Nginx, and bash automation.</li>
+          <li><strong>Support Philosophy:</strong> Prioritizing immediate temporary workarounds to stop business downtime, followed by root cause analysis with L3.</li>
+        </ul>
+      </div>
+
+      <div class="box-script">
+        <div class="box-script-title">🗣️ Complete Spoken Script (Say This to HR)</div>
+        <div class="box-script-text" id="hudScript">
+          "My experience centers on L1 and L2 Application Production Support. On a daily basis, I monitor application health, handle inbound incidents through our ticketing system, and perform environment sanity checks during shift handovers. Technically, I work extensively on Linux servers analyzing logs, verifying process states, and troubleshooting system resource bottlenecks. I write SQL queries to validate data integrity, troubleshoot connection pools, and assist with application deployments during maintenance windows. When critical issues occur, I coordinate with development and infrastructure teams to restore service quickly and document the post-incident root cause."
+        </div>
+      </div>
+
+      <div class="box-commands">
+        <span>⚙️ Commands & Tools:</span>
+        <strong id="hudCommands">top | ps -ef | tail -100f app.log | df -h | netstat -tulnp</strong>
+      </div>
+    </div>
   </div>
 
-  <!-- Chat History Container -->
-  <div class="chat-container" id="chatBox"></div>
-
-  <!-- Bottom Message Input Form -->
-  <form class="input-bar" onsubmit="handleChatSubmit(event)">
-    <input 
-      type="text" 
-      id="chatInput" 
-      placeholder="Type HR question or turn on mic (e.g. 'What is SLA vs OLA?', 'How to debug OOM?')..." 
-      autocomplete="off"
-    />
-    <button type="submit" class="btn-send">Generate Answer</button>
-  </form>
+  <!-- Hidden Mini Pill (Shows when widget is hidden) -->
+  <div class="mini-pill" id="miniPill" onclick="toggleHide()">
+    <span>⚡ Parakeet AI (Press Ctrl+E to Restore)</span>
+  </div>
 
   <script>
-    // COMPLETE KNOWLEDGE BASE FOR APPLICATION SUPPORT (L1/L2)
-    const KNOWLEDGE_BASE = [
+    // COMPLETE PRE-LOADED APPLICATION SUPPORT & CODING REPOSITORY
+    const MASTER_KNOWLEDGE = [
       {
-        triggers: ["tell me about yourself", "introduce yourself", "walk me through", "background", "experience", "profile"],
-        category: "Introduction & Profile",
-        opener: "Thank you for the opportunity. I specialize in L1 and L2 Application Production Support, focusing on system uptime, rapid incident resolution, and high availability across distributed environments.",
+        keys: ["tell me about yourself", "introduce yourself", "walk me through", "background", "experience"],
+        tag: "Introduction & Profile",
+        question: "Tell me about yourself and your background in Application Support.",
+        opener: "Thank you for asking. I specialize in L1 and L2 Application Production Support, maintaining 24/7 high availability across business-critical environments.",
         bullets: [
-          "Operational Scope: Triage tickets in ServiceNow/Jira, monitor production telemetry, execute health checks, and uphold strict SLAs.",
-          "Technical Foundation: Linux command line, Oracle/PostgreSQL SQL queries, Java/Tomcat web servers, and bash automation.",
-          "Engineering Focus: Deliver rapid temporary workarounds to stop business downtime, followed by root-cause analysis (RCA) with dev teams."
+          "Operational Scope: Monitoring real-time telemetry, handling P1-P4 incidents, and executing daily shift sanity health checks.",
+          "Technical Foundation: Linux server diagnostics, Oracle/PostgreSQL SQL queries, Apache Tomcat/Nginx, and bash automation.",
+          "Support Philosophy: Prioritizing immediate temporary workarounds to stop business downtime, followed by root cause analysis with L3."
         ],
-        script: "My experience centers on L1 and L2 Application Production Support. On a daily basis, I monitor application health, handle inbound incidents through our ticketing system, and perform environment sanity checks during shift handovers. Technically, I work extensively on Linux servers analyzing logs, verifying process states, and troubleshooting system bottlenecks. I write SQL queries to validate data integrity, troubleshoot connection pools, and assist with application deployments during maintenance windows. When critical issues occur, I coordinate with development and infrastructure teams to restore service quickly and document the post-incident root cause.",
+        script: "My experience centers on L1 and L2 Application Production Support. On a daily basis, I monitor application health, handle inbound incidents through our ticketing system, and perform environment sanity checks during shift handovers. Technically, I work extensively on Linux servers analyzing logs, verifying process states, and troubleshooting system resource bottlenecks. I write SQL queries to validate data integrity, troubleshoot connection pools, and assist with application deployments during maintenance windows. When critical issues occur, I coordinate with development and infrastructure teams to restore service quickly and document the post-incident root cause.",
         commands: "top | ps -ef | tail -100f app.log | df -h | netstat -tulnp"
       },
       {
-        triggers: ["slow", "slowness", "application slow", "performance issue", "latency"],
-        category: "Performance Troubleshooting",
-        opener: "Whenever application slowness is reported, my approach is to systematically isolate whether the bottleneck is at the client network, server OS, JVM thread pool, or database layer.",
+        keys: ["slow", "slowness", "latency", "performance", "taking long"],
+        tag: "Performance Troubleshooting",
+        question: "How do you troubleshoot an application slowness issue?",
+        opener: "Whenever slowness is reported, my approach is to systematically isolate whether the bottleneck is at the client network, server OS, JVM thread pool, or database layer.",
         bullets: [
           "Blast Radius: Confirm whether slowness impacts a single user (browser cache/VPN) or all users globally.",
           "Host Resource Check: Run 'top', 'uptime', and 'vmstat' to check Load Average, CPU saturation, and memory swapping.",
@@ -414,8 +494,9 @@
         commands: "top -b -n 1 | vmstat 1 5 | iostat -xz 1 5 | v$session"
       },
       {
-        triggers: ["cpu", "memory", "load average", "high cpu", "swap", "ram"],
-        category: "Linux Server Diagnostics",
+        keys: ["cpu", "memory", "load average", "high cpu", "swap", "ram"],
+        tag: "Linux Diagnostics",
+        question: "How do you troubleshoot high CPU or Memory utilization on Linux?",
         opener: "When server resources spike, I immediately isolate whether the bottleneck is process-bound, stuck on disk I/O wait, or caused by memory swapping.",
         bullets: [
           "CPU Triage: Run 'top' or 'uptime' to check Load Average. Press 'P' to sort by CPU; run 'ps aux --sort=-%cpu | head -10' to isolate the rogue PID.",
@@ -426,8 +507,9 @@
         commands: "top | ps aux --sort=-%cpu | head -10 | free -m | vmstat 1 5 | jstack <pid>"
       },
       {
-        triggers: ["log", "logs", "grep", "tail", "exception", "catalina", "trace", "investigate log"],
-        category: "Log Analysis Masterclass",
+        keys: ["log", "logs", "grep", "tail", "exception", "catalina", "trace"],
+        tag: "Log Analysis",
+        question: "How do you investigate production application logs like an expert?",
         opener: "Log analysis is my primary diagnostic tool. I use real-time tailing, contextual grep searching, and compressed log utilities to trace root causes.",
         bullets: [
           "Live Monitoring: Run 'tail -100f app.log | grep -iE \"ERROR|FATAL|Exception\"' to monitor incoming production failures.",
@@ -438,8 +520,9 @@
         commands: "tail -100f app.log | grep -i -C 5 'Exception' | zgrep -i 'timeout' *.gz"
       },
       {
-        triggers: ["disk", "space", "filesystem", "100%", "75%", "df", "du", "truncate", "lsof"],
-        category: "Filesystem & Disk Management",
+        keys: ["disk", "space", "filesystem", "100%", "75%", "df", "du", "truncate"],
+        tag: "Filesystem & Disk",
+        question: "How do you troubleshoot a 100% full Filesystem (Disk Space)?",
         opener: "When a filesystem saturates, I identify heavy files, handle open file descriptors safely, and truncate without killing active processes.",
         bullets: [
           "Locate Mount: Run 'df -h' to identify the saturated volume. Enter directory and run 'du -sk * | sort -k 1nr | head -10'.",
@@ -450,8 +533,9 @@
         commands: "df -h; du -sh * | sort -hr | head -10; lsof | grep deleted; > app.log"
       },
       {
-        triggers: ["lock", "locks", "deadlock", "deadlocks", "blockage", "blocking session", "v$session", "kill session"],
-        category: "Database Concurrency & Locks",
+        keys: ["deadlock", "lock", "locks", "blockage", "blocking session", "v$session"],
+        tag: "Database Locks",
+        question: "How do you identify and resolve Database Deadlocks and Session Blockages?",
         opener: "Database session blockages happen when an uncommitted transaction locks rows needed by concurrent requests, queuing downstream transactions.",
         bullets: [
           "Detection: In Oracle, query 'v$session' where blocking_session is not null. In PostgreSQL, query 'pg_stat_activity' for wait_event_type = 'Lock'.",
@@ -462,8 +546,9 @@
         commands: "SELECT * FROM v$session WHERE blocking_session IS NOT NULL; ALTER SYSTEM KILL SESSION ('sid,serial#') IMMEDIATE;"
       },
       {
-        triggers: ["p1", "p2", "major incident", "critical", "bridge call", "war room", "severity", "priority"],
-        category: "Major Incident Management",
+        keys: ["p1", "p2", "major incident", "critical", "bridge call", "war room"],
+        tag: "Major Incident Management",
+        question: "How do you handle a Major Incident (P1 / P2) bridge call?",
         opener: "During a P1 major incident, my priority is rapid triage, clear stakeholder communication, and establishing an immediate workaround before root-cause analysis.",
         bullets: [
           "Phase 1 (Triage & Alert): Verify business impact, raise P1 in ServiceNow, and dispatch Incident Notification email within 15 minutes.",
@@ -475,8 +560,9 @@
         commands: "P1 SLA = 5h | Update Every 30m | Priority = Impact + Urgency"
       },
       {
-        triggers: ["500", "502", "503", "504", "bad gateway", "gateway timeout", "http errors", "status code"],
-        category: "HTTP 5xx Server Errors",
+        keys: ["500", "502", "503", "504", "bad gateway", "gateway timeout"],
+        tag: "HTTP 5xx Server Errors",
+        question: "How do you troubleshoot HTTP 500, 502, 503, and 504 errors?",
         opener: "HTTP 5xx status codes indicate server-side failures. I isolate between backend code crashes, reverse proxy breaks, and upstream connection timeouts.",
         bullets: [
           "500 Internal Error: Unhandled backend code exception or database connectivity drop. Check application/catalina logs.",
@@ -486,170 +572,134 @@
         ],
         script: "For a 500 error, I immediately inspect catalina.out to catch unhandled runtime exceptions or database pool connection drops. For a 502 Bad Gateway, the reverse proxy cannot connect to the backend daemon, so I verify that Tomcat is running using ps -ef and listening on its port with netstat. For a 504 Gateway Timeout, the proxy gave up waiting for the backend, which almost always points to an expensive database query or an unresponsive third-party API. I trace the request ID across the access and application logs to pinpoint the delay.",
         commands: "curl -Iv https://app.com | ps -ef | grep tomcat | netstat -tulnp"
-      },
-      {
-        triggers: ["oom", "outofmemory", "heap", "heap dump", "garbage collection", "jvm", "jstack", "jmap"],
-        category: "JVM & Memory Management",
-        opener: "When a JVM hits OutOfMemoryError, I identify whether it is Heap Space, Metaspace, or GC Overhead Limit Exceeded before extracting memory dumps.",
-        bullets: [
-          "Types of OOM: Java Heap Space (object memory leak), Metaspace (classloader leak), GC Overhead limit (98%+ time spent in GC).",
-          "Dump Extraction: Configure '-XX:+HeapDumpOnOutOfMemoryError' or extract manually using 'jmap -dump:format=b,file=heap.hprof <pid>'.",
-          "Analysis: Analyze the .hprof file using Eclipse Memory Analyzer (MAT) to identify memory leaks and dominator trees."
-        ],
-        script: "When an application crashes with OutOfMemoryError, simply restarting it is only a temporary fix. I check the exact error message: if it says Java Heap Space, it means memory allocation exceeded the maximum heap (-Xmx) due to a memory leak. I verify whether automated heap dump generation is enabled with -XX:+HeapDumpOnOutOfMemoryError, or manually generate one using jmap. Then I restart the service to recover production, and feed the heap dump into Eclipse Memory Analyzer (MAT) to find the leaking objects for development to patch.",
-        commands: "jmap -dump:format=b,file=heap.hprof <PID> | jstack <PID> > threads.txt"
-      },
-      {
-        triggers: ["sla", "ola", "service level agreement", "operational level agreement"],
-        category: "ITIL Service Agreements",
-        opener: "SLA governs our contractual commitment to business users, whereas OLA defines our internal operational agreements between technical teams.",
-        bullets: [
-          "SLA (Service Level Agreement): Contract between the IT service provider and the customer defining response and resolution times.",
-          "OLA (Operational Level Agreement): Internal agreement between internal teams (Support, DBA, Network, Dev) to support the SLA.",
-          "Priority SLAs: Standard enterprise benchmarks are P1 (5 Hours), P2 (10 Hours), P3 (24 Hours), and P4 (48 Hours)."
-        ],
-        script: "A Service Level Agreement (SLA) is the formal contract between our support organization and the end business users, specifying measurable targets like uptime and resolution timelines—for instance, 5 hours for P1 and 24 hours for P3. An Operational Level Agreement (OLA) is an internal operational agreement between our internal teams—such as how quickly the DBA or Network team must respond when L2 support escalates an issue—ensuring we do not breach the customer-facing SLA.",
-        commands: "P1: 5h | P2: 10h | P3: 24h | P4: 48h | MTTR Metrics"
-      },
-      {
-        triggers: ["weakness", "areas of improvement", "struggle with", "greatest weakness"],
-        category: "HR Behavioral",
-        opener: "I consider self-awareness the foundation of professional growth, and early on my main challenge was hesitating to ask for help when blocked.",
-        bullets: [
-          "The Weakness: Tendency to spend too much time trying to solve difficult technical roadblocks alone.",
-          "The Fix: Implemented a strict '30-Minute Rule'—research independently first, then escalate with findings.",
-          "The Result: Faster issue resolution without risking SLA breaches or wasting team resources."
-        ],
-        script: "Earlier in my career, I had a tendency to spend too much time trying to figure out complex technical problems completely on my own because I wanted to be self-reliant. In production support, where SLAs are critical, waiting too long can create unnecessary risk. I recognized this and adopted a strict 30-minute rule: if I cannot make measurable progress on an issue within 30 minutes of checking logs and runbooks, I organize my findings, summarize what I tested, and consult a senior engineer. This ensures we resolve issues within SLA while keeping collaboration high.",
-        commands: "Behavioral: 30-Minute Rule | Structured Escalation | SLA Awareness"
       }
     ];
 
-    // Fallback generator for ANY unknown question
-    function generateFallbackAnswer(userQuery) {
-      const q = userQuery.toLowerCase();
+    let currentTranscript = "Tell me about yourself";
+    let recognition = null;
+    let isListening = false;
+
+    // Load Knowledge into Prompter
+    function displayPrompterAnswer(data) {
+      document.getElementById("hudTag").innerText = data.tag.toUpperCase();
+      document.getElementById("hudQuestion").innerText = data.question;
+      document.getElementById("hudOpener").innerHTML = `<strong>💬 2-Second Opener:</strong> "${data.opener}"`;
+      document.getElementById("hudBullets").innerHTML = data.bullets.map(b => `<li>${b}</li>`).join("");
+      document.getElementById("hudScript").innerText = `"${data.script}"`;
+      document.getElementById("hudCommands").innerText = data.commands;
+
+      const widget = document.getElementById("mainWidget");
+      widget.style.borderColor = "var(--accent)";
+      setTimeout(() => widget.style.borderColor = "rgba(129, 140, 248, 0.35)", 400);
+    }
+
+    // Match Query
+    function findBestMatch(text) {
+      const q = text.toLowerCase();
+      for (const item of MASTER_KNOWLEDGE) {
+        if (item.keys.some(k => q.includes(k))) return item;
+      }
       return {
-        category: "Application Support (Tailored Triage)",
-        opener: `Whenever handling an issue regarding ${userQuery}, my approach is to isolate the scope, inspect telemetry and logs, and apply a verified workaround before root-cause investigation.`,
+        tag: "Production Triage",
+        question: text,
+        opener: `Regarding this scenario, my approach is to verify the user blast radius, inspect host telemetry and logs, and apply a verified workaround before root cause analysis.`,
         bullets: [
-          `Scope & Blast Radius: Verify whether this impacts single or multiple users, and check current SLA constraints.`,
-          `Diagnostic Step: Check relevant Linux server logs, service status, and backend database dependencies.`,
-          `Remediation & Closure: Apply a safe workaround or restart, verify health checks, and document the root cause for engineering.`
+          "Check Scope: Determine if the problem affects a single user or all systems globally.",
+          "Investigate Logs: Review application and server logs to isolate the exact error code or stack trace.",
+          "Remediate: Apply a safe service restart or failover, verify end-to-end functionality, and document the root cause."
         ],
-        script: `When investigating an issue related to ${userQuery}, I begin by assessing user impact and checking our monitoring dashboards. Next, I connect to the server environment, inspect application access and error logs to catch active exceptions, and verify that all dependent database and network connections are responsive. If production is degraded, I prioritize service restoration using our documented runbooks, confirm stability with business users, and log a problem ticket with logs attached for root-cause analysis.`,
+        script: `When dealing with this issue, I first confirm the impact and check our monitoring dashboards. Next, I connect to the server environment, inspect application access and error logs to catch active exceptions, and verify that all dependent database and network connections are responsive. If production is degraded, I prioritize service restoration using our documented runbooks, confirm stability with business users, and log a problem ticket with logs attached for root-cause analysis.`,
         commands: "ps -ef | tail -100f app.log | ss -tulnp | df -h"
       };
     }
 
-    // Match query against knowledge base or fallback
-    function findBestAnswer(query) {
-      const q = query.toLowerCase().trim();
-      for (const item of KNOWLEDGE_BASE) {
-        if (item.triggers.some(t => q.includes(t) || t.includes(q))) {
-          return item;
+    // Ctrl+G / Answer Question Action
+    function triggerAnswer() {
+      const answer = findBestMatch(currentTranscript);
+      displayPrompterAnswer(answer);
+    }
+
+    // Ctrl+K / Screen Analysis Action (Uses Screen Capture + OCR)
+    async function triggerScreenAnalysis() {
+      const statusLabel = document.getElementById("statusLabel");
+      const transcript = document.getElementById("liveTranscript");
+
+      try {
+        statusLabel.innerText = "Analyzing Screen...";
+        transcript.innerText = "Capturing screen region/window...";
+
+        // Request display stream
+        const stream = await navigator.mediaDevices.getDisplayMedia({ video: { cursor: "always" }, audio: false });
+        const track = stream.getVideoTracks()[0];
+        const imageCapture = new ImageCapture(track);
+        const bitmap = await imageCapture.grabFrame();
+        track.stop(); // Stop sharing immediately
+
+        // Render to canvas for OCR
+        const canvas = document.createElement("canvas");
+        canvas.width = bitmap.width;
+        canvas.height = bitmap.height;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(bitmap, 0, 0);
+
+        transcript.innerText = "Extracting text from screen with OCR...";
+
+        // Perform in-browser OCR
+        const { data: { text } } = await Tesseract.recognize(canvas, 'eng');
+        const cleanText = text.trim();
+
+        if (cleanText.length > 5) {
+          transcript.innerText = `Screen Detected: "${cleanText.substring(0, 70)}..."`;
+          currentTranscript = cleanText;
+          const match = findBestMatch(cleanText);
+          displayPrompterAnswer(match);
+        } else {
+          transcript.innerText = "Screen captured, but no clear text found. Using general triage.";
+          triggerAnswer();
         }
+
+        statusLabel.innerText = "Ready";
+      } catch (err) {
+        console.warn("Screen capture cancelled or not supported:", err);
+        statusLabel.innerText = "Ready";
+        transcript.innerText = "Screen analysis cancelled.";
       }
-      return generateFallbackAnswer(query);
     }
 
-    // Render Answer Bubble
-    function renderBotResponse(answerData, userQuestion) {
-      const chatBox = document.getElementById("chatBox");
-
-      // User Bubble
-      const userBubble = document.createElement("div");
-      userBubble.className = "msg-user";
-      userBubble.innerText = userQuestion;
-      chatBox.appendChild(userBubble);
-
-      // Bot Card
-      const botCard = document.createElement("div");
-      botCard.className = "msg-bot";
-
-      const bulletsHtml = answerData.bullets.map(b => `<li>${b}</li>`).join("");
-
-      botCard.innerHTML = `
-        <div class="card-meta">
-          <span class="meta-tag">⚡ ${answerData.category}</span>
-          <button class="btn-copy" onclick="copyCard(this)">📋 Copy Script</button>
-        </div>
-
-        <div class="sec-opener">
-          <strong>💬 2-Second Opener:</strong> "${answerData.opener}"
-        </div>
-
-        <div>
-          <div class="sec-bullets-title">📌 Key Bullet Points (Glance & Speak)</div>
-          <ul class="sec-bullets">
-            ${bulletsHtml}
-          </ul>
-        </div>
-
-        <div class="sec-script-box">
-          <div class="sec-script-title">🗣️ Complete Spoken Script (Say This to HR)</div>
-          <div class="sec-script-text">"${answerData.script}"</div>
-        </div>
-
-        <div class="sec-commands">
-          <span>⚙️ Commands / Tools:</span>
-          <strong>${answerData.commands}</strong>
-        </div>
-      `;
-
-      chatBox.appendChild(botCard);
-      chatBox.scrollTop = chatBox.scrollHeight;
+    // Ctrl+E / Hide Action
+    function toggleHide() {
+      document.body.classList.toggle("hidden-mode");
     }
 
-    // Chat submit handler
-    function handleChatSubmit(e) {
-      if (e) e.preventDefault();
-      const input = document.getElementById("chatInput");
-      const text = input.value.trim();
-      if (!text) return;
-
-      const answer = findBestAnswer(text);
-      renderBotResponse(answer, text);
-      input.value = "";
+    // Clear Feed
+    function clearFeed() {
+      document.getElementById("liveTranscript").innerText = "Waiting for HR speech or press 'Answer Question'...";
+      currentTranscript = "";
     }
 
-    function submitQuickQuestion(qText) {
-      const answer = findBestAnswer(qText);
-      renderBotResponse(answer, qText);
-    }
-
-    function clearChat() {
-      document.getElementById("chatBox").innerHTML = "";
-    }
-
-    function copyCard(btn) {
-      const card = btn.closest(".msg-bot");
-      const scriptText = card.querySelector(".sec-script-text").innerText;
-      navigator.clipboard.writeText(scriptText);
-      btn.innerText = "✓ Copied!";
-      setTimeout(() => btn.innerText = "📋 Copy Script", 1600);
-    }
-
-    // Speech Recognition (Mic Mode)
-    let recognition = null;
-    let isListening = false;
-
+    // Audio & Speech Engine
     function initSpeech() {
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
       if (!SpeechRecognition) {
-        alert("Speech Recognition requires Google Chrome or Microsoft Edge.");
+        alert("Microphone recognition requires Google Chrome or Microsoft Edge.");
         return null;
       }
 
       const rec = new SpeechRecognition();
       rec.continuous = true;
-      rec.interimResults = false;
+      rec.interimResults = true;
       rec.lang = "en-US";
 
       rec.onresult = (evt) => {
-        const transcript = evt.results[evt.results.length - 1][0].transcript.trim();
-        if (transcript.length > 2) {
-          const answer = findBestAnswer(transcript);
-          renderBotResponse(answer, transcript);
+        let transcript = "";
+        for (let i = evt.resultIndex; i < evt.results.length; i++) {
+          transcript += evt.results[i][0].transcript;
+        }
+        if (transcript.trim().length > 0) {
+          document.getElementById("liveTranscript").innerText = transcript;
+          currentTranscript = transcript;
+          // Auto-update meter animation
+          document.getElementById("waveformBar").style.width = Math.min(100, transcript.length * 4) + "%";
         }
       };
 
@@ -664,6 +714,9 @@
 
     function toggleMic() {
       const btn = document.getElementById("micBtn");
+      const pill = document.getElementById("statusPill");
+      const label = document.getElementById("statusLabel");
+
       if (!recognition) recognition = initSpeech();
       if (!recognition) return;
 
@@ -671,21 +724,47 @@
         try {
           recognition.start();
           isListening = true;
-          btn.classList.add("active");
-          btn.innerText = "🛑 Stop Mic";
+          btn.style.background = "#0284c7";
+          btn.innerText = "🛑 Stop";
+          pill.classList.add("listening");
+          label.innerText = "Listening...";
         } catch(e) {}
       } else {
         isListening = false;
         recognition.stop();
-        btn.classList.remove("active");
-        btn.innerText = "🎙️ Listen HR";
+        btn.style.background = "rgba(255, 255, 255, 0.05)";
+        btn.innerText = "🎙️ Listen";
+        pill.classList.remove("listening");
+        label.innerText = "Ready";
+        document.getElementById("waveformBar").style.width = "0%";
       }
     }
 
-    // Load initial welcome prompt on open
-    window.addEventListener("DOMContentLoaded", () => {
-      submitQuickQuestion("Tell me about yourself and your background in Application Support.");
+    // Hotkeys exactly matching Parakeet AI
+    window.addEventListener("keydown", (e) => {
+      const isCmdOrCtrl = e.metaKey || e.ctrlKey;
+
+      // Cmd/Ctrl + G: Answer Question
+      if (isCmdOrCtrl && e.key.toLowerCase() === "g") {
+        e.preventDefault();
+        triggerAnswer();
+      }
+
+      // Cmd/Ctrl + K: Analyze Screen
+      if (isCmdOrCtrl && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        triggerScreenAnalysis();
+      }
+
+      // Cmd/Ctrl + E: Hide / Unhide
+      if (isCmdOrCtrl && e.key.toLowerCase() === "e") {
+        e.preventDefault();
+        toggleHide();
+      }
     });
+
+    // Load initial answer on start
+    displayPrompterAnswer(MASTER_KNOWLEDGE[0]);
   </script>
 </body>
 </html>
