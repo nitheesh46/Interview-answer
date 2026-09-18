@@ -3,13 +3,14 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Parrot & Pilot AI | Deep Production Support Copilot</title>
+  <title>Application Support Copilot | L1 & L2 Master Teleprompter</title>
   <style>
     :root {
       --bg: #07090e;
-      --card-bg: rgba(18, 24, 38, 0.9);
-      --panel: #0d1321;
-      --border: rgba(255, 255, 255, 0.1);
+      --panel: #0d1322;
+      --card-bg: rgba(17, 24, 39, 0.85);
+      --border: rgba(255, 255, 255, 0.08);
+      --border-focus: #38bdf8;
       --primary: #38bdf8;
       --accent: #10b981;
       --warning: #f59e0b;
@@ -33,19 +34,20 @@
       display: flex;
       flex-direction: column;
       padding-bottom: 50px;
+      overflow-x: hidden;
     }
 
     header {
       position: sticky;
       top: 0;
       z-index: 1000;
-      background: rgba(10, 14, 23, 0.95);
-      backdrop-filter: blur(14px);
+      background: rgba(10, 14, 23, 0.96);
+      backdrop-filter: blur(16px);
       border-bottom: 1px solid var(--border);
-      padding: 12px 18px;
+      padding: 10px 16px;
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 8px;
     }
 
     .top-bar {
@@ -56,13 +58,13 @@
       gap: 8px;
     }
 
-    .brand-row {
+    .brand-group {
       display: flex;
       align-items: center;
       gap: 8px;
     }
 
-    .live-pulse {
+    .status-pulse {
       width: 10px;
       height: 10px;
       border-radius: 50%;
@@ -70,7 +72,7 @@
       transition: all 0.3s;
     }
 
-    .live-pulse.active {
+    .status-pulse.active {
       background: var(--accent);
       box-shadow: 0 0 10px var(--accent);
       animation: pulse 1.4s infinite;
@@ -83,14 +85,30 @@
     }
 
     .brand-title {
-      font-size: 0.95rem;
+      font-size: 0.92rem;
       font-weight: 800;
-      color: var(--primary);
-      text-transform: uppercase;
       letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--primary);
     }
 
-    .btn-group {
+    .hotkey-hints {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      display: flex;
+      gap: 6px;
+    }
+
+    .badge-key {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--border);
+      padding: 1px 5px;
+      border-radius: 4px;
+      color: #cbd5e1;
+      font-family: monospace;
+    }
+
+    .controls-group {
       display: flex;
       align-items: center;
       gap: 6px;
@@ -111,47 +129,48 @@
 
     .btn-mic { background: var(--danger); color: #fff; }
     .btn-mic.listening { background: #0284c7; box-shadow: 0 0 12px rgba(2, 132, 199, 0.4); }
-    .btn-stealth { background: rgba(255, 255, 255, 0.06); color: var(--text-muted); border: 1px solid var(--border); }
+    .btn-action { background: rgba(255, 255, 255, 0.06); color: var(--text-muted); border: 1px solid var(--border); }
+    .btn-action:hover { color: #fff; border-color: var(--primary); }
 
-    /* Search & Type Bar */
-    .search-row {
+    /* Type and Search Input Area */
+    .search-wrapper {
       display: flex;
       flex-direction: column;
       gap: 6px;
     }
 
-    .type-input {
+    .type-search-bar {
       width: 100%;
       background: var(--panel);
-      border: 1.5px solid #334155;
+      border: 1.5px solid #1e293b;
       color: #fff;
-      padding: 10px 14px;
+      padding: 9px 14px;
       border-radius: 8px;
-      font-size: 0.98rem;
+      font-size: 0.95rem;
       outline: none;
       transition: border-color 0.2s;
     }
 
-    .type-input:focus {
+    .type-search-bar:focus {
       border-color: var(--primary);
       box-shadow: 0 0 8px rgba(56, 189, 248, 0.25);
     }
 
-    .type-chips {
+    .category-chips {
       display: flex;
-      gap: 6px;
+      gap: 5px;
       overflow-x: auto;
       padding-bottom: 2px;
     }
 
     .chip {
-      background: rgba(255, 255, 255, 0.05);
+      background: rgba(255, 255, 255, 0.04);
       border: 1px solid var(--border);
       color: var(--text-muted);
-      font-size: 0.74rem;
+      font-size: 0.72rem;
       font-weight: 700;
-      padding: 3px 10px;
-      border-radius: 6px;
+      padding: 3px 9px;
+      border-radius: 5px;
       white-space: nowrap;
       cursor: pointer;
     }
@@ -162,7 +181,7 @@
       border-color: var(--primary);
     }
 
-    .transcript-bar {
+    .transcript-ticker {
       font-size: 0.78rem;
       color: var(--purple);
       background: rgba(0, 0, 0, 0.4);
@@ -176,14 +195,14 @@
       text-overflow: ellipsis;
     }
 
-    /* TELEPROMPTER HUD (PARROT / PILOT STYLE) */
-    .parrot-hud {
-      margin: 12px 18px;
+    /* TELEPROMPTER HUD */
+    .teleprompter-hud {
+      margin: 10px 16px;
       background: var(--card-bg);
       border: 2px solid var(--purple);
       border-radius: 12px;
-      padding: 18px;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+      padding: 16px 18px;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
       backdrop-filter: blur(12px);
       transition: border-color 0.2s;
     }
@@ -195,53 +214,53 @@
       margin-bottom: 6px;
     }
 
-    .hud-category {
+    .hud-tag {
       font-size: 0.72rem;
       font-weight: 800;
       color: var(--primary);
       text-transform: uppercase;
-      letter-spacing: 0.08em;
+      letter-spacing: 0.06em;
     }
 
-    .hud-match-score {
+    .hud-badge {
       font-size: 0.72rem;
-      padding: 2px 8px;
+      padding: 2px 7px;
       border-radius: 4px;
       background: rgba(16, 185, 129, 0.15);
       color: var(--accent);
       font-weight: 800;
     }
 
-    .hud-question {
+    .hud-title {
       font-size: 1.25rem;
       font-weight: 800;
       color: #fff;
-      margin-bottom: 10px;
-      line-height: 1.35;
+      margin-bottom: 8px;
+      line-height: 1.3;
     }
 
-    /* 0-Second Hook */
     .hud-hook {
       background: rgba(245, 158, 11, 0.12);
       border-left: 3px solid var(--warning);
-      padding: 6px 12px;
-      font-size: 0.86rem;
-      color: #fde68a;
-      margin-bottom: 12px;
+      padding: 6px 10px;
       border-radius: 4px;
+      font-size: 0.85rem;
+      color: #fde68a;
+      margin-bottom: 10px;
+      line-height: 1.4;
     }
 
     .hud-bullets {
       list-style-type: none;
       display: flex;
       flex-direction: column;
-      gap: 7px;
-      margin-bottom: 14px;
+      gap: 6px;
+      margin-bottom: 12px;
     }
 
     .hud-bullets li {
-      font-size: 1.05rem;
-      line-height: 1.45;
+      font-size: 1rem;
+      line-height: 1.4;
       color: #f1f5f9;
       display: flex;
       align-items: flex-start;
@@ -255,16 +274,15 @@
       margin-top: 3px;
     }
 
-    /* Deep Analysis Box */
-    .deep-analysis {
+    .hud-deep-section {
       background: #090e18;
       border: 1px solid var(--border);
       border-radius: 8px;
       padding: 12px 14px;
-      margin-top: 10px;
+      margin-top: 8px;
     }
 
-    .deep-analysis-title {
+    .deep-header {
       font-size: 0.76rem;
       text-transform: uppercase;
       letter-spacing: 0.06em;
@@ -273,21 +291,21 @@
       margin-bottom: 6px;
     }
 
-    .deep-analysis-content {
-      font-size: 0.9rem;
+    .deep-body {
+      font-size: 0.88rem;
       color: #cbd5e1;
-      line-height: 1.6;
+      line-height: 1.55;
       white-space: pre-line;
     }
 
     .hud-command {
       margin-top: 10px;
-      background: #04060a;
+      background: #030508;
       border: 1px solid #1e293b;
       border-radius: 6px;
       padding: 8px 12px;
-      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-      font-size: 0.85rem;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 0.82rem;
       color: #67e8f9;
       display: flex;
       justify-content: space-between;
@@ -296,15 +314,15 @@
 
     /* Cards Grid */
     main {
-      padding: 0 18px;
+      padding: 0 16px;
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 8px;
     }
 
     .cards-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
       gap: 10px;
     }
 
@@ -314,7 +332,7 @@
       border-radius: 8px;
       padding: 10px 12px;
       cursor: pointer;
-      transition: 0.15s ease;
+      transition: all 0.15s ease;
     }
 
     .card:hover {
@@ -328,7 +346,7 @@
     }
 
     .card-title {
-      font-size: 0.9rem;
+      font-size: 0.88rem;
       font-weight: 700;
       color: #fff;
       margin-bottom: 4px;
@@ -342,13 +360,13 @@
 
     /* Stealth View Mode */
     body.stealth-view main,
-    body.stealth-view .type-chips,
-    body.stealth-view .search-row {
+    body.stealth-view .category-chips,
+    body.stealth-view .search-wrapper {
       display: none !important;
     }
-    body.stealth-view .parrot-hud {
-      margin: 8px;
-      background: rgba(8, 12, 20, 0.98);
+    body.stealth-view .teleprompter-hud {
+      margin: 6px;
+      background: rgba(7, 10, 18, 0.98);
       border-color: rgba(255, 255, 255, 0.15);
     }
   </style>
@@ -357,76 +375,79 @@
 
   <header>
     <div class="top-bar">
-      <div class="brand-row">
-        <div class="live-pulse" id="livePulse"></div>
-        <span class="brand-title">Parrot AI | Production Support Teleprompter</span>
+      <div class="brand-group">
+        <div class="status-pulse" id="statusPulse"></div>
+        <span class="brand-title">L1/L2 Support Copilot</span>
+        <div class="hotkey-hints">
+          <span><span class="badge-key">Space</span> Mic</span>
+          <span><span class="badge-key">Esc</span> Stealth</span>
+          <span><span class="badge-key">/</span> Search</span>
+        </div>
       </div>
-      <div class="btn-group">
-        <button class="btn btn-mic" id="micBtn" onclick="toggleMic()">🎙️ Listen</button>
-        <button class="btn btn-stealth" onclick="toggleStealth()">👁️ Stealth (Esc)</button>
-        <button class="btn btn-stealth" onclick="resetIntro()">↺ Intro</button>
+      <div class="controls-group">
+        <button class="btn btn-mic" id="micBtn" onclick="toggleMic()">🎙️ Listen HR</button>
+        <button class="btn btn-action" onclick="toggleStealth()">👁️ Stealth</button>
+        <button class="btn btn-action" onclick="resetToIntroduction()">↺ Intro</button>
       </div>
     </div>
 
-    <!-- TYPE SEARCH SECTION -->
-    <div class="search-row">
+    <div class="search-wrapper">
       <input 
         type="text" 
-        id="typeInput" 
-        class="type-input" 
-        placeholder="Type any topic (e.g. 'monitoring', 'log', 'blockage', 'space', 'ssi', 'autosys', 'sla')..."
+        id="searchInput" 
+        class="type-search-bar" 
+        placeholder="Type any keyword: e.g. cpu, memory, logs, 502, deadlock, oom, p1, autosys, curl, ssl..."
         autofocus
         oninput="handleSearch(this.value)"
       />
 
-      <div class="type-chips">
-        <button class="chip active" onclick="filterChip('All', this)">All Topics</button>
-        <button class="chip" onclick="filterChip('Monitoring & Logs', this)">Monitoring & Logs</button>
-        <button class="chip" onclick="filterChip('Unix & Server', this)">UNIX & Space</button>
-        <button class="chip" onclick="filterChip('Database & SQL', this)">Oracle SQL & Locks</button>
-        <button class="chip" onclick="filterChip('ITIL & ServiceNow', this)">ITIL & SLAs</button>
-        <button class="chip" onclick="filterChip('Real-Time Projects', this)">Real-Time Automation</button>
+      <div class="category-chips">
+        <button class="chip active" onclick="filterCategory('All', this)">All Categories</button>
+        <button class="chip" onclick="filterCategory('Linux & Server', this)">Linux & Server</button>
+        <button class="chip" onclick="filterCategory('Database & SQL', this)">SQL & Databases</button>
+        <button class="chip" onclick="filterCategory('App Server & JVM', this)">JVM & Tomcat</button>
+        <button class="chip" onclick="filterCategory('Web & APIs', this)">HTTP, Web & APIs</button>
+        <button class="chip" onclick="filterCategory('ITIL & Operations', this)">ITIL & Production</button>
       </div>
 
-      <div class="transcript-bar">
+      <div class="transcript-ticker">
         <span>👂 Live Heard:</span>
-        <span id="liveTranscriptText">Speech recognition ready or type keyword above...</span>
+        <span id="liveTranscript">Waiting for interviewer audio or instant keyboard search...</span>
       </div>
     </div>
   </header>
 
-  <!-- TELEPROMPTER HUD: Zero Delay Live Display -->
-  <div class="parrot-hud" id="hudBox">
+  <!-- TELEPROMPTER HUD: Zero-Delay Display -->
+  <div class="teleprompter-hud" id="hudContainer">
     <div class="hud-meta">
-      <span class="hud-category" id="hudCategory">MONITORING & LOGS</span>
-      <span class="hud-match-score" id="hudMatch">⚡ 100% Match</span>
+      <span class="hud-tag" id="hudCategory">INTRODUCTION</span>
+      <span class="hud-badge" id="hudBadge">⚡ 100% Match</span>
     </div>
 
-    <div class="hud-question" id="hudQuestion">How do you investigate Logs in Production? (Log Analysis Masterclass)</div>
+    <div class="hud-title" id="hudTitle">Tell me about yourself as an Application Support Engineer (L1/L2)?</div>
 
     <div class="hud-hook" id="hudHook">
-      💬 <strong>0s Hook:</strong> "In production support, log analysis is my primary diagnostic tool. I use a structured 3-phase investigation workflow..."
+      💬 <strong>0s Hook:</strong> "Thank you for asking. I specialize in L1 and L2 Application Production Support, ensuring 24/7 high availability across distributed production environments..."
     </div>
 
     <ul class="hud-bullets" id="hudBullets">
-      <li><strong>Real-Time Triage:</strong> Running 'tail -f' to observe live events and 'grep -i -C 5 "Exception"' to isolate root cause stack traces.</li>
-      <li><strong>Log Classification:</strong> Inspecting HTTP access codes in /var logs (4xx client errors vs 5xx server errors), GC logs, and Autosys out/spool logs.</li>
-      <li><strong>Safe Log Maintenance:</strong> Safely zeroing active logs using 'cat /dev/null > log_file' without breaking file handles held by running processes.</li>
+      <li><strong>Operational Scope:</strong> Monitoring real-time telemetry, triaging P1-P4 incidents, executing standard health checks, and maintaining SLA targets.</li>
+      <li><strong>Technical Stack:</strong> Linux/Unix systems, Oracle/PostgreSQL SQL queries, Java/Tomcat application servers, shell automation, and batch schedulers.</li>
+      <li><strong>Problem Solving:</strong> Isolating application slowness, debugging production logs, resolving database session locks, and root-cause collaboration with L3.</li>
     </ul>
 
-    <div class="deep-analysis">
-      <div class="deep-analysis-title">📋 Deep Investigation Steps & Commands</div>
-      <div class="deep-analysis-content" id="hudAnalysis">
-• Production Log Analysis Workflow:
-  1. Live Tracking: tail -100f /var/log/application/catalina.out | grep -E "ERROR|FATAL|Exception"
-  2. Contextual Searching: grep -i -C 5 "NullPointerException" server.log (Pulls 5 lines before & after the crash).
-  3. Compressed/Rotated Logs: zgrep -i "Connection timeout" app_log-2026-*.gz (Searches gzip files without extracting).
-  4. HTTP Log Codes: Reviewing access logs: 400-499 indicate user/client permission errors, while 500-599 signify backend server, thread, or database connectivity drops.
-  5. Autosys Job Logs: Inspecting /autosys/spool or log output to diagnose missing dependencies, input data corruptions, and permission failures.
+    <div class="hud-deep-section">
+      <div class="deep-header">📋 Complete Technical Architecture & Production Workflow</div>
+      <div class="deep-body" id="hudDeepAnalysis">
+• Day-to-Day Responsibilities:
+  1. Incident & Ticket Management: Monitoring ticketing queues (ServiceNow/Jira), triaging tickets based on Impact & Urgency, managing major incident bridge calls, and publishing user notifications.
+  2. Proactive Monitoring: Reviewing real-time dashboards (Dynatrace, Splunk, Geneos, Grafana), responding to infrastructure alerts (disk, CPU, memory), and monitoring scheduled batch jobs.
+  3. Diagnostic Investigation: Connecting via SSH to Unix environments, isolating application error codes across server access logs, verifying database connection pool health, and terminating runaway processes.
+  4. Release & Maintenance: Supporting CAB deployments, managing server maintenance windows, executing pre- and post-deployment sanity testing, and participating in Disaster Recovery (DR) drills.
       </div>
       <div class="hud-command">
-        <span>Master Command:</span>
-        <strong id="hudCmd">tail -f log | grep -i -C 5 'Exception' | cat /dev/null > file.log</strong>
+        <span>Command Reference:</span>
+        <strong id="hudCommand">top | ps aux --sort=-%cpu | tail -f catalina.out | df -h</strong>
       </div>
     </div>
   </div>
@@ -436,529 +457,491 @@
   </main>
 
   <script>
-    // DEEP REPOSITORY COMBINING YOUR PDF WITH STANDARD PRODUCTION SUPPORT PRACTICES
-    const PRODUCTION_SUPPORT_MASTER_DB = [
+    // FULL MASTER APPLICATION SUPPORT ENGINEER L1 & L2 KNOWLEDGE BASE
+    const MASTER_SUPPORT_KB = [
       {
         id: 1,
-        category: "Monitoring & Logs",
-        question: "How do you investigate Logs in Production? (Log Analysis Masterclass)",
-        keywords: ["log", "logs", "log analysis", "investigate log", "catalina", "grep", "tail", "exception", "trace"],
-        hook: "Log analysis is my primary diagnostic tool in production. I follow a structured real-time investigation workflow...",
+        cat: "ITIL & Operations",
+        q: "Tell me about yourself as an Application Support Engineer (L1/L2)?",
+        keywords: ["tell me about yourself", "introduce yourself", "walk me through", "background", "experience", "profile"],
+        hook: "Thank you for asking. I specialize in L1 and L2 Application Production Support, maintaining 24/7 high availability across business-critical architectures...",
         bullets: [
-          "Real-Time Triage: Use 'tail -f' for live tracking and 'grep -i -C 5 \"Exception\"' to inspect full stack traces with context.",
-          "Log Classification: Review HTTP access codes (4xx client vs 5xx server failures), Tomcat catalina.out, and GC/OOM logs.",
-          "Safe File Maintenance: If logs saturate the filesystem, never delete active files; truncate safely with 'cat /dev/null > log_file'."
+          "Operational Scope: Triage incident tickets, monitor system telemetry, manage incident bridges, and uphold strict SLA targets.",
+          "Technical Foundation: Strong Unix/Linux command-line diagnostics, Oracle/PostgreSQL SQL queries, web servers (Tomcat/Nginx), and bash automation.",
+          "Engineering Mindset: Focus on rapid temporary workarounds to stop business downtime, followed by thorough root-cause analysis (RCA) with dev teams."
         ],
-        analysis: `• Step-by-Step Log Diagnostic SOP:
-  1. Real-Time Tracking:
-     - Follow live server execution: tail -100f /var/log/application/catalina.out | grep -E "ERROR|FATAL|Exception"
-  2. Context Extraction:
-     - Pull the exact stack trace: grep -i -C 5 "SQLException" app.log (extracts 5 lines of context before and after the failure).
-  3. Searching Archived Logs:
-     - Search rotated/compressed logs without extracting: zgrep -i "timed out" app_log_2026_*.gz
-  4. HTTP Access Log Diagnostics:
-     - 400-499: Client-side issues (invalid parameters, expired session token, 404 missing resource).
-     - 500-599: Backend infrastructure faults (500 internal server error, 502 bad gateway, 504 gateway timeout).
-  5. Safe Log Maintenance:
-     - If a log file consumes 100% filesystem disk space, running 'rm' fails to release disk blocks if Java holds the inode.
-     - Truncate safely: cat /dev/null > catalina.out (instantly clears space to 0 bytes without stopping Tomcat).`,
-        cmd: "tail -100f catalina.out | grep -i -C 5 'Exception' | zgrep -i 'timeout' *.gz"
+        deep: `• Production Support Workflow:
+  1. Triage & Shift Handovers: Reviewing active handovers, checking ongoing tickets in ServiceNow, and conducting routine shift startup health checks.
+  2. Monitoring & Alert Handling: Responding to automated alerts (Geneos/Dynatrace/Splunk) before business users experience service degradation.
+  3. Escalation & Collaboration: Resolving L1/L2 scope issues via documented standard operating procedures (SOPs), and coordinating with L3/Development for code bugs.
+  4. Automation: Creating reusable shell scripts and cron jobs to automate manual reconciliations, log cleanups, and batch monitoring.`,
+        cmd: "top | ps -ef | tail -100f app.log | df -h | netstat -tulnp"
       },
       {
         id: 2,
-        category: "Monitoring & Logs",
-        question: "Explain your End-to-End Monitoring Framework (Geneos, Autosys, APM)?",
-        keywords: ["monitoring", "monitor", "alerts", "geneos", "itrs", "health check", "proactive", "reactive"],
-        hook: "We utilize a combination of proactive infrastructure monitoring via ITRS Geneos and batch scheduling via Autosys...",
+        cat: "Linux & Server",
+        q: "How do you troubleshoot high CPU or Memory utilization on a Linux server?",
+        keywords: ["high cpu", "cpu utilization", "memory utilization", "server slow", "load average", "top", "swap"],
+        hook: "When server resources spike, I immediately isolate whether the bottleneck is process-bound, I/O wait, or memory thrashing...",
         bullets: [
-          "ITRS Geneos: Real-time probes monitor disk capacity, memory, CPU, feed file arrivals, and long-running processes.",
-          "Alert Triage: Warning alerts generate P4 tickets in ServiceNow; Critical alerts generate P3 tickets.",
-          "Autosys Job Monitoring: Continuous tracking of 400+ scheduled jobs; proactive alerting on job failures or time breaches."
+          "CPU Triage: Run 'top' or 'htop' to check Load Average. Press 'P' to sort by CPU; run 'ps aux --sort=-%cpu | head -10' to isolate the rogue PID.",
+          "Memory & Swap: Run 'free -m' and 'vmstat 1 5' to check 'si' (swap in) and 'so' (swap out). High swap I/O indicates RAM exhaustion.",
+          "Action: If a rogue or zombie process is consuming 90%+ CPU, capture thread stack traces if Java, or terminate with 'kill -15' (graceful) or 'kill -9'."
         ],
-        analysis: `• Production Monitoring Framework:
-  1. Proactive vs Reactive Monitoring:
-     - Proactive: ITRS Geneos monitors system health before users detect issues (alerts trigger before filesystems reach 100%).
-     - Reactive: Responding to ServiceNow incident tickets raised directly by downstream settlement teams.
-  2. ITRS Geneos Operations:
-     - Monitors incoming feeds, gateway status, and OS metrics (CPU, RAM, swap).
-     - SLA Protocol: Warning alerts = P4 ticket (48hr SLA); Critical alerts = P3 ticket (24hr SLA).
-     - Maintenance SOP: Always snooze Geneos alert monitors during application weekend deployments to prevent false alarms.
-  3. Batch Job Monitoring:
-     - Supervising 400+ daily Autosys batch jobs across settlement, reconciliation, and dynamic reporting streams.
-     - When jobs breach Max Runtime, investigate blocking database locks or heavy transaction volume.`,
-        cmd: "Geneos: Warning (P4) / Critical (P3) | Snooze during CAB release | Autosys 400+ jobs"
+        deep: `• Step-by-Step Diagnostic SOP:
+  1. Check System Load Average:
+     - Run: uptime or top
+     - If load average significantly exceeds the total number of CPU cores, the server is backlogged.
+  2. Identify Rogue Processes:
+     - Sort by CPU: ps aux --sort=-%cpu | head -10
+     - Sort by Memory: ps aux --sort=-%mem | head -10
+  3. Inspect I/O Wait (Disk Bottleneck):
+     - In 'top', check '%wa' (wait on I/O). If wa > 15-20%, the CPU is idling waiting for slow disk or network storage.
+     - Run: iostat -xz 1 5 to pinpoint the saturated disk partition.
+  4. Memory Analysis:
+     - Check RAM: free -h (Check 'available' memory, not just 'free' which excludes disk buffer/cache).
+     - Run: vmstat 1 5. If 'si' and 'so' are continuously non-zero, active swapping is degrading application latency.
+  5. Remediation:
+     - If Java: Capture thread dump (jstack <pid> > threads.tdump) before terminating.
+     - Terminate cleanly: kill -15 <pid>. If unresponsive: kill -9 <pid>.`,
+        cmd: "top -b -n 1 | ps aux --sort=-%cpu | head -10 | free -m | vmstat 1 5"
       },
       {
         id: 3,
-        category: "Unix & Server",
-        question: "Filesystem Space 75% or 100% full in UNIX? (Safe Remediation SOP)",
-        keywords: ["filesystem", "space", "75%", "100%", "disk full", "df", "du", "truncate", "cat /dev/null"],
-        hook: "When a filesystem warning or critical alert fires, I isolate the mount, identify heavy files, and safely remediate...",
+        cat: "Linux & Server",
+        q: "How do you investigate production application logs like an expert?",
+        keywords: ["log", "logs", "investigate logs", "log analysis", "grep", "tail", "exception", "trace", "catalina"],
+        hook: "Log analysis is my primary diagnostic tool. I use live monitoring, contextual search, and archive tools to trace root causes...",
         bullets: [
-          "Locate Filesystem: Run 'df -h' to isolate the mount point at 75% or 100% capacity.",
-          "Find Heavy Directory & Files: Use 'du -sk * | sort -k 1nr | head -10' and 'ls -lS' to identify heavy targets.",
-          "Safe Truncation: Never delete files currently locked by a running process; clear using: 'cat /dev/null > log_file_name'."
+          "Live Monitoring: Run 'tail -100f app.log | grep -iE \"ERROR|FATAL|Exception\"' to monitor incoming production failures.",
+          "Context Search: Use 'grep -i -C 5 \"NullPointer\" app.log' to extract 5 lines before and after the crash to inspect stack traces.",
+          "Compressed Logs: Use 'zgrep', 'zcat', or 'zless' to search archived .gz logs without decompressing them to disk."
         ],
-        analysis: `• Detailed Unix Space Troubleshooting:
-  1. Triage Commands:
-     - Check disk utilization: df -h
-     - Enter directory and sort folders by size: du -sk * | sort -k 1nr | head -10
-     - Pinpoint heaviest files: ls -lS | head -10
-  2. Resolution Strategy:
-     - Inactive/Archived files: Gzip or move to a backup directory: gzip old_data.log
-     - Active Application Logs: If actively written by Java or Tomcat, using 'rm' will delete the file pointer, but the Unix kernel will NOT release the disk space because the running process holds the open file descriptor!
-     - The Only Safe Truncation: cat /dev/null > log_file_name (or: > log_file_name)
-  3. Permanent Extension:
-     - Email the Unix Admin team with mount details and volume path to extend disk allocation.`,
-        cmd: "df -h; du -sk * | sort -k 1nr; ls -lS; cat /dev/null > log_file_name"
+        deep: `• Real-Time Log Diagnostic Framework:
+  1. Live Tail Filtering:
+     - tail -f /var/log/tomcat/catalina.out | grep --line-buffered -E "Exception|OutOfMemory"
+  2. Context Extraction (Stack Trace Isolation):
+     - grep -n -C 5 "SQLException" /var/log/application.log
+     - -n prints line numbers; -C 5 gives 5 lines of preceding and succeeding context.
+  3. Search Multiple Rotated Logs:
+     - zgrep -i "Connection timed out" /var/log/app_2026_*.log.gz
+  4. Count Error Frequency:
+     - grep "HTTP 500" access.log | awk '{print $1, $7}' | sort | uniq -c | sort -nr
+  5. Large File Navigation:
+     - Use 'less +F filename' to inspect large multi-gigabyte logs without memory overhead; use Shift+F to toggle tail mode.`,
+        cmd: "tail -100f app.log | grep -i -C 5 'Exception' | zgrep -i 'timeout' *.gz"
       },
       {
         id: 4,
-        category: "Database & SQL",
-        question: "How do you find and kill Database Blockages in Oracle SQL?",
-        keywords: ["blockage", "db blockage", "database blockage", "blocking_session", "kill session", "v$session", "locks"],
-        hook: "Database blockage happens when an uncommitted DML transaction locks a table row needed by other sessions...",
+        cat: "Linux & Server",
+        q: "How do you troubleshoot a 100% full Filesystem (Disk Space Exhaustion)?",
+        keywords: ["filesystem", "space", "disk full", "100%", "75%", "df", "du", "truncate", "lsof"],
+        hook: "When a filesystem saturates, I identify heavy files, handle open file descriptors safely, and truncate without killing processes...",
         bullets: [
-          "Root Cause: A user executes an INSERT, UPDATE, or DELETE without a COMMIT or ROLLBACK, leaving rows in a locked state.",
-          "Query to Identify Blockage: select * from v$session where blocking_session is not NULL order by blocking_session;",
-          "Query to Kill Session: alter system kill session ('sid,serial#') immediate; (Executed with DBA support)."
+          "Locate Mount: Run 'df -h' to identify the saturated volume. Enter directory and run 'du -sk * | sort -k 1nr | head -10'.",
+          "Identify Heaviest Files: Run 'ls -lS' to find large target logs or core dumps. Gzip inactive logs.",
+          "Open File Descriptors: If a deleted file still consumes space, check 'lsof | grep deleted'. Truncate active logs with 'cat /dev/null > file.log'."
         ],
-        analysis: `• Complete Oracle Database Lock SOP:
-  1. Diagnostic Detection:
-     - When jobs hang or users report screen freezing, query v$session in Oracle SQL Developer:
-       SELECT sid, serial#, username, status, blocking_session, seconds_in_wait, sql_id 
-       FROM v$session 
-       WHERE blocking_session IS NOT NULL 
-       ORDER BY blocking_session;
-  2. Triage & Confirmation:
-     - Trace the blocking_session value (which represents the parent SID holding the row lock).
-     - Check user identity and verify if the query is a runaway or abandoned session.
-  3. Termination:
-     - Coordinate with DBA team to execute:
-       ALTER SYSTEM KILL SESSION ('<sid>,<serial#>') IMMEDIATE;
-     - Check v$session again to confirm queued child sessions resume processing immediately.`,
-        cmd: "select * from v$session where blocking_session is not NULL; alter system kill session ('sid,serial#') immediate;"
+        deep: `• Filesystem Recovery Sequence:
+  1. Triage:
+     - Run: df -h (Identify saturated mount point, e.g., /var or /app).
+     - Run: du -sh * | sort -hr | head -10 (Find largest directory in that path).
+  2. The Open File Descriptor Trap (lsof):
+     - If someone deleted a log file with 'rm', but the running Java/Tomcat process holds the open file handle, the disk space is NOT freed!
+     - Run: lsof +L1 or lsof | grep -i deleted
+     - Locate the PID and restart the service, or safely truncate via proc: > /proc/<PID>/fd/<FD_NUM>
+  3. Safe Truncation of Live Logs:
+     - NEVER delete an actively written log file using 'rm'.
+     - Clear it instantly to 0 bytes: cat /dev/null > application.log (or: > application.log).
+  4. Permanent Fix:
+     - Implement logrotate with compression (gzip) and coordinate with Unix admin to extend Logical Volume Manager (LVM) partition.`,
+        cmd: "df -h; du -sh * | sort -hr | head -10; lsof | grep deleted; > app.log"
       },
       {
         id: 5,
-        category: "Real-Time Projects",
-        question: "Explain your real-time automation project (Settlement SSI Mismatch Shell Script)?",
-        keywords: ["shell script", "ssi", "omega", "cdm", "mismatch", "automation", "last faced issue", "script"],
-        hook: "I automated a critical pre-EOD file comparison that previously triggered trade bounces and P1 settlement delays...",
+        cat: "Database & SQL",
+        q: "How do you identify and resolve Database Deadlocks, Locks, and Session Blockages?",
+        keywords: ["deadlock", "db lock", "blockage", "blocking_session", "v$session", "kill session", "pg_stat_activity"],
+        hook: "Session blockages occur when an uncommitted transaction locks rows needed by concurrent threads, queuing downstream requests...",
         bullets: [
-          "Problem: Files received from Omego client server and CDM SSI team had mismatch records, causing trades to bounce.",
-          "Pain Point: Required tedious manual deactivation of mismatched records by users before End-of-Day (EOD).",
-          "Script Logic: Compares files via 'diff', checks if output is non-empty with '[ -n \"$res\" ]', and auto-emails users."
+          "Detection: In Oracle, query 'v$session' where blocking_session is not null. In PostgreSQL, check 'pg_stat_activity' for wait_event_type = 'Lock'.",
+          "Triage: Identify the root blocking session SID, query details, username, and duration in seconds.",
+          "Resolution: Contact the holding user or coordinate with DBA to terminate the holding session immediately using ALTER SYSTEM KILL SESSION."
         ],
-        analysis: `• Technical Script Architecture:
-  1. Business Context:
-     - Trade settlements depend on matching Standard Settlement Instructions (SSI) from Omego and CDM feeds.
-     - Discrepancies between feeds caused trades to fail during the EOD batch, resulting in P1/P2 settlement incidents.
-  2. Shell Script Implementation:
-     - Run file comparison: res=$(diff /data/omego_ssi.txt /data/cdm_ssi.txt)
-     - Test non-empty string:
-       if [ -n "$res" ]; then
-         echo "Alert: Settlement SSI discrepancy found between Omego and CDM files." | mail -s "URGENT: SSI Mismatch Notification" support_dl@bank.com
-       fi
-  3. Outcome:
-     - Discrepancies are flagged hours before the EOD run, enabling users to deactivate invalid SSIs in advance and eliminating trade delay P1 incidents entirely.`,
-        cmd: "res=$(diff f1 f2); if [ -n \"$res\" ]; then echo 'Mismatch' | mail -s 'SSI Alert' dl; fi"
+        deep: `• Database Lock & Blockage Triage:
+  1. Root Cause:
+     - A user or batch transaction executes DML (UPDATE/DELETE) on a table but forgets to execute COMMIT or ROLLBACK, leaving an exclusive row-level lock.
+  2. Oracle Query to Find Blockages:
+     SELECT sid, serial#, username, status, blocking_session, seconds_in_wait, sql_id 
+     FROM v$session 
+     WHERE blocking_session IS NOT NULL 
+     ORDER BY seconds_in_wait DESC;
+  3. PostgreSQL Query:
+     SELECT blocked_locks.pid AS blocked_pid, blocking_locks.pid AS blocking_pid, blocking_activity.query AS blocking_statement
+     FROM pg_catalog.pg_locks blocked_locks
+     JOIN pg_catalog.pg_locks blocking_locks ON blocking_locks.locktype = blocked_locks.locktype;
+  4. Termination Command:
+     - Oracle: ALTER SYSTEM KILL SESSION ('<sid>,<serial#>') IMMEDIATE;
+     - PostgreSQL: SELECT pg_terminate_backend(<blocking_pid>);`,
+        cmd: "SELECT * FROM v$session WHERE blocking_session IS NOT NULL; ALTER SYSTEM KILL SESSION ('sid,serial#') IMMEDIATE;"
       },
       {
         id: 6,
-        category: "Real-Time Projects",
-        question: "Real-Time Issue: User unable to raise Change Request in Application?",
-        keywords: ["unable to raise change request", "party_work_item_status", "party queue", "work item", "real time issue"],
-        hook: "This occurs due to orphaned records in backend database session tables. Here is my exact triage sequence...",
+        cat: "Database & SQL",
+        q: "How do you troubleshoot Slow Running Queries and Performance Bottlenecks?",
+        keywords: ["slow query", "performance", "explain plan", "indexes", "full table scan", "sql tuning"],
+        hook: "When a query runs slow, I examine its Execution Plan to identify missing indexes, full table scans, or high cardinality operations...",
         bullets: [
-          "Step 1 (Check Work Item): Query 'party_work_item_status'. If an item is pending, have the user clear it first.",
-          "Step 2 (Check Queue): If clear, create a P4 incident and query the 'party_queue' database table for hung queue items.",
-          "Step 3 (UAT Validation): Always test deleting the hung queue in UAT first before implementing manual deletion in Production."
+          "Execution Plan: Run 'EXPLAIN PLAN FOR <query>' and review operations. Look out for Cost spikes and TABLE ACCESS FULL.",
+          "Indexing: Verify if WHERE clause and JOIN columns have appropriate B-Tree indexes. Avoid functions on indexed columns (e.g. UPPER(name)).",
+          "Table Statistics: Check if table optimizer statistics are stale using 'DBA_TABLES.LAST_ANALYZED'. Stale stats cause bad optimizer choices."
         ],
-        analysis: `• Exact Investigation Sequence:
-  1. Level 1 Investigation:
-     - Connect to SQL Developer and inspect: select * from party_work_item_status where user_id = '<user>';
-     - If a pending work item exists, advise user to clear the existing task and recreate the Change Request.
-  2. Level 2 Investigation:
-     - If no work item exists, create a P4 Incident in ServiceNow.
-     - Query queue table: select * from party_queue where user_id = '<user>';
-     - If an orphaned record is hung, manual deletion is required.
-  3. Production Safety Protocol:
-     - Never delete directly in Production!
-     - First, replicate the deletion in UAT to ensure no downstream foreign key breaks.
-     - Execute the deletion in Production and verify user can now create the Change Request.`,
-        cmd: "select * from party_work_item_status; select * from party_queue; (UAT verification first)"
+        deep: `• SQL Performance Optimization Steps:
+  1. Check Execution Plan:
+     - Oracle: EXPLAIN PLAN FOR SELECT * FROM orders WHERE customer_id = 502;
+     - Display: SELECT * FROM TABLE(DBMS_XPLAN.DISPLAY);
+     - PostgreSQL: EXPLAIN ANALYZE SELECT * FROM orders WHERE customer_id = 502;
+  2. Key Bottleneck Indicators:
+     - Table Access Full on large tables (millions of rows).
+     - Nested Loops on massive datasets instead of Hash Joins.
+     - Temporary tablespace spill (Sort / Hash Spill to disk).
+  3. Remediation Actions:
+     - Add composite index on frequently combined query filters.
+     - Rewrite non-sargable queries (e.g., replace 'WHERE date >= sysdate - 1' instead of 'WHERE to_char(date) = ...').
+     - Gather fresh statistics: EXEC DBMS_STATS.GATHER_TABLE_STATS('SCHEMA_NAME', 'TABLE_NAME');`,
+        cmd: "EXPLAIN PLAN FOR <query>; SELECT * FROM TABLE(DBMS_XPLAN.DISPLAY);"
       },
       {
         id: 7,
-        category: "Unix & Server",
-        question: "User reports unable to launch application (Single user vs All users outage)?",
-        keywords: ["unable to launch application", "application down", "tomcat", "single user", "all users", "http error"],
-        hook: "I immediately isolate whether the failure is an isolated client environment issue or a full application outage...",
+        cat: "App Server & JVM",
+        q: "How do you troubleshoot Java OutOfMemoryError (OOM) and JVM Heap Exhaution?",
+        keywords: ["oom", "outofmemory", "heap", "heap dump", "garbage collection", "jvm", "jstack", "jmap", "gc"],
+        hook: "When a JVM hits OutOfMemoryError, I identify whether it is Heap Space, Metaspace, or GC Overhead Limit Exceeded...",
         bullets: [
-          "Single User: Verify URL, clear browser cache, check network/VPN, and check user DB table ('select * from users;').",
-          "All Users: Application is down. Check Tomcat process: 'ps -ef | grep tomcat'. Restart via: 'sudo service start tomcat'.",
-          "HTTP Log Inspection: Review /var logs for HTTP codes (400-499 = Client error, 500-599 = Server error) and engage infra."
+          "Types of OOM: Java Heap Space (object memory leak), Metaspace (classloader leak), GC Overhead limit (98%+ time spent in GC).",
+          "Dump Extraction: Configure '-XX:+HeapDumpOnOutOfMemoryError' or extract manually using 'jmap -dump:format=b,file=heap.hprof <pid>'.",
+          "Analysis: Analyze .hprof dump using Eclipse Memory Analyzer (MAT) to identify leak suspects and dominator trees."
         ],
-        analysis: `• Triage Decision Matrix:
-  1. Single User Affected:
-     - Verify correct environment URL and port.
-     - Instruct user to clear browser cache and test incognito mode.
-     - Run database check: select * from users where username = '<user>';
-     - If permissions are missing, re-route ticket to System Access Management (SAM).
-  2. All Users Affected (Outage):
-     - Check Tomcat service status: ps -ef | grep 'tomcat'
-     - If process is dead, start Tomcat: sudo service start tomcat
-     - Inspect application logs in /var:
-       * 4xx Codes: Bad client requests or authentication gateway errors.
-       * 5xx Codes: Server crash, thread pool exhaustion, or database connection pool timeouts.
-     - If startup hangs, convene priority bridge with infrastructure and DBA teams.`,
-        cmd: "ps -ef | grep tomcat | sudo service start tomcat | select * from users;"
+        deep: `• JVM Memory Diagnostics:
+  1. Diagnostic Dumps:
+     - Heap Dump: jmap -dump:format=b,file=/tmp/heapdump.hprof <PID>
+     - Thread Dump: jstack <PID> > /tmp/threaddump.txt
+     - Memory Statistics: jcmd <PID> GC.heap_info
+  2. Garbage Collection Log Inspection:
+     - Check GC pauses in gc.log: Look for frequent Full GC cycles failing to reclaim heap memory before crashing.
+  3. Immediate Workaround:
+     - Restart the affected application service/instance to restore traffic handling.
+     - If cluster-enabled, failover traffic to peer nodes.
+  4. Permanent Fix:
+     - Analyze Eclipse MAT Dominator Tree to locate uncollected caches, unclosed connections, or circular references.
+     - Tune JVM memory flags in startup scripts: -Xms4g -Xmx8g -XX:MetaspaceSize=512m.`,
+        cmd: "jmap -dump:format=b,file=heap.hprof <PID> | jstack <PID> > threads.txt | -XX:+HeapDumpOnOutOfMemoryError"
       },
       {
         id: 8,
-        category: "ITIL & ServiceNow",
-        question: "How do you handle P1 or P2 critical tickets?",
-        keywords: ["p1", "p2", "critical", "major incident", "bridge call", "handle p1", "handle p2"],
-        hook: "For P1/P2 incidents, rapid communication, bridge coordination, and quick workarounds take precedence...",
+        cat: "Web & APIs",
+        q: "How do you troubleshoot HTTP 500, 502, 503, and 504 status errors?",
+        keywords: ["500", "502", "503", "504", "bad gateway", "gateway timeout", "service unavailable", "http status"],
+        hook: "HTTP 5xx errors represent server-side failures. I isolate between code exceptions, reverse proxy misconfigurations, and upstream timeouts...",
         bullets: [
-          "Immediate Notification: Alert Manager/TL, create ServiceNow ticket, and send out incident notification email.",
-          "Bridge Call Setup: System Operations convenes a live bridge with Affected Users, DB Dev, Unix, and Support.",
-          "Workaround & Fix: Apply a quick workaround to restore business flow; Manager logs Jira ticket for development RCA."
+          "500 Internal Server Error: Unhandled backend exception or database connectivity drop. Check application/catalina logs.",
+          "502 Bad Gateway: Upstream backend service is down, crashed, or not listening on its assigned port (Nginx cannot reach Tomcat).",
+          "503 Service Unavailable: Server overloaded, thread pool exhausted, or app is under planned maintenance/warmup.",
+          "504 Gateway Timeout: Upstream application took longer to respond than reverse proxy timeout threshold (e.g., slow SQL query)."
         ],
-        analysis: `• P1 / P2 Major Incident Checklist:
-  1. 0 - 15 Minutes:
-     - Identify issue, inform Team Lead/Manager immediately.
-     - Log P1/P2 ticket in ServiceNow.
-     - Send Incident Notification email with: Description, Priority, Business Impact, and Next Update ETA.
-  2. Bridge Call Coordination:
-     - Operations hosts bridge with Incident Manager, DB Dev, Unix team, and Business Users.
-     - Production support explains functional and operational impact.
-  3. Workaround Implementation:
-     - Implement temporary fix (restart services, purge stuck queue, or kill locked sessions) to stop financial impact.
-  4. Problem Management Handover:
-     - Manager creates Jira ticket for the Development team to perform deep Root Cause Analysis (RCA) and patch the defect permanently.`,
-        cmd: "P1 SLA = 5 Hours | P2 SLA = 10 Hours | Updates = Every 30 mins"
+        deep: `• Systematic 5xx Triage Matrix:
+  1. HTTP 500 (Internal Server Error):
+     - Cause: Unhandled runtime NullPointerException, broken DB connection pool.
+     - Action: Check catalina.out or application error logs at the exact timestamp.
+  2. HTTP 502 (Bad Gateway):
+     - Cause: Nginx/Apache cannot connect to Tomcat backend (connection refused).
+     - Action: Run 'ps -ef | grep tomcat' and 'netstat -tulnp | grep 8080'. If dead, restart Tomcat.
+  3. HTTP 503 (Service Unavailable):
+     - Cause: Max active threads or connections reached in server.xml (e.g. maxThreads=200 saturated).
+     - Action: Check queue depths, thread dumps, and increase thread pool or scale out instances.
+  4. HTTP 504 (Gateway Timeout):
+     - Cause: Backend took >60s (default proxy_read_timeout) to process query.
+     - Action: Trace slow database execution or external third-party API dependencies.`,
+        cmd: "curl -Iv https://app.com | ps -ef | grep tomcat | netstat -tulnp"
       },
       {
         id: 9,
-        category: "ITIL & ServiceNow",
-        question: "Difference between a Service Request and an Incident?",
-        keywords: ["service request", "incident", "difference between service request", "request ticket", "unplanned"],
-        hook: "The key distinction is whether the request is a planned task or an unplanned operational disruption...",
+        cat: "Web & APIs",
+        q: "How do you test and debug REST API integrations and Microservices?",
+        keywords: ["api", "rest api", "curl", "postman", "endpoint", "payload", "json", "header", "ssl handshake"],
+        hook: "I use command-line 'curl' to test endpoints directly from the application server, verifying headers, payload, latency, and SSL...",
         bullets: [
-          "Service Request: Planned user task (e.g., dynamic reports, access setup). Carries no urgency, impact, or priority.",
-          "Incident: Unplanned business interruption or degradation. Must be assigned Impact, Urgency, and Priority in ServiceNow immediately.",
-          "Goal: Incidents require swift workarounds before business is affected; Service Requests follow planned delivery."
+          "CLI Testing: Use 'curl -vk -X POST https://api.internal/v1/trade -H \"Content-Type: application/json\" -d '{\"id\":1}''.",
+          "SSL/TLS Debugging: Use '-v' to inspect TLS handshake, certificate validation, and cipher negotiation.",
+          "Network Isolation: Test if failure occurs at DNS, Network routing, Proxy, or Application layer."
         ],
-        analysis: `• ITIL Comparison:
-  1. Service Request:
-     - Planned, standard business request (e.g., ad-hoc SQL report export, user role onboarding in GBM Remedy tool).
-     - Handled via ServiceNow Request tickets.
-     - Does not require Impact or Urgency values; no priority escalation.
-  2. Incident:
-     - Unexpected disruption or failure in an application or server affecting business operations.
-     - Must assign Impact and Urgency to calculate Priority (P1 to P4).
-     - Primary target is rapid service restoration using temporary workarounds before SLA breaches.`,
-        cmd: "Service Request = Planned (No Priority) | Incident = Unplanned (Impact + Urgency = Priority)"
+        deep: `• Real-World API Debugging SOP:
+  1. Detailed Curl Command:
+     curl -v -k -X GET "https://api.internal.com/health" \\
+       -H "Authorization: Bearer <token>" \\
+       -H "Accept: application/json" \\
+       -w "\\nHTTP Code: %{http_code}\\nTotal Time: %{time_total}s\\n"
+  2. Parameter Breakdown:
+     - -v: Verbose output (shows full HTTP request headers, response headers, and TLS handshake).
+     - -k: Bypasses untrusted internal SSL certificate checks for initial triage.
+     - -w: Formats timing breakdown (DNS lookup time, connect time, total latency).
+  3. Certificate Verification:
+     - If SSL handshake fails: openssl s_client -connect host:443 -servername host
+     - Check certificate validity dates and verify root CA chain.`,
+        cmd: "curl -v -X POST https://api/path -H 'Content-Type: application/json' -d '{}' -w '%{time_total}s'"
       },
       {
         id: 10,
-        category: "ITIL & ServiceNow",
-        question: "What is SLA, OLA, and what are your SLA priority timelines?",
-        keywords: ["sla", "ola", "timelines", "service level agreement", "types of sla", "p3", "p4"],
-        hook: "SLA governs our external commitment to business users, while OLA governs our internal dependencies...",
+        cat: "Linux & Server",
+        q: "How do you troubleshoot network connectivity between two servers?",
+        keywords: ["network", "connectivity", "ping", "telnet", "nc", "netstat", "traceroute", "tcpdump", "firewall"],
+        hook: "I verify network health in a layered approach: ICMP ping (IP), Telnet/Netcat (Port), Netstat (Listening), and TCPDump (Packets)...",
         bullets: [
-          "SLA vs OLA: SLA is between Service Provider and End Users. OLA is an internal agreement between internal teams.",
-          "3 SLA Types: Customer SLA (external clients), Internal SLA (internal business units), Vendor SLA (third-party vendors).",
-          "SLA Timelines: P1 = 5 Hours | P2 = 10 Hours | P3 = 24 Hours | P4 = 48 Hours."
+          "Host Reachability: Use 'ping <ip>' to test ICMP reachability. (Note: Many cloud firewalls block ICMP).",
+          "Port Reachability: Use 'nc -zv <host> <port>' or 'telnet <host> <port>' to verify if the remote port accepts connections.",
+          "Port Listening: On the destination host, verify the app is listening using 'netstat -tulnp | grep <port>' or 'ss -tulnp'.",
+          "Deep Packet Inspection: Use 'tcpdump -i any port <port> -nn' to check if SYN packets arrive and receive SYN-ACK responses."
         ],
-        analysis: `• SLA Breakdown:
-  1. Definitions:
-     - SLA (Service Level Agreement): Contract between service provider and end user defining agreed service delivery standards.
-     - OLA (Operational Level Agreement): Internal agreement between technical teams (DBA, Unix, Support) to meet customer SLAs.
-  2. Three SLA Classifications:
-     - Customer SLA: Between service provider and external customer.
-     - Internal SLA: Between IT support and internal departments (finance, settlements).
-     - Vendor SLA: Between the organization and third-party vendors.
-  3. Strict SLA Timelines:
-     - P1 (Critical): 5 Hours
-     - P2 (High): 10 Hours
-     - P3 (Medium): 24 Hours
-     - P4 (Low): 48 Hours`,
-        cmd: "P1: 5h | P2: 10h | P3: 24h | P4: 48h"
+        deep: `• Systematic Network Diagnostic Ladder:
+  1. Layer 3 (Network Layer):
+     - ping 10.20.30.40 (Checks IP routing).
+     - traceroute 10.20.30.40 (Identifies where packets drop along network hops).
+  2. Layer 4 (Transport Layer - TCP Ports):
+     - nc -zvw 3 10.20.30.40 8080
+     - If Connection timed out: Firewall / Security Group is blocking the port.
+     - If Connection refused: Firewall is open, but no application is listening on that port on the target server.
+  3. Local Listening Check:
+     - ss -tulnp | grep 8080 (Verify binding to 0.0.0.0, not just 127.0.0.1 localhost).
+  4. Packet Sniffing (TCPDump):
+     - tcpdump -i eth0 host 10.20.30.40 and port 8080 -nn -vv`,
+        cmd: "nc -zv <host> <port> | ss -tulnp | tcpdump -i any port <port> -nn"
       },
       {
         id: 11,
-        category: "ITIL & ServiceNow",
-        question: "How do you mention Priority (Settlement vs Non-Settlement Rules)?",
-        keywords: ["priority", "settlement", "mention priority", "impact and urgency"],
-        hook: "In ServiceNow, Priority is calculated automatically from Impact and Urgency based on settlement cutoff rules...",
+        cat: "ITIL & Operations",
+        q: "How do you handle a Major Incident (P1 / P2) from end to end?",
+        keywords: ["p1", "p2", "major incident", "critical ticket", "bridge call", "war room", "rca", "incident management"],
+        hook: "In major incidents, my priorities are rapid triage, clear stakeholder communication, and swift workarounds before root cause...",
         bullets: [
-          "Baseline Rule: Settlement issues start at P3; non-settlement issues default to P4.",
-          "Approaching Cutoff: If an issue is close to the settlement deadline, escalate to P2.",
-          "Missed Cutoff: If the settlement cutoff deadline has passed, escalate immediately to P1."
+          "Phase 1 (Triage & Alert): Identify business impact, raise P1/P2 in ServiceNow, and trigger Incident Notification email within 15 mins.",
+          "Phase 2 (Bridge / War Room): Host bridge call with Incident Manager, DBAs, Dev, and Infrastructure teams.",
+          "Phase 3 (Restore First): Implement temporary workaround (restart, failover to DR, rollback release) to recover service.",
+          "Phase 4 (Problem Management): Facilitate Root Cause Analysis (RCA) and document Post-Incident Review (PIR)."
         ],
-        analysis: `• Priority Determination Logic:
-  1. ServiceNow Priority Matrix:
-     - Impact + Urgency automatically sets Priority.
-  2. Financial Settlement Logic:
-     - In our project, settlement-related tickets start at P3 (non-settlement issues start at P4).
-     - If the issue is nearing the bank settlement cutoff time, escalate to P2.
-     - If the settlement cutoff deadline passes and trades bounce, escalate immediately to P1.`,
-        cmd: "Normal: P3 | Near Cutoff: P2 | Cutoff Passed: P1"
+        deep: `• End-to-End P1 Incident Protocol:
+  1. 0 - 15 Minutes:
+     - Acknowledge ticket, verify impact scope (how many users/transactions affected).
+     - Notify Team Lead & Incident Manager; create ServiceNow P1 ticket.
+     - Send initial Incident Notification: Issue Summary, Impacted System, Priority, and Next Update Time (every 30 mins).
+  2. 15 - 45 Minutes (War Room Execution):
+     - Open emergency technical bridge call.
+     - Isolate affected components (database, network, microservice, storage).
+  3. Mitigation (Workaround over Root Cause):
+     - Prioritize service recovery: restart degraded services, route traffic to secondary node, or kill blocking sessions.
+  4. Verification & Closure:
+     - Confirm transaction processing resumes cleanly; get business confirmation.
+     - Send Resolution Notification.
+  5. Post-Incident Review (PIR / RCA):
+     - Create Problem ticket; conduct RCA meeting within 24-48 hours to prevent recurrence.`,
+        cmd: "P1 SLA = 5h | Update Every 30m | Priority = Impact + Urgency"
       },
       {
         id: 12,
-        category: "ITIL & ServiceNow",
-        question: "What are the 4 Types of Changes and Change Deployment steps?",
-        keywords: ["change management", "standard change", "emergency change", "retrospective", "cab", "jenkins"],
-        hook: "Any production code or database alteration is governed strictly under Change Management...",
+        cat: "ITIL & Operations",
+        q: "Explain ITIL Change Management: Standard, Normal, Emergency, and Retrospective Changes?",
+        keywords: ["change management", "standard change", "emergency change", "normal change", "retrospective", "cab"],
+        hook: "Change Management ensures that all production modifications are risk-assessed, approved, and tracked to avoid outages...",
         bullets: [
-          "4 Change Types: Standard (pre-authorized, SCR ticket), Emergency (line manager approval), Retrospective RCR (immediate emergency, post-approval), Normal (standard CAB review).",
-          "CAB & Approvals: Dev team arranges weekday CAB meetings for UAT sign-off and scheduled downtime.",
-          "Deployment Sequence: Hold Autosys jobs → Release Management (REM) deploys via Jenkins → Release jobs & run health checks."
+          "Standard Change: Low-risk, pre-authorized, repeatable procedural changes (e.g. routine cache flush, scheduled index rebuild).",
+          "Normal Change: Requires full Change Advisory Board (CAB) review, UAT sign-off, implementation plan, and rollback plan.",
+          "Emergency Change: Urgent fix deployed during an active major incident requiring expedited Line Manager / ECAB approval.",
+          "Retrospective Change: Approved and documented post-deployment for emergency fixes where immediate action was mandatory."
         ],
-        analysis: `• Change Management Procedures:
+        deep: `• Change Management Governance:
   1. Change Types:
-     - Standard Change: Low-risk, routine changes logged via SCR tickets in ServiceNow.
-     - Emergency Change: Urgent fix for major incidents requiring only line manager approval.
-     - Retrospective Change (RCR): Immediate fix executed during critical production emergencies without prior approval, documented post-release.
-     - Normal Change: Standard scheduled changes requiring CAB approval.
-  2. Deployment Flow:
-     - Weekday CAB reviews approve UAT sign-off and scheduled maintenance window.
-     - Production Support puts Autosys batch jobs on HOLD.
-     - Release Management (REM) deploys code using Jenkins.
-     - Support takes jobs OFF HOLD and runs post-deployment sanity health checks.`,
-        cmd: "Hold Autosys -> Jenkins Deploy (REM) -> Off-Hold Autosys -> Health Checks"
+     - Standard: Pre-authorized by CAB. Lowest risk. Executed directly via standard change templates.
+     - Normal: Follows full lifecycle: Creation → UAT Testing Sign-off → Peer Review → CAB Approval → Scheduled Weekend Maintenance Window.
+     - Emergency: High risk, fast-tracked. Deployed during major outages with approval from Emergency CAB (ECAB) or Operations Director.
+     - Retrospective (RCR): Logged immediately after an emergency fix to maintain compliance records.
+  2. Deployment Checklist:
+     - Prerequisite: UAT Sign-off attached.
+     - Implementation Plan: Step-by-step rollout commands.
+     - Backout / Rollback Plan: Specific steps to revert if sanity tests fail.
+     - Post-Implementation Review: Validating error rates in telemetry dashboards.`,
+        cmd: "CAB Review -> UAT Signoff -> Implementation Plan -> Rollback Plan"
       },
       {
         id: 13,
-        category: "Monitoring & Logs",
-        question: "Autosys Batch Monitoring & Job Failure Troubleshooting?",
-        keywords: ["autosys", "batch", "job failure", "400+ jobs", "spool", "jil"],
-        hook: "We supervise over 400 scheduled batch jobs daily and troubleshoot failures using a systematic log review...",
+        cat: "ITIL & Operations",
+        q: "Batch Job Scheduling and Automation (Autosys, Control-M, Crontab)?",
+        keywords: ["autosys", "batch", "job failure", "control-m", "crontab", "dependencies", "autorep", "sendevent"],
+        hook: "We manage critical batch pipelines. When a job fails, I review logs, check dependencies, and remediate before SLA breaches...",
         bullets: [
-          "Failure Investigation: Review Autosys log/spool files, log ServiceNow incident, and notify business stakeholders.",
-          "Common Root Causes: Missing incoming feed files, filesystem disk exhaustion, corrupt input data, or permission errors.",
-          "Resolution: Clear disk space, request missing feeds, adjust permissions, and re-trigger jobs after validation."
+          "Job States: STARTING, RUNNING, SUCCESS, FAILURE, TERMINATED, ON_HOLD, ON_NOEXEC.",
+          "Troubleshooting Flow: Check Autosys job spool logs, verify upstream feed arrivals, check file permissions and disk space.",
+          "Commands: Use 'autorep -J <job_name>' to view status and history; use 'sendevent -E FORCE_STARTJOB -J <job>' to re-run."
         ],
-        analysis: `• Autosys Troubleshooting Framework:
-  1. Failure Detection:
-     - Monitor 400+ daily jobs. On failure alert, access the job execution log.
-  2. Identifying Root Causes:
-     - Feed file issue: Upstream file delayed or missing in the source directory.
-     - Space issue: Target filesystem full, preventing output file generation.
-     - Input data error: Formatting inconsistencies or missing delimiter in incoming flat files.
-     - Permission issue: Autosys execution user lacking write or execute rights on Unix directories.
-  3. Action:
-     - Coordinate with upstream teams for feed re-transmission, clear file blockages, or rerun jobs via command line (sendevent -E FORCE_STARTJOB -J job_name).`,
-        cmd: "sendevent -E FORCE_STARTJOB -J job_name | Review Autosys Spool Logs"
+        deep: `• Batch Scheduling Diagnostics:
+  1. Autosys Core Commands:
+     - Check job status: autorep -J <job_name> -d
+     - View job definition: autorep -q -J <job_name>
+     - Force Start Job: sendevent -E FORCE_STARTJOB -J <job_name>
+     - Put on Hold: sendevent -E JOB_ON_HOLD -J <job_name>
+     - Take Off Hold: sendevent -E JOB_OFF_HOLD -J <job_name>
+  2. Common Batch Failure Modes:
+     - Upstream Dependency: Predecessor job failed or completed late.
+     - Missing Input File: Source flat file not delivered to SFTP/drop path.
+     - Format Mismatch: Source data contains unexpected delimiters or corrupted characters.
+     - Database Contention: Batch SQL query timed out due to deadlocks.
+  3. Crontab Syntax:
+     - * * * * * (Minute, Hour, Day of Month, Month, Day of Week).
+     - Edit: crontab -e | List: crontab -l`,
+        cmd: "autorep -J job_name -d | sendevent -E FORCE_STARTJOB -J job_name"
       },
       {
         id: 14,
-        category: "Unix & Server",
-        question: "Disaster Recovery (DR) / Continuity of Business (COB) Testing 6 Steps?",
-        keywords: ["cob", "dr", "dr server", "disaster recovery", "continuity of business"],
-        hook: "DR testing follows a synchronized 6-step multi-team failover plan...",
+        cat: "ITIL & Operations",
+        q: "Disaster Recovery (DR) and Continuity of Business (COB) Concepts?",
+        keywords: ["dr", "disaster recovery", "cob", "rto", "rpo", "failover", "failback", "dr drill"],
+        hook: "Disaster Recovery ensures that if the primary data center fails, business operations resume seamlessly at a secondary site...",
         bullets: [
-          "Step 1 & 2: Production Support stops App server; DB team brings primary database down.",
-          "Step 3 & 4: Linux Admin mounts storage to DR server; Networking team points domain/URL to DR IP.",
-          "Step 5 & 6: DB team starts DR database; Production Support brings up DR App server. DR runs for 1 week before rollback."
+          "RTO (Recovery Time Objective): The maximum acceptable duration the application can remain down before recovery.",
+          "RPO (Recovery Point Objective): The maximum acceptable data loss measured in time (e.g. 15 minutes of transactional data).",
+          "DR Drill Steps: Shutdown primary app/DB → sync storage/files → switch DNS/IP routing → start DR DB/app → validate sanity."
         ],
-        analysis: `• 6-Step COB Failover SOP:
-  1. Step 1 (Prod App Down): Production Support stops the primary application server.
-  2. Step 2 (Prod DB Down): Database team stops the primary database instance.
-  3. Step 3 (Mount Files): Linux Admin mounts application files and directories to the DR host.
-  4. Step 4 (DNS Reroute): Networking team updates domain routing (pointing URL IP to DR server).
-  5. Step 5 (DR DB Up): Database team brings the DR database instance up.
-  6. Step 6 (DR App Up): Production Support starts the DR application server and validates health checks.
-  • The application runs on the DR server for one week before failing back to primary.`,
-        cmd: "App Down -> DB Down -> Mount DR -> DNS IP Change -> DR DB UP -> DR App UP (1 Week)"
+        deep: `• 6-Phase DR Failover Drill Protocol:
+  1. Phase 1 (Graceful Shutdown): Stop upstream feeds and cleanly bring down primary web/app tiers.
+  2. Phase 2 (Database State): Ensure all pending transaction logs are committed and bring down primary database.
+  3. Phase 3 (Storage Replication): Verify SAN/NAS storage replication or mount shared file paths to DR host.
+  4. Phase 4 (DNS / Network Redirection): Update Global Traffic Manager (GTM) or DNS A-records to point user URL to secondary DC IP.
+  5. Phase 5 (Secondary Startup): Bring up DR database in read-write mode, followed by starting application servers.
+  6. Phase 6 (Sanity Testing): Run automated smoke test scripts; verify user login, balance checks, and trade processing.
+  • Soak Period: Systems typically operate on DR for 3 to 7 days before performing scheduled failback.`,
+        cmd: "RTO (Downtime limit) | RPO (Data loss limit) | DNS Failover -> Smoke Test"
       },
       {
         id: 15,
-        category: "Unix & Server",
-        question: "What do you do if JVM Heap Memory gets full (OutOfMemoryError)?",
-        keywords: ["heap memory", "outofmemory", "oom", "heap dump", "jvm", "garbage collection"],
-        hook: "Heap exhaustion requires immediate temporary stability followed by developer memory leak analysis...",
+        cat: "Linux & Server",
+        q: "How do you automate tasks using Shell Scripting and Cron Jobs?",
+        keywords: ["shell script", "bash", "cron", "automation", "crontab", "scripting", "exit code"],
+        hook: "I write modular bash scripts to eliminate repetitive manual work, handle error conditions, and schedule them via cron...",
         bullets: [
-          "Immediate Diagnostic: Alert Java development team to extract a heap dump before memory is lost.",
-          "Temporary Workaround: Reboot application server during non-business hours to clear allocation.",
-          "Permanent Fix: Developers inspect heap dump in Eclipse MAT and tune JVM parameters (-Xms / -Xmx)."
+          "Script Structure: Use '#!/bin/bash', set strict modes ('set -e'), check exit status ('$?'), and log all outputs with timestamps.",
+          "Error Handling: Use conditional checks ('if [ $? -ne 0 ]; then ... fi') and validate file existence ('[ -f "$file" ]').",
+          "Cron Scheduling: Redirect stdout and stderr ('>> /var/log/my_job.log 2>&1') to maintain full audit trails."
         ],
-        analysis: `• JVM OutOfMemory SOP:
-  1. Capture Heap Dump:
-     - jmap -dump:format=b,file=heapdump.hprof <pid>
-  2. Restoration:
-     - Schedule emergency or non-business hours server reboot to restore system availability.
-  3. Permanent Optimization:
-     - Development team analyzes heap dump to isolate uncollected objects and memory leaks.
-     - Adjust Tomcat JVM heap arguments (-Xms initial heap, -Xmx maximum heap) in setenv.sh.`,
-        cmd: "jmap -dump:format=b,file=heap.hprof <pid> | sudo service tomcat restart"
-      },
-      {
-        id: 16,
-        category: "Unix & Server",
-        question: "Action taken when Server gets slow or Unreachable?",
-        keywords: ["server slow", "server down", "ping", "top", "vmstat", "iostat", "swap"],
-        hook: "I methodically isolate between database concurrency, host CPU/memory hogs, and data volume...",
-        bullets: [
-          "1. Check DB Sessions: Run 'select count(*) from v$session;'. Terminate runaway queries with DBA.",
-          "2. Check Host Resources: Run 'top' to inspect CPU/Memory hogs; use 'vmstat' or 'iostat' to identify swap bottlenecks.",
-          "3. Server Down Check: Run 'ping <ip>'. If unreachable, raise P1 ticket and engage Infrastructure immediately."
-        ],
-        analysis: `• Server Diagnostic SOP:
-  1. Server Slowness:
-     - Run 'top' in Unix to inspect top CPU/Memory consuming processes.
-     - Inspect I/O and swap bottlenecks: vmstat 1 5 or iostat.
-     - Check concurrent database connections: select count(*) from v$session;
-     - Terminate runaway processes with user confirmation.
-  2. Server Down / Unreachable:
-     - Run: ping <server_ip>
-     - If unreachable, raise P1 incident in ServiceNow and alert Infrastructure team on bridge.
-     - If hardware failure cannot be fixed within SLA, initiate DR domain failover.`,
-        cmd: "top | vmstat 1 5 | select count(*) from v$session; | ping <server_ip>"
-      },
-      {
-        id: 17,
-        category: "Real-Time Projects",
-        question: "Dynamic Report Generation and User Role Creation Workflows?",
-        keywords: ["dynamic report", "report generation", "user role creation", "gbm user", "remedy"],
-        hook: "Static reports run automatically via Autosys, while dynamic reports and role provisioning are handled on-demand...",
-        bullets: [
-          "Dynamic Reports: Open Oracle SQL Developer → Execute query → Export to .XLS → Email attachment (or network share path).",
-          "User Role Creation: Review requests in 'GBM User Remedy setup' tool (enables users to create CRs in UI).",
-          "Access Activation: Upload parameters into Unix files and trigger designated Autosys batch job."
-        ],
-        analysis: `• Operational Execution:
-  1. Dynamic Report Generation:
-     - On user request, connect to Oracle SQL Developer.
-     - Execute custom SQL query and export result set into .XLS file.
-     - Email to users (or place in network shared path if file size is very large).
-  2. User Role Provisioning:
-     - Access 'GBM User Remedy setup' application to view pending user access requests.
-     - Upload user parameters into specified Unix files.
-     - Run designated Autosys job to grant permissions, enabling users to create Change Requests in the UI.`,
-        cmd: "SQL Developer (.XLS export) | GBM User Remedy -> Unix -> Autosys"
-      },
-      {
-        id: 18,
-        category: "Monitoring & Logs",
-        question: "What are your Shift Timings and Daily L1 / L2 Health Check Activities?",
-        keywords: ["shift timing", "l1 team", "l2 team", "daily activities", "rotational", "health check"],
-        hook: "We operate on a 24/7 rotational model with clear operational tiering and daily health check routines...",
-        bullets: [
-          "Rotational Shifts: Morning (6 AM - 3 PM), Afternoon (2 PM - 11 PM), Night (9 PM - 6 AM).",
-          "L1 Duties: Monitoring alerts (Geneos/Autosys), daily health checks, mailbox triage, ticket logging/closure, and dynamic reporting.",
-          "L2 Duties: Resolving incidents within SLA using SOPs, cross-team coordination, and escalating to L3/Dev for production bugs."
-        ],
-        analysis: `• Shift & Routine Operations:
-  1. 24/7 Rotational Shift Windows:
-     - Morning: 6:00 AM – 3:00 PM
-     - Afternoon: 2:00 PM – 11:00 PM
-     - Night: 9:00 PM – 6:00 AM
-  2. Daily Morning Health Check Routine:
-     - Verify Tomcat application server processes are running (ps -ef | grep tomcat).
-     - Verify Oracle database connectivity and check for active locks (v$session).
-     - Verify overnight Autosys batch jobs completed with SUCCESS status.
-     - Check disk capacity across all mount points (df -h).
-     - Perform mailbox triage and take over handover tickets from preceding shift.`,
-        cmd: "Shifts: 6AM-3PM | 2PM-11PM | 9PM-6AM | Daily Health Checks"
+        deep: `• Robust Production Shell Script Template:
+  #!/bin/bash
+  set -o pipefail
+  LOG_FILE="/var/log/app_cleanup.log"
+  echo "[$(date '+%Y-%m-%d %H:%M:%S')] Starting log cleanup job..." >> "$LOG_FILE"
+
+  # Find and delete logs older than 30 days
+  find /app/logs/ -name "*.log.gz" -type f -mtime +30 -exec rm -f {} \\; 2>&1 >> "$LOG_FILE"
+  if [ $? -eq 0 ]; then
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] Cleanup completed successfully." >> "$LOG_FILE"
+  else
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] ERROR during cleanup!" | mail -s "Cleanup Failure Alert" support@team.com
+  fi
+
+  • Crontab Entry (Runs daily at 2:30 AM):
+    30 2 * * * /app/scripts/cleanup.sh >> /var/log/cron_exec.log 2>&1`,
+        cmd: "chmod +x script.sh | crontab -e | find /path -mtime +30 -delete"
       }
     ];
 
-    let currentList = [...PRODUCTION_SUPPORT_MASTER_DB];
+    let currentList = [...MASTER_SUPPORT_KB];
     let activeCategory = "All";
     let recognition = null;
     let isListening = false;
 
-    // RENDER KNOWLEDGE CARDS
+    // RENDER CARDS IN GRID
     function renderCards(list) {
       const grid = document.getElementById("cardsGrid");
       grid.innerHTML = "";
+
       list.forEach(item => {
         const card = document.createElement("div");
         card.className = "card";
         card.id = `card-${item.id}`;
         card.onclick = () => loadAnswerToHUD(item);
         card.innerHTML = `
-          <div class="card-title">${item.question}</div>
+          <div class="card-title">${item.q}</div>
           <div class="card-snippet">${item.bullets[0]}</div>
         `;
         grid.appendChild(card);
       });
     }
 
-    // INSTANT DISPLAY IN HUD (0-SECOND DELAY)
+    // INSTANT DISPLAY IN HUD (0s DELAY)
     function loadAnswerToHUD(item) {
-      document.getElementById("hudCategory").innerText = item.category.toUpperCase();
-      document.getElementById("hudQuestion").innerText = item.question;
+      document.getElementById("hudCategory").innerText = item.cat.toUpperCase();
+      document.getElementById("hudTitle").innerText = item.q;
       document.getElementById("hudHook").innerHTML = `💬 <strong>0s Hook:</strong> "${item.hook}"`;
       document.getElementById("hudBullets").innerHTML = item.bullets.map(b => `<li>${b}</li>`).join("");
-      document.getElementById("hudAnalysis").innerText = item.analysis;
-      document.getElementById("hudCmd").innerText = item.cmd;
+      document.getElementById("hudDeepAnalysis").innerText = item.deep;
+      document.getElementById("hudCommand").innerText = item.cmd;
 
       document.querySelectorAll(".card").forEach(c => c.classList.remove("active"));
       const card = document.getElementById(`card-${item.id}`);
       if (card) card.classList.add("active");
 
-      // Flash HUD border green to signal 0-second refresh
-      const hud = document.getElementById("hudBox");
+      // Flash green HUD border to signal instant refresh
+      const hud = document.getElementById("hudContainer");
       hud.style.borderColor = "var(--accent)";
-      setTimeout(() => hud.style.borderColor = "var(--purple)", 450);
+      setTimeout(() => hud.style.borderColor = "var(--purple)", 400);
     }
 
-    // BROAD & DEEP KEYWORD SEARCH ENGINE
+    // BROAD INSTANT SEARCH ENGINE
     function handleSearch(val) {
       const q = val.toLowerCase().trim();
-      let filtered = PRODUCTION_SUPPORT_MASTER_DB;
+      let filtered = MASTER_SUPPORT_KB;
 
       if (activeCategory !== "All") {
-        filtered = filtered.filter(item => item.category === activeCategory);
+        filtered = filtered.filter(item => item.cat === activeCategory);
       }
 
       if (q) {
         filtered = filtered.filter(item => {
-          const matchTitle = item.question.toLowerCase().includes(q);
+          const matchTitle = item.q.toLowerCase().includes(q);
           const matchKeywords = item.keywords.some(k => k.toLowerCase().includes(q) || q.includes(k.toLowerCase()));
           const matchBullets = item.bullets.some(b => b.toLowerCase().includes(q));
-          const matchAnalysis = item.analysis.toLowerCase().includes(q);
+          const matchDeep = item.deep.toLowerCase().includes(q);
           const matchCmd = item.cmd.toLowerCase().includes(q);
-          return matchTitle || matchKeywords || matchBullets || matchAnalysis || matchCmd;
+          return matchTitle || matchKeywords || matchBullets || matchDeep || matchCmd;
         });
       }
 
       renderCards(filtered);
 
-      // Instantly display top matching result in teleprompter without clicking
+      // Instantly load the first matching answer into the teleprompter!
       if (filtered.length > 0) {
         loadAnswerToHUD(filtered[0]);
       }
     }
 
-    function filterChip(cat, btn) {
+    function filterCategory(cat, btn) {
       activeCategory = cat;
       document.querySelectorAll(".chip").forEach(c => c.classList.remove("active"));
       btn.classList.add("active");
-      handleSearch(document.getElementById("typeInput").value);
+      handleSearch(document.getElementById("searchInput").value);
     }
 
-    function resetIntro() {
-      document.getElementById("typeInput").value = "";
-      filterChip("All", document.querySelector(".chip"));
-      loadAnswerToHUD(PRODUCTION_SUPPORT_MASTER_DB[0]);
+    function resetToIntroduction() {
+      document.getElementById("searchInput").value = "";
+      filterCategory("All", document.querySelector(".chip"));
+      loadAnswerToHUD(MASTER_SUPPORT_KB[0]);
     }
 
     function toggleStealth() {
       document.body.classList.toggle("stealth-view");
     }
 
-    // SPEECH RECOGNITION (LISTENS TO INTERVIEWER LIVE)
+    // LIVE SPEECH RECOGNITION (LISTENS TO HR INTERVIEWER)
     function initSpeechEngine() {
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
       if (!SpeechRecognition) {
-        alert("Microphone recognition requires Google Chrome or Microsoft Edge.");
+        alert("Speech Recognition requires Google Chrome or Microsoft Edge.");
         return null;
       }
       const rec = new SpeechRecognition();
@@ -972,10 +955,10 @@
           transcript += evt.results[i][0].transcript;
         }
         const text = transcript.toLowerCase().trim();
-        document.getElementById("liveTranscriptText").innerText = text;
+        document.getElementById("liveTranscript").innerText = text;
 
-        // Instant pattern matching against master database
-        for (const item of PRODUCTION_SUPPORT_MASTER_DB) {
+        // Fast keyword matching
+        for (const item of MASTER_SUPPORT_KB) {
           for (const kw of item.keywords) {
             if (text.includes(kw.toLowerCase())) {
               loadAnswerToHUD(item);
@@ -996,7 +979,7 @@
 
     function toggleMic() {
       const btn = document.getElementById("micBtn");
-      const pulse = document.getElementById("livePulse");
+      const pulse = document.getElementById("statusPulse");
 
       if (!recognition) recognition = initSpeechEngine();
       if (!recognition) return;
@@ -1013,7 +996,7 @@
         isListening = false;
         recognition.stop();
         btn.classList.remove("listening");
-        btn.innerText = "🎙️ Listen";
+        btn.innerText = "🎙️ Listen HR";
         pulse.classList.remove("active");
       }
     }
@@ -1021,15 +1004,19 @@
     // KEYBOARD SHORTCUTS
     window.addEventListener("keydown", (e) => {
       if (e.code === "Escape") toggleStealth();
-      if (e.key === "/" && document.activeElement !== document.getElementById("typeInput")) {
+      if (e.code === "Space" && document.activeElement !== document.getElementById("searchInput")) {
         e.preventDefault();
-        document.getElementById("typeInput").focus();
+        toggleMic();
+      }
+      if (e.key === "/" && document.activeElement !== document.getElementById("searchInput")) {
+        e.preventDefault();
+        document.getElementById("searchInput").focus();
       }
     });
 
-    // Start with Log Masterclass loaded on open
-    renderCards(PRODUCTION_SUPPORT_MASTER_DB);
-    loadAnswerToHUD(PRODUCTION_SUPPORT_MASTER_DB[0]);
+    // Start with Introduction on page load
+    renderCards(MASTER_SUPPORT_KB);
+    loadAnswerToHUD(MASTER_SUPPORT_KB[0]);
   </script>
 </body>
 </html>
