@@ -3,28 +3,27 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Application Support Copilot | L1 & L2 Master Teleprompter</title>
+  <title>Parakeet AI | Real-Time Interview Copilot</title>
   <style>
     :root {
       --bg: #07090e;
-      --panel: #0d1322;
-      --card-bg: rgba(17, 24, 39, 0.85);
-      --border: rgba(255, 255, 255, 0.08);
-      --border-focus: #38bdf8;
+      --surface: rgba(15, 23, 42, 0.85);
+      --surface-border: rgba(255, 255, 255, 0.08);
       --primary: #38bdf8;
       --accent: #10b981;
       --warning: #f59e0b;
-      --danger: #f43f5e;
-      --purple: #8b5cf6;
+      --danger: #ef4444;
+      --purple: #818cf8;
       --text: #f8fafc;
-      --text-muted: #94a3b8;
+      --text-dim: #94a3b8;
     }
 
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      user-select: none;
     }
 
     body {
@@ -33,24 +32,25 @@
       min-height: 100vh;
       display: flex;
       flex-direction: column;
-      padding-bottom: 50px;
-      overflow-x: hidden;
+      padding-bottom: 40px;
+      transition: background 0.2s ease, opacity 0.2s ease;
     }
 
+    /* Floating Parakeet App Bar */
     header {
       position: sticky;
       top: 0;
       z-index: 1000;
-      background: rgba(10, 14, 23, 0.96);
-      backdrop-filter: blur(16px);
-      border-bottom: 1px solid var(--border);
-      padding: 10px 16px;
+      background: rgba(11, 17, 32, 0.95);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--surface-border);
+      padding: 10px 18px;
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 10px;
     }
 
-    .top-bar {
+    .window-nav {
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -58,172 +58,195 @@
       gap: 8px;
     }
 
-    .brand-group {
+    .brand-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .app-icon {
+      width: 24px;
+      height: 24px;
+      background: linear-gradient(135deg, var(--primary), var(--purple));
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 900;
+      color: #07090e;
+    }
+
+    .app-title {
+      font-size: 0.9rem;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: #fff;
+    }
+
+    .status-pill {
+      font-size: 0.72rem;
+      padding: 2px 8px;
+      border-radius: 12px;
+      background: rgba(16, 185, 129, 0.15);
+      color: var(--accent);
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--accent);
+    }
+
+    .actions-bar {
       display: flex;
       align-items: center;
       gap: 8px;
     }
 
-    .status-pulse {
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      background: #475569;
-      transition: all 0.3s;
-    }
-
-    .status-pulse.active {
-      background: var(--accent);
-      box-shadow: 0 0 10px var(--accent);
-      animation: pulse 1.4s infinite;
-    }
-
-    @keyframes pulse {
-      0% { transform: scale(0.9); opacity: 0.8; }
-      50% { transform: scale(1.3); opacity: 1; }
-      100% { transform: scale(0.9); opacity: 0.8; }
-    }
-
-    .brand-title {
-      font-size: 0.92rem;
-      font-weight: 800;
-      letter-spacing: 0.05em;
-      text-transform: uppercase;
-      color: var(--primary);
-    }
-
-    .hotkey-hints {
-      font-size: 0.72rem;
-      color: var(--text-muted);
-      display: flex;
-      gap: 6px;
-    }
-
-    .badge-key {
-      background: rgba(255, 255, 255, 0.08);
-      border: 1px solid var(--border);
-      padding: 1px 5px;
-      border-radius: 4px;
-      color: #cbd5e1;
-      font-family: monospace;
-    }
-
-    .controls-group {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
     .btn {
       padding: 6px 12px;
       border-radius: 6px;
-      font-size: 0.8rem;
+      font-size: 0.78rem;
       font-weight: 700;
-      border: none;
+      border: 1px solid var(--surface-border);
       cursor: pointer;
       display: inline-flex;
       align-items: center;
-      gap: 5px;
+      gap: 6px;
       transition: all 0.15s ease;
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--text-dim);
     }
 
-    .btn-mic { background: var(--danger); color: #fff; }
-    .btn-mic.listening { background: #0284c7; box-shadow: 0 0 12px rgba(2, 132, 199, 0.4); }
-    .btn-action { background: rgba(255, 255, 255, 0.06); color: var(--text-muted); border: 1px solid var(--border); }
-    .btn-action:hover { color: #fff; border-color: var(--primary); }
+    .btn:hover {
+      color: #fff;
+      border-color: var(--primary);
+    }
 
-    /* Type and Search Input Area */
-    .search-wrapper {
+    .btn-mic {
+      background: var(--danger);
+      color: #fff;
+      border: none;
+    }
+
+    .btn-mic.active {
+      background: #0284c7;
+      box-shadow: 0 0 14px rgba(2, 132, 199, 0.4);
+    }
+
+    /* Live Waveform Audio Meter */
+    .audio-meter {
+      height: 3px;
+      width: 100%;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .audio-progress {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--primary), var(--purple));
+      transition: width 0.08s ease;
+    }
+
+    /* Input & Search Strip */
+    .search-strip {
       display: flex;
       flex-direction: column;
       gap: 6px;
     }
 
-    .type-search-bar {
+    .input-box {
       width: 100%;
-      background: var(--panel);
-      border: 1.5px solid #1e293b;
+      background: rgba(18, 24, 38, 0.9);
+      border: 1.5px solid var(--surface-border);
       color: #fff;
       padding: 9px 14px;
       border-radius: 8px;
-      font-size: 0.95rem;
+      font-size: 0.94rem;
       outline: none;
-      transition: border-color 0.2s;
     }
 
-    .type-search-bar:focus {
+    .input-box:focus {
       border-color: var(--primary);
-      box-shadow: 0 0 8px rgba(56, 189, 248, 0.25);
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.2);
     }
 
-    .category-chips {
+    .chips-row {
       display: flex;
-      gap: 5px;
+      gap: 6px;
       overflow-x: auto;
       padding-bottom: 2px;
     }
 
-    .chip {
+    .chip-btn {
       background: rgba(255, 255, 255, 0.04);
-      border: 1px solid var(--border);
-      color: var(--text-muted);
+      border: 1px solid var(--surface-border);
+      color: var(--text-dim);
       font-size: 0.72rem;
       font-weight: 700;
-      padding: 3px 9px;
+      padding: 4px 10px;
       border-radius: 5px;
       white-space: nowrap;
       cursor: pointer;
     }
 
-    .chip.active, .chip:hover {
+    .chip-btn.active, .chip-btn:hover {
       background: var(--primary);
       color: #07090e;
       border-color: var(--primary);
     }
 
-    .transcript-ticker {
-      font-size: 0.78rem;
+    .live-transcript-feed {
+      font-size: 0.76rem;
       color: var(--purple);
       background: rgba(0, 0, 0, 0.4);
-      padding: 4px 10px;
+      padding: 5px 10px;
       border-radius: 4px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      display: flex;
+      align-items: center;
+      gap: 6px;
     }
 
-    /* TELEPROMPTER HUD */
-    .teleprompter-hud {
-      margin: 10px 16px;
-      background: var(--card-bg);
-      border: 2px solid var(--purple);
+    /* PARAKEET FLOATING TELEPROMPTER HUD */
+    .parakeet-teleprompter {
+      margin: 12px 18px;
+      background: var(--surface);
+      border: 1.5px solid rgba(99, 102, 241, 0.35);
       border-radius: 12px;
-      padding: 16px 18px;
-      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
-      backdrop-filter: blur(12px);
-      transition: border-color 0.2s;
+      padding: 16px 20px;
+      box-shadow: 0 12px 35px rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(14px);
     }
 
-    .hud-meta {
+    .teleprompter-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
       margin-bottom: 6px;
     }
 
-    .hud-tag {
-      font-size: 0.72rem;
+    .category-tag {
+      font-size: 0.7rem;
       font-weight: 800;
       color: var(--primary);
       text-transform: uppercase;
-      letter-spacing: 0.06em;
+      letter-spacing: 0.08em;
     }
 
-    .hud-badge {
-      font-size: 0.72rem;
+    .confidence-badge {
+      font-size: 0.7rem;
       padding: 2px 7px;
       border-radius: 4px;
       background: rgba(16, 185, 129, 0.15);
@@ -231,77 +254,53 @@
       font-weight: 800;
     }
 
-    .hud-title {
+    .question-title {
       font-size: 1.25rem;
       font-weight: 800;
       color: #fff;
-      margin-bottom: 8px;
-      line-height: 1.3;
+      margin-bottom: 10px;
+      line-height: 1.35;
     }
 
-    .hud-hook {
-      background: rgba(245, 158, 11, 0.12);
+    .hook-card {
+      background: rgba(245, 158, 11, 0.1);
       border-left: 3px solid var(--warning);
-      padding: 6px 10px;
+      padding: 7px 12px;
       border-radius: 4px;
-      font-size: 0.85rem;
+      font-size: 0.86rem;
       color: #fde68a;
-      margin-bottom: 10px;
+      margin-bottom: 12px;
       line-height: 1.4;
     }
 
-    .hud-bullets {
+    .bullets-container {
       list-style-type: none;
       display: flex;
       flex-direction: column;
-      gap: 6px;
-      margin-bottom: 12px;
+      gap: 7px;
+      margin-bottom: 14px;
     }
 
-    .hud-bullets li {
-      font-size: 1rem;
-      line-height: 1.4;
+    .bullets-container li {
+      font-size: 1.02rem;
+      line-height: 1.45;
       color: #f1f5f9;
       display: flex;
       align-items: flex-start;
       gap: 8px;
     }
 
-    .hud-bullets li::before {
+    .bullets-container li::before {
       content: "▶";
       color: var(--accent);
       font-size: 0.8rem;
       margin-top: 3px;
     }
 
-    .hud-deep-section {
-      background: #090e18;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 12px 14px;
-      margin-top: 8px;
-    }
-
-    .deep-header {
-      font-size: 0.76rem;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      font-weight: 800;
-      color: var(--primary);
-      margin-bottom: 6px;
-    }
-
-    .deep-body {
-      font-size: 0.88rem;
-      color: #cbd5e1;
-      line-height: 1.55;
-      white-space: pre-line;
-    }
-
-    .hud-command {
-      margin-top: 10px;
-      background: #030508;
-      border: 1px solid #1e293b;
+    /* Command & Technical Code Box */
+    .command-box {
+      background: #05070c;
+      border: 1px solid var(--surface-border);
       border-radius: 6px;
       padding: 8px 12px;
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
@@ -310,14 +309,47 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
+      margin-bottom: 12px;
     }
 
-    /* Cards Grid */
+    /* Detailed Deep Breakdown */
+    .deep-card {
+      background: #090d16;
+      border: 1px solid var(--surface-border);
+      border-radius: 8px;
+      padding: 12px 14px;
+    }
+
+    .deep-card-title {
+      font-size: 0.74rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      font-weight: 800;
+      color: var(--primary);
+      margin-bottom: 6px;
+    }
+
+    .deep-card-text {
+      font-size: 0.88rem;
+      color: #cbd5e1;
+      line-height: 1.55;
+      white-space: pre-line;
+    }
+
+    /* Question Grid */
     main {
-      padding: 0 16px;
+      padding: 0 18px;
       display: flex;
       flex-direction: column;
       gap: 8px;
+    }
+
+    .grid-title {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-dim);
+      margin-top: 4px;
     }
 
     .cards-grid {
@@ -327,8 +359,8 @@
     }
 
     .card {
-      background: rgba(18, 24, 38, 0.6);
-      border: 1px solid var(--border);
+      background: rgba(18, 24, 38, 0.5);
+      border: 1px solid var(--surface-border);
       border-radius: 8px;
       padding: 10px 12px;
       cursor: pointer;
@@ -354,19 +386,20 @@
 
     .card-snippet {
       font-size: 0.78rem;
-      color: var(--text-muted);
+      color: var(--text-dim);
       line-height: 1.35;
     }
 
-    /* Stealth View Mode */
-    body.stealth-view main,
-    body.stealth-view .category-chips,
-    body.stealth-view .search-wrapper {
+    /* Parakeet Stealth / Ghost Mode */
+    body.stealth-mode main,
+    body.stealth-mode .chips-row,
+    body.stealth-mode .search-strip {
       display: none !important;
     }
-    body.stealth-view .teleprompter-hud {
-      margin: 6px;
-      background: rgba(7, 10, 18, 0.98);
+
+    body.stealth-mode .parakeet-teleprompter {
+      margin: 8px;
+      background: rgba(8, 12, 20, 0.95);
       border-color: rgba(255, 255, 255, 0.15);
     }
   </style>
@@ -374,113 +407,121 @@
 <body>
 
   <header>
-    <div class="top-bar">
-      <div class="brand-group">
-        <div class="status-pulse" id="statusPulse"></div>
-        <span class="brand-title">L1/L2 Support Copilot</span>
-        <div class="hotkey-hints">
-          <span><span class="badge-key">Space</span> Mic</span>
-          <span><span class="badge-key">Esc</span> Stealth</span>
-          <span><span class="badge-key">/</span> Search</span>
+    <div class="window-nav">
+      <div class="brand-wrap">
+        <div class="app-icon">P</div>
+        <span class="app-title">Parakeet AI Copilot</span>
+        <div class="status-pill">
+          <div class="status-dot"></div>
+          <span>Active Prompter</span>
         </div>
       </div>
-      <div class="controls-group">
-        <button class="btn btn-mic" id="micBtn" onclick="toggleMic()">🎙️ Listen HR</button>
-        <button class="btn btn-action" onclick="toggleStealth()">👁️ Stealth</button>
-        <button class="btn btn-action" onclick="resetToIntroduction()">↺ Intro</button>
+
+      <div class="actions-bar">
+        <button class="btn btn-mic" id="micBtn" onclick="toggleMic()">🎙️ Listen</button>
+        <button class="btn" onclick="toggleStealth()">👁️ Stealth (Esc)</button>
+        <button class="btn" onclick="resetToHome()">↺ Intro</button>
       </div>
     </div>
 
-    <div class="search-wrapper">
+    <!-- Live Audio Waveform -->
+    <div class="audio-meter">
+      <div class="audio-progress" id="audioMeterBar"></div>
+    </div>
+
+    <!-- Search / Instant Keyword Bar -->
+    <div class="search-strip">
       <input 
         type="text" 
-        id="searchInput" 
-        class="type-search-bar" 
-        placeholder="Type any keyword: e.g. cpu, memory, logs, 502, deadlock, oom, p1, autosys, curl, ssl..."
+        id="promptSearch" 
+        class="input-box" 
+        placeholder="Type any keyword (e.g., cpu, 502, deadlocks, log, full, heap, p1, oom, curl)..."
         autofocus
         oninput="handleSearch(this.value)"
       />
 
-      <div class="category-chips">
-        <button class="chip active" onclick="filterCategory('All', this)">All Categories</button>
-        <button class="chip" onclick="filterCategory('Linux & Server', this)">Linux & Server</button>
-        <button class="chip" onclick="filterCategory('Database & SQL', this)">SQL & Databases</button>
-        <button class="chip" onclick="filterCategory('App Server & JVM', this)">JVM & Tomcat</button>
-        <button class="chip" onclick="filterCategory('Web & APIs', this)">HTTP, Web & APIs</button>
-        <button class="chip" onclick="filterCategory('ITIL & Operations', this)">ITIL & Production</button>
+      <div class="chips-row">
+        <button class="chip-btn active" onclick="filterCategory('All', this)">All Categories</button>
+        <button class="chip-btn" onclick="filterCategory('Linux & System', this)">Linux & System</button>
+        <button class="chip-btn" onclick="filterCategory('Databases', this)">SQL & Locks</button>
+        <button class="chip-btn" onclick="filterCategory('JVM & App Server', this)">JVM & Tomcat</button>
+        <button class="chip-btn" onclick="filterCategory('Web & APIs', this)">HTTP 5xx & APIs</button>
+        <button class="chip-btn" onclick="filterCategory('ITIL Operations', this)">ITIL & Production</button>
       </div>
 
-      <div class="transcript-ticker">
+      <div class="live-transcript-feed">
         <span>👂 Live Heard:</span>
-        <span id="liveTranscript">Waiting for interviewer audio or instant keyboard search...</span>
+        <span id="transcriptFeedText">Listening to interviewer audio or ready for keyword input...</span>
       </div>
     </div>
   </header>
 
-  <!-- TELEPROMPTER HUD: Zero-Delay Display -->
-  <div class="teleprompter-hud" id="hudContainer">
-    <div class="hud-meta">
-      <span class="hud-tag" id="hudCategory">INTRODUCTION</span>
-      <span class="hud-badge" id="hudBadge">⚡ 100% Match</span>
+  <!-- TELEPROMPTER HUD: Zero-Delay Instant Display -->
+  <div class="parakeet-teleprompter" id="prompterCard">
+    <div class="teleprompter-header">
+      <span class="category-tag" id="hudCategory">INTRODUCTION</span>
+      <span class="confidence-badge" id="hudConfidence">⚡ 100% Match</span>
     </div>
 
-    <div class="hud-title" id="hudTitle">Tell me about yourself as an Application Support Engineer (L1/L2)?</div>
+    <div class="question-title" id="hudQuestion">Tell me about yourself as an Application Support Engineer (L1/L2)?</div>
 
-    <div class="hud-hook" id="hudHook">
-      💬 <strong>0s Hook:</strong> "Thank you for asking. I specialize in L1 and L2 Application Production Support, ensuring 24/7 high availability across distributed production environments..."
+    <div class="hook-card" id="hudHook">
+      💬 <strong>2s Hook:</strong> "Thank you for asking. I specialize in L1 and L2 Application Production Support, maintaining 24/7 high availability across distributed production environments..."
     </div>
 
-    <ul class="hud-bullets" id="hudBullets">
-      <li><strong>Operational Scope:</strong> Monitoring real-time telemetry, triaging P1-P4 incidents, executing standard health checks, and maintaining SLA targets.</li>
-      <li><strong>Technical Stack:</strong> Linux/Unix systems, Oracle/PostgreSQL SQL queries, Java/Tomcat application servers, shell automation, and batch schedulers.</li>
-      <li><strong>Problem Solving:</strong> Isolating application slowness, debugging production logs, resolving database session locks, and root-cause collaboration with L3.</li>
+    <ul class="bullets-container" id="hudBullets">
+      <li><strong>Core Scope:</strong> Monitoring real-time system health, triaging incident tickets (P1-P4), managing bridge calls, and preventing SLA breaches.</li>
+      <li><strong>Technical Stack:</strong> Linux/Unix systems, Oracle & PostgreSQL SQL, Apache Tomcat/Nginx, shell scripting, and batch job scheduling.</li>
+      <li><strong>Troubleshooting Methodology:</strong> Resolving application slowness, debugging production logs, clearing database session locks, and root-cause collaboration with L3.</li>
     </ul>
 
-    <div class="hud-deep-section">
-      <div class="deep-header">📋 Complete Technical Architecture & Production Workflow</div>
-      <div class="deep-body" id="hudDeepAnalysis">
-• Day-to-Day Responsibilities:
-  1. Incident & Ticket Management: Monitoring ticketing queues (ServiceNow/Jira), triaging tickets based on Impact & Urgency, managing major incident bridge calls, and publishing user notifications.
-  2. Proactive Monitoring: Reviewing real-time dashboards (Dynatrace, Splunk, Geneos, Grafana), responding to infrastructure alerts (disk, CPU, memory), and monitoring scheduled batch jobs.
-  3. Diagnostic Investigation: Connecting via SSH to Unix environments, isolating application error codes across server access logs, verifying database connection pool health, and terminating runaway processes.
-  4. Release & Maintenance: Supporting CAB deployments, managing server maintenance windows, executing pre- and post-deployment sanity testing, and participating in Disaster Recovery (DR) drills.
-      </div>
-      <div class="hud-command">
-        <span>Command Reference:</span>
-        <strong id="hudCommand">top | ps aux --sort=-%cpu | tail -f catalina.out | df -h</strong>
+    <div class="command-box" id="hudCommandBox">
+      <span>Master Command:</span>
+      <strong id="hudCommand">top | ps aux --sort=-%cpu | tail -f catalina.out | df -h</strong>
+    </div>
+
+    <div class="deep-card">
+      <div class="deep-card-title">📋 Production Architecture & Daily Operations</div>
+      <div class="deep-card-text" id="hudDeepText">
+• Operational Architecture:
+  1. Incident & Ticket Management: Monitoring queues (ServiceNow/Jira), triaging tickets based on Impact & Urgency, managing major incident bridges, and sending user notifications.
+  2. Telemetry & Monitoring: Reviewing real-time dashboards (Dynatrace, Geneos, Splunk, Grafana), responding to server resource thresholds (disk, CPU, memory), and monitoring scheduled batch jobs.
+  3. Diagnostic Investigation: Connecting via SSH to Linux servers, isolating HTTP status codes in access logs, checking connection pool health, and killing runaway processes.
+  4. Release & Maintenance: Supporting Change Advisory Board (CAB) deployments, managing maintenance windows, running pre/post-deployment health checks, and supporting Disaster Recovery (DR) drills.
       </div>
     </div>
   </div>
 
   <main>
+    <div class="grid-title">All Pre-Loaded Knowledge (Instant Search)</div>
     <div class="cards-grid" id="cardsGrid"></div>
   </main>
 
   <script>
-    // FULL MASTER APPLICATION SUPPORT ENGINEER L1 & L2 KNOWLEDGE BASE
-    const MASTER_SUPPORT_KB = [
+    // COMPLETE PRE-LOADED APPLICATION SUPPORT L1/L2 REPOSITORY
+    const PARAKEET_KB = [
       {
         id: 1,
-        cat: "ITIL & Operations",
+        cat: "ITIL Operations",
         q: "Tell me about yourself as an Application Support Engineer (L1/L2)?",
         keywords: ["tell me about yourself", "introduce yourself", "walk me through", "background", "experience", "profile"],
-        hook: "Thank you for asking. I specialize in L1 and L2 Application Production Support, maintaining 24/7 high availability across business-critical architectures...",
+        hook: "Thank you for asking. I specialize in L1 and L2 Application Production Support, maintaining 24/7 uptime across business-critical architectures...",
         bullets: [
-          "Operational Scope: Triage incident tickets, monitor system telemetry, manage incident bridges, and uphold strict SLA targets.",
+          "Operational Scope: Triage incident tickets, monitor system telemetry, manage major incident bridges, and uphold strict SLAs.",
           "Technical Foundation: Strong Unix/Linux command-line diagnostics, Oracle/PostgreSQL SQL queries, web servers (Tomcat/Nginx), and bash automation.",
           "Engineering Mindset: Focus on rapid temporary workarounds to stop business downtime, followed by thorough root-cause analysis (RCA) with dev teams."
         ],
+        cmd: "top | ps -ef | tail -100f app.log | df -h | netstat -tulnp",
         deep: `• Production Support Workflow:
   1. Triage & Shift Handovers: Reviewing active handovers, checking ongoing tickets in ServiceNow, and conducting routine shift startup health checks.
   2. Monitoring & Alert Handling: Responding to automated alerts (Geneos/Dynatrace/Splunk) before business users experience service degradation.
   3. Escalation & Collaboration: Resolving L1/L2 scope issues via documented standard operating procedures (SOPs), and coordinating with L3/Development for code bugs.
-  4. Automation: Creating reusable shell scripts and cron jobs to automate manual reconciliations, log cleanups, and batch monitoring.`,
-        cmd: "top | ps -ef | tail -100f app.log | df -h | netstat -tulnp"
+  4. Automation: Creating reusable shell scripts and cron jobs to automate manual reconciliations, log cleanups, and batch monitoring.`
       },
       {
         id: 2,
-        cat: "Linux & Server",
-        q: "How do you troubleshoot high CPU or Memory utilization on a Linux server?",
+        cat: "Linux & System",
+        q: "How do you troubleshoot High CPU or Memory utilization on a Linux server?",
         keywords: ["high cpu", "cpu utilization", "memory utilization", "server slow", "load average", "top", "swap"],
         hook: "When server resources spike, I immediately isolate whether the bottleneck is process-bound, I/O wait, or memory thrashing...",
         bullets: [
@@ -488,27 +529,27 @@
           "Memory & Swap: Run 'free -m' and 'vmstat 1 5' to check 'si' (swap in) and 'so' (swap out). High swap I/O indicates RAM exhaustion.",
           "Action: If a rogue or zombie process is consuming 90%+ CPU, capture thread stack traces if Java, or terminate with 'kill -15' (graceful) or 'kill -9'."
         ],
+        cmd: "top -b -n 1 | ps aux --sort=-%cpu | head -10 | free -m | vmstat 1 5",
         deep: `• Step-by-Step Diagnostic SOP:
   1. Check System Load Average:
      - Run: uptime or top
-     - If load average significantly exceeds the total number of CPU cores, the server is backlogged.
+     - If load average significantly exceeds total CPU cores, the server is backlogged.
   2. Identify Rogue Processes:
      - Sort by CPU: ps aux --sort=-%cpu | head -10
      - Sort by Memory: ps aux --sort=-%mem | head -10
   3. Inspect I/O Wait (Disk Bottleneck):
-     - In 'top', check '%wa' (wait on I/O). If wa > 15-20%, the CPU is idling waiting for slow disk or network storage.
+     - In 'top', check '%wa' (wait on I/O). If wa > 15-20%, CPU is idling waiting for slow disk or network storage.
      - Run: iostat -xz 1 5 to pinpoint the saturated disk partition.
   4. Memory Analysis:
      - Check RAM: free -h (Check 'available' memory, not just 'free' which excludes disk buffer/cache).
      - Run: vmstat 1 5. If 'si' and 'so' are continuously non-zero, active swapping is degrading application latency.
   5. Remediation:
      - If Java: Capture thread dump (jstack <pid> > threads.tdump) before terminating.
-     - Terminate cleanly: kill -15 <pid>. If unresponsive: kill -9 <pid>.`,
-        cmd: "top -b -n 1 | ps aux --sort=-%cpu | head -10 | free -m | vmstat 1 5"
+     - Terminate cleanly: kill -15 <pid>. If unresponsive: kill -9 <pid>.`
       },
       {
         id: 3,
-        cat: "Linux & Server",
+        cat: "Linux & System",
         q: "How do you investigate production application logs like an expert?",
         keywords: ["log", "logs", "investigate logs", "log analysis", "grep", "tail", "exception", "trace", "catalina"],
         hook: "Log analysis is my primary diagnostic tool. I use live monitoring, contextual search, and archive tools to trace root causes...",
@@ -517,6 +558,7 @@
           "Context Search: Use 'grep -i -C 5 \"NullPointer\" app.log' to extract 5 lines before and after the crash to inspect stack traces.",
           "Compressed Logs: Use 'zgrep', 'zcat', or 'zless' to search archived .gz logs without decompressing them to disk."
         ],
+        cmd: "tail -100f app.log | grep -i -C 5 'Exception' | zgrep -i 'timeout' *.gz",
         deep: `• Real-Time Log Diagnostic Framework:
   1. Live Tail Filtering:
      - tail -f /var/log/tomcat/catalina.out | grep --line-buffered -E "Exception|OutOfMemory"
@@ -528,12 +570,11 @@
   4. Count Error Frequency:
      - grep "HTTP 500" access.log | awk '{print $1, $7}' | sort | uniq -c | sort -nr
   5. Large File Navigation:
-     - Use 'less +F filename' to inspect large multi-gigabyte logs without memory overhead; use Shift+F to toggle tail mode.`,
-        cmd: "tail -100f app.log | grep -i -C 5 'Exception' | zgrep -i 'timeout' *.gz"
+     - Use 'less +F filename' to inspect large multi-gigabyte logs without memory overhead; use Shift+F to toggle tail mode.`
       },
       {
         id: 4,
-        cat: "Linux & Server",
+        cat: "Linux & System",
         q: "How do you troubleshoot a 100% full Filesystem (Disk Space Exhaustion)?",
         keywords: ["filesystem", "space", "disk full", "100%", "75%", "df", "du", "truncate", "lsof"],
         hook: "When a filesystem saturates, I identify heavy files, handle open file descriptors safely, and truncate without killing processes...",
@@ -542,6 +583,7 @@
           "Identify Heaviest Files: Run 'ls -lS' to find large target logs or core dumps. Gzip inactive logs.",
           "Open File Descriptors: If a deleted file still consumes space, check 'lsof | grep deleted'. Truncate active logs with 'cat /dev/null > file.log'."
         ],
+        cmd: "df -h; du -sh * | sort -hr | head -10; lsof | grep deleted; > app.log",
         deep: `• Filesystem Recovery Sequence:
   1. Triage:
      - Run: df -h (Identify saturated mount point, e.g., /var or /app).
@@ -554,12 +596,11 @@
      - NEVER delete an actively written log file using 'rm'.
      - Clear it instantly to 0 bytes: cat /dev/null > application.log (or: > application.log).
   4. Permanent Fix:
-     - Implement logrotate with compression (gzip) and coordinate with Unix admin to extend Logical Volume Manager (LVM) partition.`,
-        cmd: "df -h; du -sh * | sort -hr | head -10; lsof | grep deleted; > app.log"
+     - Implement logrotate with compression (gzip) and coordinate with Unix admin to extend Logical Volume Manager (LVM) partition.`
       },
       {
         id: 5,
-        cat: "Database & SQL",
+        cat: "Databases",
         q: "How do you identify and resolve Database Deadlocks, Locks, and Session Blockages?",
         keywords: ["deadlock", "db lock", "blockage", "blocking_session", "v$session", "kill session", "pg_stat_activity"],
         hook: "Session blockages occur when an uncommitted transaction locks rows needed by concurrent threads, queuing downstream requests...",
@@ -568,6 +609,7 @@
           "Triage: Identify the root blocking session SID, query details, username, and duration in seconds.",
           "Resolution: Contact the holding user or coordinate with DBA to terminate the holding session immediately using ALTER SYSTEM KILL SESSION."
         ],
+        cmd: "SELECT * FROM v$session WHERE blocking_session IS NOT NULL; ALTER SYSTEM KILL SESSION ('sid,serial#') IMMEDIATE;",
         deep: `• Database Lock & Blockage Triage:
   1. Root Cause:
      - A user or batch transaction executes DML (UPDATE/DELETE) on a table but forgets to execute COMMIT or ROLLBACK, leaving an exclusive row-level lock.
@@ -582,12 +624,11 @@
      JOIN pg_catalog.pg_locks blocking_locks ON blocking_locks.locktype = blocked_locks.locktype;
   4. Termination Command:
      - Oracle: ALTER SYSTEM KILL SESSION ('<sid>,<serial#>') IMMEDIATE;
-     - PostgreSQL: SELECT pg_terminate_backend(<blocking_pid>);`,
-        cmd: "SELECT * FROM v$session WHERE blocking_session IS NOT NULL; ALTER SYSTEM KILL SESSION ('sid,serial#') IMMEDIATE;"
+     - PostgreSQL: SELECT pg_terminate_backend(<blocking_pid>);`
       },
       {
         id: 6,
-        cat: "Database & SQL",
+        cat: "Databases",
         q: "How do you troubleshoot Slow Running Queries and Performance Bottlenecks?",
         keywords: ["slow query", "performance", "explain plan", "indexes", "full table scan", "sql tuning"],
         hook: "When a query runs slow, I examine its Execution Plan to identify missing indexes, full table scans, or high cardinality operations...",
@@ -596,6 +637,7 @@
           "Indexing: Verify if WHERE clause and JOIN columns have appropriate B-Tree indexes. Avoid functions on indexed columns (e.g. UPPER(name)).",
           "Table Statistics: Check if table optimizer statistics are stale using 'DBA_TABLES.LAST_ANALYZED'. Stale stats cause bad optimizer choices."
         ],
+        cmd: "EXPLAIN PLAN FOR <query>; SELECT * FROM TABLE(DBMS_XPLAN.DISPLAY);",
         deep: `• SQL Performance Optimization Steps:
   1. Check Execution Plan:
      - Oracle: EXPLAIN PLAN FOR SELECT * FROM orders WHERE customer_id = 502;
@@ -608,13 +650,12 @@
   3. Remediation Actions:
      - Add composite index on frequently combined query filters.
      - Rewrite non-sargable queries (e.g., replace 'WHERE date >= sysdate - 1' instead of 'WHERE to_char(date) = ...').
-     - Gather fresh statistics: EXEC DBMS_STATS.GATHER_TABLE_STATS('SCHEMA_NAME', 'TABLE_NAME');`,
-        cmd: "EXPLAIN PLAN FOR <query>; SELECT * FROM TABLE(DBMS_XPLAN.DISPLAY);"
+     - Gather fresh statistics: EXEC DBMS_STATS.GATHER_TABLE_STATS('SCHEMA_NAME', 'TABLE_NAME');`
       },
       {
         id: 7,
-        cat: "App Server & JVM",
-        q: "How do you troubleshoot Java OutOfMemoryError (OOM) and JVM Heap Exhaution?",
+        cat: "JVM & App Server",
+        q: "How do you troubleshoot Java OutOfMemoryError (OOM) and JVM Heap Exhaustion?",
         keywords: ["oom", "outofmemory", "heap", "heap dump", "garbage collection", "jvm", "jstack", "jmap", "gc"],
         hook: "When a JVM hits OutOfMemoryError, I identify whether it is Heap Space, Metaspace, or GC Overhead Limit Exceeded...",
         bullets: [
@@ -622,6 +663,7 @@
           "Dump Extraction: Configure '-XX:+HeapDumpOnOutOfMemoryError' or extract manually using 'jmap -dump:format=b,file=heap.hprof <pid>'.",
           "Analysis: Analyze .hprof dump using Eclipse Memory Analyzer (MAT) to identify leak suspects and dominator trees."
         ],
+        cmd: "jmap -dump:format=b,file=heap.hprof <PID> | jstack <PID> > threads.txt | -XX:+HeapDumpOnOutOfMemoryError",
         deep: `• JVM Memory Diagnostics:
   1. Diagnostic Dumps:
      - Heap Dump: jmap -dump:format=b,file=/tmp/heapdump.hprof <PID>
@@ -634,8 +676,7 @@
      - If cluster-enabled, failover traffic to peer nodes.
   4. Permanent Fix:
      - Analyze Eclipse MAT Dominator Tree to locate uncollected caches, unclosed connections, or circular references.
-     - Tune JVM memory flags in startup scripts: -Xms4g -Xmx8g -XX:MetaspaceSize=512m.`,
-        cmd: "jmap -dump:format=b,file=heap.hprof <PID> | jstack <PID> > threads.txt | -XX:+HeapDumpOnOutOfMemoryError"
+     - Tune JVM memory flags in startup scripts: -Xms4g -Xmx8g -XX:MetaspaceSize=512m.`
       },
       {
         id: 8,
@@ -649,6 +690,7 @@
           "503 Service Unavailable: Server overloaded, thread pool exhausted, or app is under planned maintenance/warmup.",
           "504 Gateway Timeout: Upstream application took longer to respond than reverse proxy timeout threshold (e.g., slow SQL query)."
         ],
+        cmd: "curl -Iv https://app.com | ps -ef | grep tomcat | netstat -tulnp",
         deep: `• Systematic 5xx Triage Matrix:
   1. HTTP 500 (Internal Server Error):
      - Cause: Unhandled runtime NullPointerException, broken DB connection pool.
@@ -661,8 +703,7 @@
      - Action: Check queue depths, thread dumps, and increase thread pool or scale out instances.
   4. HTTP 504 (Gateway Timeout):
      - Cause: Backend took >60s (default proxy_read_timeout) to process query.
-     - Action: Trace slow database execution or external third-party API dependencies.`,
-        cmd: "curl -Iv https://app.com | ps -ef | grep tomcat | netstat -tulnp"
+     - Action: Trace slow database execution or external third-party API dependencies.`
       },
       {
         id: 9,
@@ -675,6 +716,7 @@
           "SSL/TLS Debugging: Use '-v' to inspect TLS handshake, certificate validation, and cipher negotiation.",
           "Network Isolation: Test if failure occurs at DNS, Network routing, Proxy, or Application layer."
         ],
+        cmd: "curl -v -X POST https://api/path -H 'Content-Type: application/json' -d '{}' -w '%{time_total}s'",
         deep: `• Real-World API Debugging SOP:
   1. Detailed Curl Command:
      curl -v -k -X GET "https://api.internal.com/health" \\
@@ -687,21 +729,21 @@
      - -w: Formats timing breakdown (DNS lookup time, connect time, total latency).
   3. Certificate Verification:
      - If SSL handshake fails: openssl s_client -connect host:443 -servername host
-     - Check certificate validity dates and verify root CA chain.`,
-        cmd: "curl -v -X POST https://api/path -H 'Content-Type: application/json' -d '{}' -w '%{time_total}s'"
+     - Check certificate validity dates and verify root CA chain.`
       },
       {
         id: 10,
-        cat: "Linux & Server",
+        cat: "Linux & System",
         q: "How do you troubleshoot network connectivity between two servers?",
         keywords: ["network", "connectivity", "ping", "telnet", "nc", "netstat", "traceroute", "tcpdump", "firewall"],
         hook: "I verify network health in a layered approach: ICMP ping (IP), Telnet/Netcat (Port), Netstat (Listening), and TCPDump (Packets)...",
         bullets: [
           "Host Reachability: Use 'ping <ip>' to test ICMP reachability. (Note: Many cloud firewalls block ICMP).",
           "Port Reachability: Use 'nc -zv <host> <port>' or 'telnet <host> <port>' to verify if the remote port accepts connections.",
-          "Port Listening: On the destination host, verify the app is listening using 'netstat -tulnp | grep <port>' or 'ss -tulnp'.",
+          "Port Listening: On destination host, verify app is listening using 'netstat -tulnp | grep <port>' or 'ss -tulnp'.",
           "Deep Packet Inspection: Use 'tcpdump -i any port <port> -nn' to check if SYN packets arrive and receive SYN-ACK responses."
         ],
+        cmd: "nc -zv <host> <port> | ss -tulnp | tcpdump -i any port <port> -nn",
         deep: `• Systematic Network Diagnostic Ladder:
   1. Layer 3 (Network Layer):
      - ping 10.20.30.40 (Checks IP routing).
@@ -713,12 +755,11 @@
   3. Local Listening Check:
      - ss -tulnp | grep 8080 (Verify binding to 0.0.0.0, not just 127.0.0.1 localhost).
   4. Packet Sniffing (TCPDump):
-     - tcpdump -i eth0 host 10.20.30.40 and port 8080 -nn -vv`,
-        cmd: "nc -zv <host> <port> | ss -tulnp | tcpdump -i any port <port> -nn"
+     - tcpdump -i eth0 host 10.20.30.40 and port 8080 -nn -vv`
       },
       {
         id: 11,
-        cat: "ITIL & Operations",
+        cat: "ITIL Operations",
         q: "How do you handle a Major Incident (P1 / P2) from end to end?",
         keywords: ["p1", "p2", "major incident", "critical ticket", "bridge call", "war room", "rca", "incident management"],
         hook: "In major incidents, my priorities are rapid triage, clear stakeholder communication, and swift workarounds before root cause...",
@@ -728,6 +769,7 @@
           "Phase 3 (Restore First): Implement temporary workaround (restart, failover to DR, rollback release) to recover service.",
           "Phase 4 (Problem Management): Facilitate Root Cause Analysis (RCA) and document Post-Incident Review (PIR)."
         ],
+        cmd: "P1 SLA = 5h | Update Every 30m | Priority = Impact + Urgency",
         deep: `• End-to-End P1 Incident Protocol:
   1. 0 - 15 Minutes:
      - Acknowledge ticket, verify impact scope (how many users/transactions affected).
@@ -742,12 +784,11 @@
      - Confirm transaction processing resumes cleanly; get business confirmation.
      - Send Resolution Notification.
   5. Post-Incident Review (PIR / RCA):
-     - Create Problem ticket; conduct RCA meeting within 24-48 hours to prevent recurrence.`,
-        cmd: "P1 SLA = 5h | Update Every 30m | Priority = Impact + Urgency"
+     - Create Problem ticket; conduct RCA meeting within 24-48 hours to prevent recurrence.`
       },
       {
         id: 12,
-        cat: "ITIL & Operations",
+        cat: "ITIL Operations",
         q: "Explain ITIL Change Management: Standard, Normal, Emergency, and Retrospective Changes?",
         keywords: ["change management", "standard change", "emergency change", "normal change", "retrospective", "cab"],
         hook: "Change Management ensures that all production modifications are risk-assessed, approved, and tracked to avoid outages...",
@@ -757,6 +798,7 @@
           "Emergency Change: Urgent fix deployed during an active major incident requiring expedited Line Manager / ECAB approval.",
           "Retrospective Change: Approved and documented post-deployment for emergency fixes where immediate action was mandatory."
         ],
+        cmd: "CAB Review -> UAT Signoff -> Implementation Plan -> Rollback Plan",
         deep: `• Change Management Governance:
   1. Change Types:
      - Standard: Pre-authorized by CAB. Lowest risk. Executed directly via standard change templates.
@@ -767,12 +809,11 @@
      - Prerequisite: UAT Sign-off attached.
      - Implementation Plan: Step-by-step rollout commands.
      - Backout / Rollback Plan: Specific steps to revert if sanity tests fail.
-     - Post-Implementation Review: Validating error rates in telemetry dashboards.`,
-        cmd: "CAB Review -> UAT Signoff -> Implementation Plan -> Rollback Plan"
+     - Post-Implementation Review: Validating error rates in telemetry dashboards.`
       },
       {
         id: 13,
-        cat: "ITIL & Operations",
+        cat: "ITIL Operations",
         q: "Batch Job Scheduling and Automation (Autosys, Control-M, Crontab)?",
         keywords: ["autosys", "batch", "job failure", "control-m", "crontab", "dependencies", "autorep", "sendevent"],
         hook: "We manage critical batch pipelines. When a job fails, I review logs, check dependencies, and remediate before SLA breaches...",
@@ -781,6 +822,7 @@
           "Troubleshooting Flow: Check Autosys job spool logs, verify upstream feed arrivals, check file permissions and disk space.",
           "Commands: Use 'autorep -J <job_name>' to view status and history; use 'sendevent -E FORCE_STARTJOB -J <job>' to re-run."
         ],
+        cmd: "autorep -J job_name -d | sendevent -E FORCE_STARTJOB -J job_name",
         deep: `• Batch Scheduling Diagnostics:
   1. Autosys Core Commands:
      - Check job status: autorep -J <job_name> -d
@@ -795,12 +837,11 @@
      - Database Contention: Batch SQL query timed out due to deadlocks.
   3. Crontab Syntax:
      - * * * * * (Minute, Hour, Day of Month, Month, Day of Week).
-     - Edit: crontab -e | List: crontab -l`,
-        cmd: "autorep -J job_name -d | sendevent -E FORCE_STARTJOB -J job_name"
+     - Edit: crontab -e | List: crontab -l`
       },
       {
         id: 14,
-        cat: "ITIL & Operations",
+        cat: "ITIL Operations",
         q: "Disaster Recovery (DR) and Continuity of Business (COB) Concepts?",
         keywords: ["dr", "disaster recovery", "cob", "rto", "rpo", "failover", "failback", "dr drill"],
         hook: "Disaster Recovery ensures that if the primary data center fails, business operations resume seamlessly at a secondary site...",
@@ -809,6 +850,7 @@
           "RPO (Recovery Point Objective): The maximum acceptable data loss measured in time (e.g. 15 minutes of transactional data).",
           "DR Drill Steps: Shutdown primary app/DB → sync storage/files → switch DNS/IP routing → start DR DB/app → validate sanity."
         ],
+        cmd: "RTO (Downtime limit) | RPO (Data loss limit) | DNS Failover -> Smoke Test",
         deep: `• 6-Phase DR Failover Drill Protocol:
   1. Phase 1 (Graceful Shutdown): Stop upstream feeds and cleanly bring down primary web/app tiers.
   2. Phase 2 (Database State): Ensure all pending transaction logs are committed and bring down primary database.
@@ -816,20 +858,20 @@
   4. Phase 4 (DNS / Network Redirection): Update Global Traffic Manager (GTM) or DNS A-records to point user URL to secondary DC IP.
   5. Phase 5 (Secondary Startup): Bring up DR database in read-write mode, followed by starting application servers.
   6. Phase 6 (Sanity Testing): Run automated smoke test scripts; verify user login, balance checks, and trade processing.
-  • Soak Period: Systems typically operate on DR for 3 to 7 days before performing scheduled failback.`,
-        cmd: "RTO (Downtime limit) | RPO (Data loss limit) | DNS Failover -> Smoke Test"
+  • Soak Period: Systems typically operate on DR for 3 to 7 days before performing scheduled failback.`
       },
       {
         id: 15,
-        cat: "Linux & Server",
+        cat: "Linux & System",
         q: "How do you automate tasks using Shell Scripting and Cron Jobs?",
         keywords: ["shell script", "bash", "cron", "automation", "crontab", "scripting", "exit code"],
         hook: "I write modular bash scripts to eliminate repetitive manual work, handle error conditions, and schedule them via cron...",
         bullets: [
           "Script Structure: Use '#!/bin/bash', set strict modes ('set -e'), check exit status ('$?'), and log all outputs with timestamps.",
-          "Error Handling: Use conditional checks ('if [ $? -ne 0 ]; then ... fi') and validate file existence ('[ -f "$file" ]').",
+          "Error Handling: Use conditional checks ('if [ $? -ne 0 ]; then ... fi') and validate file existence ('[ -f \"$file\" ]').",
           "Cron Scheduling: Redirect stdout and stderr ('>> /var/log/my_job.log 2>&1') to maintain full audit trails."
         ],
+        cmd: "chmod +x script.sh | crontab -e | find /path -mtime +30 -delete",
         deep: `• Robust Production Shell Script Template:
   #!/bin/bash
   set -o pipefail
@@ -845,26 +887,29 @@
   fi
 
   • Crontab Entry (Runs daily at 2:30 AM):
-    30 2 * * * /app/scripts/cleanup.sh >> /var/log/cron_exec.log 2>&1`,
-        cmd: "chmod +x script.sh | crontab -e | find /path -mtime +30 -delete"
+    30 2 * * * /app/scripts/cleanup.sh >> /var/log/cron_exec.log 2>&1`
       }
     ];
 
-    let currentList = [...MASTER_SUPPORT_KB];
-    let activeCategory = "All";
+    let currentKnowledge = [...PARAKEET_KB];
+    let selectedCategory = "All";
     let recognition = null;
     let isListening = false;
+    let audioContext = null;
+    let analyser = null;
+    let audioDataArray = null;
 
-    // RENDER CARDS IN GRID
-    function renderCards(list) {
+    // Render Cards in Sidebar / Grid
+    function renderGrid(list) {
       const grid = document.getElementById("cardsGrid");
       grid.innerHTML = "";
 
       list.forEach(item => {
         const card = document.createElement("div");
         card.className = "card";
-        card.id = `card-${item.id}`;
-        card.onclick = () => loadAnswerToHUD(item);
+        card.id = `item-${item.id}`;
+        card.onclick = () => loadPromptCard(item);
+
         card.innerHTML = `
           <div class="card-title">${item.q}</div>
           <div class="card-snippet">${item.bullets[0]}</div>
@@ -873,77 +918,77 @@
       });
     }
 
-    // INSTANT DISPLAY IN HUD (0s DELAY)
-    function loadAnswerToHUD(item) {
+    // Load into Parakeet Floating Teleprompter HUD (0ms Delay)
+    function loadPromptCard(item) {
       document.getElementById("hudCategory").innerText = item.cat.toUpperCase();
-      document.getElementById("hudTitle").innerText = item.q;
-      document.getElementById("hudHook").innerHTML = `💬 <strong>0s Hook:</strong> "${item.hook}"`;
+      document.getElementById("hudQuestion").innerText = item.q;
+      document.getElementById("hudHook").innerHTML = `💬 <strong>2s Hook:</strong> "${item.hook}"`;
       document.getElementById("hudBullets").innerHTML = item.bullets.map(b => `<li>${b}</li>`).join("");
-      document.getElementById("hudDeepAnalysis").innerText = item.deep;
       document.getElementById("hudCommand").innerText = item.cmd;
+      document.getElementById("hudDeepText").innerText = item.deep;
 
       document.querySelectorAll(".card").forEach(c => c.classList.remove("active"));
-      const card = document.getElementById(`card-${item.id}`);
-      if (card) card.classList.add("active");
+      const activeCard = document.getElementById(`item-${item.id}`);
+      if (activeCard) activeCard.classList.add("active");
 
-      // Flash green HUD border to signal instant refresh
-      const hud = document.getElementById("hudContainer");
-      hud.style.borderColor = "var(--accent)";
-      setTimeout(() => hud.style.borderColor = "var(--purple)", 400);
+      // Visual flash indicator
+      const prompter = document.getElementById("prompterCard");
+      prompter.style.borderColor = "var(--accent)";
+      setTimeout(() => prompter.style.borderColor = "rgba(99, 102, 241, 0.35)", 400);
     }
 
-    // BROAD INSTANT SEARCH ENGINE
-    function handleSearch(val) {
-      const q = val.toLowerCase().trim();
-      let filtered = MASTER_SUPPORT_KB;
+    // Instant Predictive Search (0ms Delay)
+    function handleSearch(term) {
+      const query = term.toLowerCase().trim();
+      let filtered = PARAKEET_KB;
 
-      if (activeCategory !== "All") {
-        filtered = filtered.filter(item => item.cat === activeCategory);
+      if (selectedCategory !== "All") {
+        filtered = filtered.filter(item => item.cat === selectedCategory);
       }
 
-      if (q) {
+      if (query) {
         filtered = filtered.filter(item => {
-          const matchTitle = item.q.toLowerCase().includes(q);
-          const matchKeywords = item.keywords.some(k => k.toLowerCase().includes(q) || q.includes(k.toLowerCase()));
-          const matchBullets = item.bullets.some(b => b.toLowerCase().includes(q));
-          const matchDeep = item.deep.toLowerCase().includes(q);
-          const matchCmd = item.cmd.toLowerCase().includes(q);
-          return matchTitle || matchKeywords || matchBullets || matchDeep || matchCmd;
+          const inTitle = item.q.toLowerCase().includes(query);
+          const inKeywords = item.keywords.some(k => k.toLowerCase().includes(query) || query.includes(k.toLowerCase()));
+          const inBullets = item.bullets.some(b => b.toLowerCase().includes(query));
+          const inDeep = item.deep.toLowerCase().includes(query);
+          const inCmd = item.cmd.toLowerCase().includes(query);
+          return inTitle || inKeywords || inBullets || inDeep || inCmd;
         });
       }
 
-      renderCards(filtered);
+      renderGrid(filtered);
 
-      // Instantly load the first matching answer into the teleprompter!
       if (filtered.length > 0) {
-        loadAnswerToHUD(filtered[0]);
+        loadPromptCard(filtered[0]);
       }
     }
 
     function filterCategory(cat, btn) {
-      activeCategory = cat;
-      document.querySelectorAll(".chip").forEach(c => c.classList.remove("active"));
+      selectedCategory = cat;
+      document.querySelectorAll(".chip-btn").forEach(b => b.classList.remove("active"));
       btn.classList.add("active");
-      handleSearch(document.getElementById("searchInput").value);
+      handleSearch(document.getElementById("promptSearch").value);
     }
 
-    function resetToIntroduction() {
-      document.getElementById("searchInput").value = "";
-      filterCategory("All", document.querySelector(".chip"));
-      loadAnswerToHUD(MASTER_SUPPORT_KB[0]);
+    function resetToHome() {
+      document.getElementById("promptSearch").value = "";
+      filterCategory("All", document.querySelector(".chip-btn"));
+      loadPromptCard(PARAKEET_KB[0]);
     }
 
     function toggleStealth() {
-      document.body.classList.toggle("stealth-view");
+      document.body.classList.toggle("stealth-mode");
     }
 
-    // LIVE SPEECH RECOGNITION (LISTENS TO HR INTERVIEWER)
-    function initSpeechEngine() {
+    // Speech Recognition Engine (Parakeet Live Listener)
+    function initSpeech() {
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
       if (!SpeechRecognition) {
-        alert("Speech Recognition requires Google Chrome or Microsoft Edge.");
+        alert("Microphone recognition requires Google Chrome or Microsoft Edge.");
         return null;
       }
+
       const rec = new SpeechRecognition();
       rec.continuous = true;
       rec.interimResults = true;
@@ -954,14 +999,15 @@
         for (let i = evt.resultIndex; i < evt.results.length; i++) {
           transcript += evt.results[i][0].transcript;
         }
-        const text = transcript.toLowerCase().trim();
-        document.getElementById("liveTranscript").innerText = text;
 
-        // Fast keyword matching
-        for (const item of MASTER_SUPPORT_KB) {
+        const clean = transcript.toLowerCase().trim();
+        document.getElementById("transcriptFeedText").innerText = clean;
+
+        // Instant Semantic Keyword Match
+        for (const item of PARAKEET_KB) {
           for (const kw of item.keywords) {
-            if (text.includes(kw.toLowerCase())) {
-              loadAnswerToHUD(item);
+            if (clean.includes(kw.toLowerCase())) {
+              loadPromptCard(item);
               return;
             }
           }
@@ -977,46 +1023,76 @@
       return rec;
     }
 
+    // Audio Visualizer Meter
+    async function startAudioMeter() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const source = audioContext.createMediaStreamSource(stream);
+        analyser = audioContext.createAnalyser();
+        analyser.fftSize = 64;
+        source.connect(analyser);
+        audioDataArray = new Uint8Array(analyser.frequencyBinCount);
+        updateVisualizer();
+      } catch (err) {
+        console.warn("Audio meter not active:", err);
+      }
+    }
+
+    function updateVisualizer() {
+      if (!isListening) {
+        document.getElementById("audioMeterBar").style.width = "0%";
+        return;
+      }
+      if (analyser && audioDataArray) {
+        analyser.getByteFrequencyData(audioDataArray);
+        let sum = 0;
+        for (let i = 0; i < audioDataArray.length; i++) sum += audioDataArray[i];
+        let average = sum / audioDataArray.length;
+        let percentage = Math.min(100, Math.max(5, (average / 128) * 100));
+        document.getElementById("audioMeterBar").style.width = percentage + "%";
+      }
+      requestAnimationFrame(updateVisualizer);
+    }
+
     function toggleMic() {
       const btn = document.getElementById("micBtn");
-      const pulse = document.getElementById("statusPulse");
 
-      if (!recognition) recognition = initSpeechEngine();
+      if (!recognition) recognition = initSpeech();
       if (!recognition) return;
 
       if (!isListening) {
         try {
           recognition.start();
           isListening = true;
-          btn.classList.add("listening");
+          btn.classList.add("active");
           btn.innerText = "🛑 Stop";
-          pulse.classList.add("active");
+          startAudioMeter();
         } catch(e) {}
       } else {
         isListening = false;
         recognition.stop();
-        btn.classList.remove("listening");
-        btn.innerText = "🎙️ Listen HR";
-        pulse.classList.remove("active");
+        btn.classList.remove("active");
+        btn.innerText = "🎙️ Listen";
       }
     }
 
-    // KEYBOARD SHORTCUTS
+    // Parakeet Hotkeys
     window.addEventListener("keydown", (e) => {
       if (e.code === "Escape") toggleStealth();
-      if (e.code === "Space" && document.activeElement !== document.getElementById("searchInput")) {
+      if (e.code === "Space" && document.activeElement !== document.getElementById("promptSearch")) {
         e.preventDefault();
         toggleMic();
       }
-      if (e.key === "/" && document.activeElement !== document.getElementById("searchInput")) {
+      if (e.key === "/" && document.activeElement !== document.getElementById("promptSearch")) {
         e.preventDefault();
-        document.getElementById("searchInput").focus();
+        document.getElementById("promptSearch").focus();
       }
     });
 
-    // Start with Introduction on page load
-    renderCards(MASTER_SUPPORT_KB);
-    loadAnswerToHUD(MASTER_SUPPORT_KB[0]);
+    // Start with Intro Answer loaded
+    renderGrid(PARAKEET_KB);
+    loadPromptCard(PARAKEET_KB[0]);
   </script>
 </body>
 </html>
