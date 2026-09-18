@@ -3,108 +3,79 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Parakeet AI | Real-Time Interview Copilot</title>
+  <title>Application Support AI Interview Chatbot</title>
   <style>
     :root {
       --bg: #07090e;
-      --surface: rgba(15, 23, 42, 0.85);
-      --surface-border: rgba(255, 255, 255, 0.08);
+      --panel: #0d1322;
+      --card-bg: rgba(18, 24, 38, 0.85);
+      --border: rgba(255, 255, 255, 0.08);
       --primary: #38bdf8;
       --accent: #10b981;
       --warning: #f59e0b;
       --danger: #ef4444;
       --purple: #818cf8;
       --text: #f8fafc;
-      --text-dim: #94a3b8;
+      --text-muted: #94a3b8;
     }
 
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      user-select: none;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
     }
 
     body {
       background: var(--bg);
       color: var(--text);
-      min-height: 100vh;
+      height: 100vh;
       display: flex;
       flex-direction: column;
-      padding-bottom: 40px;
-      transition: background 0.2s ease, opacity 0.2s ease;
+      overflow: hidden;
     }
 
-    /* Floating Parakeet App Bar */
+    /* Top App Navigation */
     header {
-      position: sticky;
-      top: 0;
-      z-index: 1000;
-      background: rgba(11, 17, 32, 0.95);
-      backdrop-filter: blur(20px);
-      border-bottom: 1px solid var(--surface-border);
+      background: rgba(13, 19, 34, 0.95);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
       padding: 10px 18px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    .window-nav {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      flex-wrap: wrap;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
       gap: 8px;
     }
 
-    .brand-wrap {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .app-icon {
-      width: 24px;
-      height: 24px;
+    .brand-badge {
+      width: 28px;
+      height: 28px;
       background: linear-gradient(135deg, var(--primary), var(--purple));
-      border-radius: 6px;
+      border-radius: 8px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 13px;
       font-weight: 900;
       color: #07090e;
+      font-size: 0.9rem;
     }
 
-    .app-title {
-      font-size: 0.9rem;
+    .brand-title {
+      font-size: 0.95rem;
       font-weight: 800;
-      letter-spacing: 0.05em;
+      letter-spacing: 0.04em;
       text-transform: uppercase;
       color: #fff;
     }
 
-    .status-pill {
-      font-size: 0.72rem;
-      padding: 2px 8px;
-      border-radius: 12px;
-      background: rgba(16, 185, 129, 0.15);
-      color: var(--accent);
-      font-weight: 700;
-      display: flex;
-      align-items: center;
-      gap: 5px;
-    }
-
-    .status-dot {
-      width: 7px;
-      height: 7px;
-      border-radius: 50%;
-      background: var(--accent);
-    }
-
-    .actions-bar {
+    .header-actions {
       display: flex;
       align-items: center;
       gap: 8px;
@@ -113,16 +84,16 @@
     .btn {
       padding: 6px 12px;
       border-radius: 6px;
-      font-size: 0.78rem;
+      font-size: 0.8rem;
       font-weight: 700;
-      border: 1px solid var(--surface-border);
+      border: 1px solid var(--border);
       cursor: pointer;
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      transition: all 0.15s ease;
       background: rgba(255, 255, 255, 0.04);
-      color: var(--text-dim);
+      color: var(--text-muted);
+      transition: all 0.15s ease;
     }
 
     .btn:hover {
@@ -138,879 +109,547 @@
 
     .btn-mic.active {
       background: #0284c7;
-      box-shadow: 0 0 14px rgba(2, 132, 199, 0.4);
+      box-shadow: 0 0 12px rgba(2, 132, 199, 0.5);
     }
 
-    /* Live Waveform Audio Meter */
-    .audio-meter {
-      height: 3px;
-      width: 100%;
-      background: rgba(255, 255, 255, 0.05);
-      border-radius: 2px;
-      overflow: hidden;
-    }
-
-    .audio-progress {
-      height: 100%;
-      width: 0%;
-      background: linear-gradient(90deg, var(--primary), var(--purple));
-      transition: width 0.08s ease;
-    }
-
-    /* Input & Search Strip */
-    .search-strip {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-
-    .input-box {
-      width: 100%;
-      background: rgba(18, 24, 38, 0.9);
-      border: 1.5px solid var(--surface-border);
-      color: #fff;
-      padding: 9px 14px;
-      border-radius: 8px;
-      font-size: 0.94rem;
-      outline: none;
-    }
-
-    .input-box:focus {
-      border-color: var(--primary);
-      box-shadow: 0 0 10px rgba(56, 189, 248, 0.2);
-    }
-
-    .chips-row {
+    /* Quick Starter Suggestion Chips */
+    .starter-strip {
+      background: rgba(15, 23, 42, 0.6);
+      border-bottom: 1px solid var(--border);
+      padding: 6px 16px;
       display: flex;
       gap: 6px;
       overflow-x: auto;
-      padding-bottom: 2px;
+      white-space: nowrap;
+      flex-shrink: 0;
     }
 
-    .chip-btn {
-      background: rgba(255, 255, 255, 0.04);
-      border: 1px solid var(--surface-border);
-      color: var(--text-dim);
+    .starter-chip {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
       font-size: 0.72rem;
-      font-weight: 700;
-      padding: 4px 10px;
-      border-radius: 5px;
-      white-space: nowrap;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 4px;
       cursor: pointer;
     }
 
-    .chip-btn.active, .chip-btn:hover {
+    .starter-chip:hover {
       background: var(--primary);
       color: #07090e;
       border-color: var(--primary);
     }
 
-    .live-transcript-feed {
-      font-size: 0.76rem;
-      color: var(--purple);
-      background: rgba(0, 0, 0, 0.4);
-      padding: 5px 10px;
-      border-radius: 4px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+    /* Chat Area */
+    .chat-container {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
       display: flex;
-      align-items: center;
-      gap: 6px;
+      flex-direction: column;
+      gap: 16px;
     }
 
-    /* PARAKEET FLOATING TELEPROMPTER HUD */
-    .parakeet-teleprompter {
-      margin: 12px 18px;
-      background: var(--surface);
+    .chat-container::-webkit-scrollbar {
+      width: 6px;
+    }
+    .chat-container::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 4px;
+    }
+
+    /* User Message Bubble */
+    .msg-user {
+      align-self: flex-end;
+      max-width: 80%;
+      background: #1e3a8a;
+      border: 1px solid #3b82f6;
+      border-radius: 12px 12px 2px 12px;
+      padding: 10px 14px;
+      font-size: 0.92rem;
+      color: #fff;
+      font-weight: 600;
+    }
+
+    /* Bot Structured 4-Part Response Card */
+    .msg-bot {
+      align-self: flex-start;
+      width: 100%;
+      max-width: 900px;
+      background: var(--card-bg);
       border: 1.5px solid rgba(99, 102, 241, 0.35);
       border-radius: 12px;
-      padding: 16px 20px;
-      box-shadow: 0 12px 35px rgba(0, 0, 0, 0.6);
-      backdrop-filter: blur(14px);
+      padding: 18px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+      animation: fadeIn 0.2s ease-out;
     }
 
-    .teleprompter-header {
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .card-meta {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 6px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 8px;
     }
 
-    .category-tag {
-      font-size: 0.7rem;
+    .meta-tag {
+      font-size: 0.72rem;
       font-weight: 800;
       color: var(--primary);
       text-transform: uppercase;
-      letter-spacing: 0.08em;
+      letter-spacing: 0.06em;
     }
 
-    .confidence-badge {
-      font-size: 0.7rem;
-      padding: 2px 7px;
-      border-radius: 4px;
-      background: rgba(16, 185, 129, 0.15);
-      color: var(--accent);
-      font-weight: 800;
+    .btn-copy {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 0.78rem;
     }
+    .btn-copy:hover { color: var(--primary); }
 
-    .question-title {
-      font-size: 1.25rem;
-      font-weight: 800;
-      color: #fff;
-      margin-bottom: 10px;
-      line-height: 1.35;
-    }
-
-    .hook-card {
-      background: rgba(245, 158, 11, 0.1);
+    /* Part 1: Opener */
+    .sec-opener {
+      background: rgba(245, 158, 11, 0.12);
       border-left: 3px solid var(--warning);
-      padding: 7px 12px;
+      padding: 8px 12px;
       border-radius: 4px;
-      font-size: 0.86rem;
+      font-size: 0.88rem;
       color: #fde68a;
-      margin-bottom: 12px;
-      line-height: 1.4;
+      line-height: 1.45;
     }
 
-    .bullets-container {
+    /* Part 2: Bullets */
+    .sec-bullets-title {
+      font-size: 0.76rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--primary);
+      font-weight: 800;
+      margin-bottom: 4px;
+    }
+
+    .sec-bullets {
       list-style-type: none;
       display: flex;
       flex-direction: column;
-      gap: 7px;
-      margin-bottom: 14px;
+      gap: 6px;
     }
 
-    .bullets-container li {
-      font-size: 1.02rem;
-      line-height: 1.45;
+    .sec-bullets li {
+      font-size: 0.95rem;
       color: #f1f5f9;
+      line-height: 1.4;
       display: flex;
       align-items: flex-start;
       gap: 8px;
     }
 
-    .bullets-container li::before {
+    .sec-bullets li::before {
       content: "▶";
       color: var(--accent);
-      font-size: 0.8rem;
+      font-size: 0.75rem;
       margin-top: 3px;
     }
 
-    /* Command & Technical Code Box */
-    .command-box {
-      background: #05070c;
-      border: 1px solid var(--surface-border);
-      border-radius: 6px;
-      padding: 8px 12px;
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-      font-size: 0.82rem;
-      color: #67e8f9;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 12px;
-    }
-
-    /* Detailed Deep Breakdown */
-    .deep-card {
-      background: #090d16;
-      border: 1px solid var(--surface-border);
+    /* Part 3: Spoken Script */
+    .sec-script-box {
+      background: #090e18;
+      border: 1px solid var(--border);
       border-radius: 8px;
       padding: 12px 14px;
     }
 
-    .deep-card-title {
+    .sec-script-title {
       font-size: 0.74rem;
       text-transform: uppercase;
       letter-spacing: 0.06em;
       font-weight: 800;
-      color: var(--primary);
+      color: #a5b4fc;
       margin-bottom: 6px;
     }
 
-    .deep-card-text {
-      font-size: 0.88rem;
+    .sec-script-text {
+      font-size: 0.92rem;
       color: #cbd5e1;
-      line-height: 1.55;
-      white-space: pre-line;
+      line-height: 1.6;
+      font-style: italic;
     }
 
-    /* Question Grid */
-    main {
-      padding: 0 18px;
+    /* Part 4: Commands */
+    .sec-commands {
+      background: #04060a;
+      border: 1px solid #1e293b;
+      border-radius: 6px;
+      padding: 8px 12px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 0.84rem;
+      color: #67e8f9;
       display: flex;
-      flex-direction: column;
-      gap: 8px;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 6px;
     }
 
-    .grid-title {
-      font-size: 0.72rem;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      color: var(--text-dim);
-      margin-top: 4px;
-    }
-
-    .cards-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+    /* Bottom Input Area */
+    .input-bar {
+      background: rgba(13, 19, 34, 0.98);
+      border-top: 1px solid var(--border);
+      padding: 12px 16px;
+      display: flex;
       gap: 10px;
+      align-items: center;
+      flex-shrink: 0;
     }
 
-    .card {
-      background: rgba(18, 24, 38, 0.5);
-      border: 1px solid var(--surface-border);
-      border-radius: 8px;
-      padding: 10px 12px;
-      cursor: pointer;
-      transition: all 0.15s ease;
-    }
-
-    .card:hover {
-      border-color: var(--primary);
-      background: rgba(30, 41, 59, 0.7);
-    }
-
-    .card.active {
-      border-color: var(--accent);
-      background: rgba(16, 185, 129, 0.1);
-    }
-
-    .card-title {
-      font-size: 0.88rem;
-      font-weight: 700;
+    #chatInput {
+      flex: 1;
+      background: #090d16;
+      border: 1.5px solid #334155;
       color: #fff;
-      margin-bottom: 4px;
+      padding: 11px 16px;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color 0.2s;
     }
 
-    .card-snippet {
-      font-size: 0.78rem;
-      color: var(--text-dim);
-      line-height: 1.35;
+    #chatInput:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.25);
     }
 
-    /* Parakeet Stealth / Ghost Mode */
-    body.stealth-mode main,
-    body.stealth-mode .chips-row,
-    body.stealth-mode .search-strip {
-      display: none !important;
+    .btn-send {
+      background: var(--primary);
+      color: #07090e;
+      border: none;
+      font-weight: 800;
+      padding: 11px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.9rem;
     }
-
-    body.stealth-mode .parakeet-teleprompter {
-      margin: 8px;
-      background: rgba(8, 12, 20, 0.95);
-      border-color: rgba(255, 255, 255, 0.15);
-    }
+    .btn-send:hover { background: #7dd3fc; }
   </style>
 </head>
 <body>
 
   <header>
-    <div class="window-nav">
-      <div class="brand-wrap">
-        <div class="app-icon">P</div>
-        <span class="app-title">Parakeet AI Copilot</span>
-        <div class="status-pill">
-          <div class="status-dot"></div>
-          <span>Active Prompter</span>
-        </div>
-      </div>
-
-      <div class="actions-bar">
-        <button class="btn btn-mic" id="micBtn" onclick="toggleMic()">🎙️ Listen</button>
-        <button class="btn" onclick="toggleStealth()">👁️ Stealth (Esc)</button>
-        <button class="btn" onclick="resetToHome()">↺ Intro</button>
-      </div>
+    <div class="brand">
+      <div class="brand-badge">⚡</div>
+      <span class="brand-title">Application Support Copilot</span>
     </div>
 
-    <!-- Live Audio Waveform -->
-    <div class="audio-meter">
-      <div class="audio-progress" id="audioMeterBar"></div>
-    </div>
-
-    <!-- Search / Instant Keyword Bar -->
-    <div class="search-strip">
-      <input 
-        type="text" 
-        id="promptSearch" 
-        class="input-box" 
-        placeholder="Type any keyword (e.g., cpu, 502, deadlocks, log, full, heap, p1, oom, curl)..."
-        autofocus
-        oninput="handleSearch(this.value)"
-      />
-
-      <div class="chips-row">
-        <button class="chip-btn active" onclick="filterCategory('All', this)">All Categories</button>
-        <button class="chip-btn" onclick="filterCategory('Linux & System', this)">Linux & System</button>
-        <button class="chip-btn" onclick="filterCategory('Databases', this)">SQL & Locks</button>
-        <button class="chip-btn" onclick="filterCategory('JVM & App Server', this)">JVM & Tomcat</button>
-        <button class="chip-btn" onclick="filterCategory('Web & APIs', this)">HTTP 5xx & APIs</button>
-        <button class="chip-btn" onclick="filterCategory('ITIL Operations', this)">ITIL & Production</button>
-      </div>
-
-      <div class="live-transcript-feed">
-        <span>👂 Live Heard:</span>
-        <span id="transcriptFeedText">Listening to interviewer audio or ready for keyword input...</span>
-      </div>
+    <div class="header-actions">
+      <button class="btn btn-mic" id="micBtn" onclick="toggleMic()">🎙️ Listen HR</button>
+      <button class="btn" onclick="clearChat()">🗑️ Clear</button>
     </div>
   </header>
 
-  <!-- TELEPROMPTER HUD: Zero-Delay Instant Display -->
-  <div class="parakeet-teleprompter" id="prompterCard">
-    <div class="teleprompter-header">
-      <span class="category-tag" id="hudCategory">INTRODUCTION</span>
-      <span class="confidence-badge" id="hudConfidence">⚡ 100% Match</span>
-    </div>
-
-    <div class="question-title" id="hudQuestion">Tell me about yourself as an Application Support Engineer (L1/L2)?</div>
-
-    <div class="hook-card" id="hudHook">
-      💬 <strong>2s Hook:</strong> "Thank you for asking. I specialize in L1 and L2 Application Production Support, maintaining 24/7 high availability across distributed production environments..."
-    </div>
-
-    <ul class="bullets-container" id="hudBullets">
-      <li><strong>Core Scope:</strong> Monitoring real-time system health, triaging incident tickets (P1-P4), managing bridge calls, and preventing SLA breaches.</li>
-      <li><strong>Technical Stack:</strong> Linux/Unix systems, Oracle & PostgreSQL SQL, Apache Tomcat/Nginx, shell scripting, and batch job scheduling.</li>
-      <li><strong>Troubleshooting Methodology:</strong> Resolving application slowness, debugging production logs, clearing database session locks, and root-cause collaboration with L3.</li>
-    </ul>
-
-    <div class="command-box" id="hudCommandBox">
-      <span>Master Command:</span>
-      <strong id="hudCommand">top | ps aux --sort=-%cpu | tail -f catalina.out | df -h</strong>
-    </div>
-
-    <div class="deep-card">
-      <div class="deep-card-title">📋 Production Architecture & Daily Operations</div>
-      <div class="deep-card-text" id="hudDeepText">
-• Operational Architecture:
-  1. Incident & Ticket Management: Monitoring queues (ServiceNow/Jira), triaging tickets based on Impact & Urgency, managing major incident bridges, and sending user notifications.
-  2. Telemetry & Monitoring: Reviewing real-time dashboards (Dynatrace, Geneos, Splunk, Grafana), responding to server resource thresholds (disk, CPU, memory), and monitoring scheduled batch jobs.
-  3. Diagnostic Investigation: Connecting via SSH to Linux servers, isolating HTTP status codes in access logs, checking connection pool health, and killing runaway processes.
-  4. Release & Maintenance: Supporting Change Advisory Board (CAB) deployments, managing maintenance windows, running pre/post-deployment health checks, and supporting Disaster Recovery (DR) drills.
-      </div>
-    </div>
+  <!-- Quick Starter Topic Chips -->
+  <div class="starter-strip">
+    <span style="font-size: 0.72rem; color: #64748b; line-height: 22px;">Try:</span>
+    <div class="starter-chip" onclick="submitQuickQuestion('Tell me about yourself')">Tell me about yourself</div>
+    <div class="starter-chip" onclick="submitQuickQuestion('How do you troubleshoot application slowness?')">App Slowness</div>
+    <div class="starter-chip" onclick="submitQuickQuestion('How do you troubleshoot high CPU on Linux?')">High CPU</div>
+    <div class="starter-chip" onclick="submitQuickQuestion('How do you investigate production application logs?')">Logs & Grep</div>
+    <div class="starter-chip" onclick="submitQuickQuestion('How do you resolve database deadlocks and session blockages?')">DB Locks</div>
+    <div class="starter-chip" onclick="submitQuickQuestion('How do you handle a P1 major incident?')">P1 Major Incident</div>
+    <div class="starter-chip" onclick="submitQuickQuestion('How do you fix HTTP 502 and 504 status codes?')">HTTP 502/504</div>
+    <div class="starter-chip" onclick="submitQuickQuestion('How do you troubleshoot a 100% full filesystem?')">Disk 100% Full</div>
+    <div class="starter-chip" onclick="submitQuickQuestion('What is your biggest weakness?')">Weakness</div>
   </div>
 
-  <main>
-    <div class="grid-title">All Pre-Loaded Knowledge (Instant Search)</div>
-    <div class="cards-grid" id="cardsGrid"></div>
-  </main>
+  <!-- Chat History Container -->
+  <div class="chat-container" id="chatBox"></div>
+
+  <!-- Bottom Message Input Form -->
+  <form class="input-bar" onsubmit="handleChatSubmit(event)">
+    <input 
+      type="text" 
+      id="chatInput" 
+      placeholder="Type HR question or turn on mic (e.g. 'What is SLA vs OLA?', 'How to debug OOM?')..." 
+      autocomplete="off"
+    />
+    <button type="submit" class="btn-send">Generate Answer</button>
+  </form>
 
   <script>
-    // COMPLETE PRE-LOADED APPLICATION SUPPORT L1/L2 REPOSITORY
-    const PARAKEET_KB = [
+    // COMPLETE KNOWLEDGE BASE FOR APPLICATION SUPPORT (L1/L2)
+    const KNOWLEDGE_BASE = [
       {
-        id: 1,
-        cat: "ITIL Operations",
-        q: "Tell me about yourself as an Application Support Engineer (L1/L2)?",
-        keywords: ["tell me about yourself", "introduce yourself", "walk me through", "background", "experience", "profile"],
-        hook: "Thank you for asking. I specialize in L1 and L2 Application Production Support, maintaining 24/7 uptime across business-critical architectures...",
+        triggers: ["tell me about yourself", "introduce yourself", "walk me through", "background", "experience", "profile"],
+        category: "Introduction & Profile",
+        opener: "Thank you for the opportunity. I specialize in L1 and L2 Application Production Support, focusing on system uptime, rapid incident resolution, and high availability across distributed environments.",
         bullets: [
-          "Operational Scope: Triage incident tickets, monitor system telemetry, manage major incident bridges, and uphold strict SLAs.",
-          "Technical Foundation: Strong Unix/Linux command-line diagnostics, Oracle/PostgreSQL SQL queries, web servers (Tomcat/Nginx), and bash automation.",
-          "Engineering Mindset: Focus on rapid temporary workarounds to stop business downtime, followed by thorough root-cause analysis (RCA) with dev teams."
+          "Operational Scope: Triage tickets in ServiceNow/Jira, monitor production telemetry, execute health checks, and uphold strict SLAs.",
+          "Technical Foundation: Linux command line, Oracle/PostgreSQL SQL queries, Java/Tomcat web servers, and bash automation.",
+          "Engineering Focus: Deliver rapid temporary workarounds to stop business downtime, followed by root-cause analysis (RCA) with dev teams."
         ],
-        cmd: "top | ps -ef | tail -100f app.log | df -h | netstat -tulnp",
-        deep: `• Production Support Workflow:
-  1. Triage & Shift Handovers: Reviewing active handovers, checking ongoing tickets in ServiceNow, and conducting routine shift startup health checks.
-  2. Monitoring & Alert Handling: Responding to automated alerts (Geneos/Dynatrace/Splunk) before business users experience service degradation.
-  3. Escalation & Collaboration: Resolving L1/L2 scope issues via documented standard operating procedures (SOPs), and coordinating with L3/Development for code bugs.
-  4. Automation: Creating reusable shell scripts and cron jobs to automate manual reconciliations, log cleanups, and batch monitoring.`
+        script: "My experience centers on L1 and L2 Application Production Support. On a daily basis, I monitor application health, handle inbound incidents through our ticketing system, and perform environment sanity checks during shift handovers. Technically, I work extensively on Linux servers analyzing logs, verifying process states, and troubleshooting system bottlenecks. I write SQL queries to validate data integrity, troubleshoot connection pools, and assist with application deployments during maintenance windows. When critical issues occur, I coordinate with development and infrastructure teams to restore service quickly and document the post-incident root cause.",
+        commands: "top | ps -ef | tail -100f app.log | df -h | netstat -tulnp"
       },
       {
-        id: 2,
-        cat: "Linux & System",
-        q: "How do you troubleshoot High CPU or Memory utilization on a Linux server?",
-        keywords: ["high cpu", "cpu utilization", "memory utilization", "server slow", "load average", "top", "swap"],
-        hook: "When server resources spike, I immediately isolate whether the bottleneck is process-bound, I/O wait, or memory thrashing...",
+        triggers: ["slow", "slowness", "application slow", "performance issue", "latency"],
+        category: "Performance Troubleshooting",
+        opener: "Whenever application slowness is reported, my approach is to systematically isolate whether the bottleneck is at the client network, server OS, JVM thread pool, or database layer.",
         bullets: [
-          "CPU Triage: Run 'top' or 'htop' to check Load Average. Press 'P' to sort by CPU; run 'ps aux --sort=-%cpu | head -10' to isolate the rogue PID.",
-          "Memory & Swap: Run 'free -m' and 'vmstat 1 5' to check 'si' (swap in) and 'so' (swap out). High swap I/O indicates RAM exhaustion.",
-          "Action: If a rogue or zombie process is consuming 90%+ CPU, capture thread stack traces if Java, or terminate with 'kill -15' (graceful) or 'kill -9'."
+          "Blast Radius: Confirm whether slowness impacts a single user (browser cache/VPN) or all users globally.",
+          "Host Resource Check: Run 'top', 'uptime', and 'vmstat' to check Load Average, CPU saturation, and memory swapping.",
+          "App Server / Threading: Inspect Tomcat catalina logs, thread pool saturation (maxThreads reached), and GC pauses.",
+          "Database Contention: Check active database sessions for uncommitted transactions holding row-level locks."
         ],
-        cmd: "top -b -n 1 | ps aux --sort=-%cpu | head -10 | free -m | vmstat 1 5",
-        deep: `• Step-by-Step Diagnostic SOP:
-  1. Check System Load Average:
-     - Run: uptime or top
-     - If load average significantly exceeds total CPU cores, the server is backlogged.
-  2. Identify Rogue Processes:
-     - Sort by CPU: ps aux --sort=-%cpu | head -10
-     - Sort by Memory: ps aux --sort=-%mem | head -10
-  3. Inspect I/O Wait (Disk Bottleneck):
-     - In 'top', check '%wa' (wait on I/O). If wa > 15-20%, CPU is idling waiting for slow disk or network storage.
-     - Run: iostat -xz 1 5 to pinpoint the saturated disk partition.
-  4. Memory Analysis:
-     - Check RAM: free -h (Check 'available' memory, not just 'free' which excludes disk buffer/cache).
-     - Run: vmstat 1 5. If 'si' and 'so' are continuously non-zero, active swapping is degrading application latency.
-  5. Remediation:
-     - If Java: Capture thread dump (jstack <pid> > threads.tdump) before terminating.
-     - Terminate cleanly: kill -15 <pid>. If unresponsive: kill -9 <pid>.`
+        script: "First, I check the scope: if only one user is affected, I verify their network connectivity, VPN, and browser cache. If it affects everyone, I log into the Linux host and run top and vmstat to verify CPU load, memory utilization, and swap activity. Next, I inspect the application layer to verify whether active threads have hit the ceiling or if Garbage Collection is stalling the application. At the database layer, I check for blocking sessions or uncommitted transactions holding row locks. Once the bottleneck is isolated, I terminate runaway locks or restart the degraded instance, and then hand over logs to development for root cause analysis.",
+        commands: "top -b -n 1 | vmstat 1 5 | iostat -xz 1 5 | v$session"
       },
       {
-        id: 3,
-        cat: "Linux & System",
-        q: "How do you investigate production application logs like an expert?",
-        keywords: ["log", "logs", "investigate logs", "log analysis", "grep", "tail", "exception", "trace", "catalina"],
-        hook: "Log analysis is my primary diagnostic tool. I use live monitoring, contextual search, and archive tools to trace root causes...",
+        triggers: ["cpu", "memory", "load average", "high cpu", "swap", "ram"],
+        category: "Linux Server Diagnostics",
+        opener: "When server resources spike, I immediately isolate whether the bottleneck is process-bound, stuck on disk I/O wait, or caused by memory swapping.",
+        bullets: [
+          "CPU Triage: Run 'top' or 'uptime' to check Load Average. Press 'P' to sort by CPU; run 'ps aux --sort=-%cpu | head -10' to isolate the rogue PID.",
+          "Memory & Swap: Run 'free -m' and 'vmstat 1 5' to check 'si' (swap in) and 'so' (swap out). Active swap I/O indicates physical RAM exhaustion.",
+          "Remediation: If Java, capture thread dumps (jstack) before terminating; terminate cleanly with 'kill -15', or 'kill -9' if completely hung."
+        ],
+        script: "I start by running top to check the system load average. If load average is significantly higher than the number of CPU cores, the system is bottlenecked. I look at the %wa metric: if I/O wait is high, the CPU is waiting on slow disk or network calls. If user CPU is high, I press Shift+P in top or run ps aux --sort=-%cpu | head -10 to find the exact Process ID consuming the cycles. For memory issues, I run free -h and vmstat 1 5 to verify swapping. If the process is Java, I take a quick thread dump using jstack before recycling the service so engineering can identify the runaway thread.",
+        commands: "top | ps aux --sort=-%cpu | head -10 | free -m | vmstat 1 5 | jstack <pid>"
+      },
+      {
+        triggers: ["log", "logs", "grep", "tail", "exception", "catalina", "trace", "investigate log"],
+        category: "Log Analysis Masterclass",
+        opener: "Log analysis is my primary diagnostic tool. I use real-time tailing, contextual grep searching, and compressed log utilities to trace root causes.",
         bullets: [
           "Live Monitoring: Run 'tail -100f app.log | grep -iE \"ERROR|FATAL|Exception\"' to monitor incoming production failures.",
           "Context Search: Use 'grep -i -C 5 \"NullPointer\" app.log' to extract 5 lines before and after the crash to inspect stack traces.",
-          "Compressed Logs: Use 'zgrep', 'zcat', or 'zless' to search archived .gz logs without decompressing them to disk."
+          "Compressed Archives: Use 'zgrep', 'zcat', or 'zless' to search archived .gz logs without decompressing them to disk."
         ],
-        cmd: "tail -100f app.log | grep -i -C 5 'Exception' | zgrep -i 'timeout' *.gz",
-        deep: `• Real-Time Log Diagnostic Framework:
-  1. Live Tail Filtering:
-     - tail -f /var/log/tomcat/catalina.out | grep --line-buffered -E "Exception|OutOfMemory"
-  2. Context Extraction (Stack Trace Isolation):
-     - grep -n -C 5 "SQLException" /var/log/application.log
-     - -n prints line numbers; -C 5 gives 5 lines of preceding and succeeding context.
-  3. Search Multiple Rotated Logs:
-     - zgrep -i "Connection timed out" /var/log/app_2026_*.log.gz
-  4. Count Error Frequency:
-     - grep "HTTP 500" access.log | awk '{print $1, $7}' | sort | uniq -c | sort -nr
-  5. Large File Navigation:
-     - Use 'less +F filename' to inspect large multi-gigabyte logs without memory overhead; use Shift+F to toggle tail mode.`
+        script: "In production support, I treat logs as the single source of truth. I start by running tail -f on the catalina or application error log piped through a grep filter for errors and exceptions. When an error is spotted, I run grep with -C 5 to capture context lines above and below the error, revealing the originating class and line number. For historical investigations across rotated logs, I use zgrep directly on the compressed .gz archives so I don't waste disk space by extracting them.",
+        commands: "tail -100f app.log | grep -i -C 5 'Exception' | zgrep -i 'timeout' *.gz"
       },
       {
-        id: 4,
-        cat: "Linux & System",
-        q: "How do you troubleshoot a 100% full Filesystem (Disk Space Exhaustion)?",
-        keywords: ["filesystem", "space", "disk full", "100%", "75%", "df", "du", "truncate", "lsof"],
-        hook: "When a filesystem saturates, I identify heavy files, handle open file descriptors safely, and truncate without killing processes...",
+        triggers: ["disk", "space", "filesystem", "100%", "75%", "df", "du", "truncate", "lsof"],
+        category: "Filesystem & Disk Management",
+        opener: "When a filesystem saturates, I identify heavy files, handle open file descriptors safely, and truncate without killing active processes.",
         bullets: [
           "Locate Mount: Run 'df -h' to identify the saturated volume. Enter directory and run 'du -sk * | sort -k 1nr | head -10'.",
-          "Identify Heaviest Files: Run 'ls -lS' to find large target logs or core dumps. Gzip inactive logs.",
-          "Open File Descriptors: If a deleted file still consumes space, check 'lsof | grep deleted'. Truncate active logs with 'cat /dev/null > file.log'."
+          "Identify Heaviest Files: Run 'ls -lS' to find large target logs. Gzip inactive archive files.",
+          "The lsof Trap: If a deleted file still consumes space, check 'lsof | grep deleted'. Truncate active logs with 'cat /dev/null > file.log'."
         ],
-        cmd: "df -h; du -sh * | sort -hr | head -10; lsof | grep deleted; > app.log",
-        deep: `• Filesystem Recovery Sequence:
-  1. Triage:
-     - Run: df -h (Identify saturated mount point, e.g., /var or /app).
-     - Run: du -sh * | sort -hr | head -10 (Find largest directory in that path).
-  2. The Open File Descriptor Trap (lsof):
-     - If someone deleted a log file with 'rm', but the running Java/Tomcat process holds the open file handle, the disk space is NOT freed!
-     - Run: lsof +L1 or lsof | grep -i deleted
-     - Locate the PID and restart the service, or safely truncate via proc: > /proc/<PID>/fd/<FD_NUM>
-  3. Safe Truncation of Live Logs:
-     - NEVER delete an actively written log file using 'rm'.
-     - Clear it instantly to 0 bytes: cat /dev/null > application.log (or: > application.log).
-  4. Permanent Fix:
-     - Implement logrotate with compression (gzip) and coordinate with Unix admin to extend Logical Volume Manager (LVM) partition.`
+        script: "I first run df -h to determine which mount point has saturated. Next, I navigate to that directory and run du -sh * | sort -hr | head -10 to pinpoint the largest subdirectory, followed by ls -lS to identify the biggest files. If a log is actively open by a running Tomcat or Java process, deleting it with 'rm' will not free disk space because the operating system holds the open file handle. Instead, I safely truncate it using 'cat /dev/null > logfile.log'. If space was deleted but not freed, I run 'lsof | grep deleted' to identify the process holding the inode and reload the process.",
+        commands: "df -h; du -sh * | sort -hr | head -10; lsof | grep deleted; > app.log"
       },
       {
-        id: 5,
-        cat: "Databases",
-        q: "How do you identify and resolve Database Deadlocks, Locks, and Session Blockages?",
-        keywords: ["deadlock", "db lock", "blockage", "blocking_session", "v$session", "kill session", "pg_stat_activity"],
-        hook: "Session blockages occur when an uncommitted transaction locks rows needed by concurrent threads, queuing downstream requests...",
+        triggers: ["lock", "locks", "deadlock", "deadlocks", "blockage", "blocking session", "v$session", "kill session"],
+        category: "Database Concurrency & Locks",
+        opener: "Database session blockages happen when an uncommitted transaction locks rows needed by concurrent requests, queuing downstream transactions.",
         bullets: [
-          "Detection: In Oracle, query 'v$session' where blocking_session is not null. In PostgreSQL, check 'pg_stat_activity' for wait_event_type = 'Lock'.",
-          "Triage: Identify the root blocking session SID, query details, username, and duration in seconds.",
-          "Resolution: Contact the holding user or coordinate with DBA to terminate the holding session immediately using ALTER SYSTEM KILL SESSION."
+          "Detection: In Oracle, query 'v$session' where blocking_session is not null. In PostgreSQL, query 'pg_stat_activity' for wait_event_type = 'Lock'.",
+          "Triage: Identify the root holding session SID, query details, username, and duration in seconds.",
+          "Resolution: Contact the holding user or coordinate with DBA to terminate the holding session using ALTER SYSTEM KILL SESSION."
         ],
-        cmd: "SELECT * FROM v$session WHERE blocking_session IS NOT NULL; ALTER SYSTEM KILL SESSION ('sid,serial#') IMMEDIATE;",
-        deep: `• Database Lock & Blockage Triage:
-  1. Root Cause:
-     - A user or batch transaction executes DML (UPDATE/DELETE) on a table but forgets to execute COMMIT or ROLLBACK, leaving an exclusive row-level lock.
-  2. Oracle Query to Find Blockages:
-     SELECT sid, serial#, username, status, blocking_session, seconds_in_wait, sql_id 
-     FROM v$session 
-     WHERE blocking_session IS NOT NULL 
-     ORDER BY seconds_in_wait DESC;
-  3. PostgreSQL Query:
-     SELECT blocked_locks.pid AS blocked_pid, blocking_locks.pid AS blocking_pid, blocking_activity.query AS blocking_statement
-     FROM pg_catalog.pg_locks blocked_locks
-     JOIN pg_catalog.pg_locks blocking_locks ON blocking_locks.locktype = blocked_locks.locktype;
-  4. Termination Command:
-     - Oracle: ALTER SYSTEM KILL SESSION ('<sid>,<serial#>') IMMEDIATE;
-     - PostgreSQL: SELECT pg_terminate_backend(<blocking_pid>);`
+        script: "Database blockages occur when a transaction executes an UPDATE or DELETE without issuing a COMMIT or ROLLBACK. This locks table rows and forces subsequent queries into a wait state. I detect this by querying v$session in Oracle for non-null blocking_session records, identifying the root parent SID. Once identified, I confirm whether the session is orphaned or frozen, coordinate with the DBA or user, and execute alter system kill session immediate to clear the backlog and resume transaction processing.",
+        commands: "SELECT * FROM v$session WHERE blocking_session IS NOT NULL; ALTER SYSTEM KILL SESSION ('sid,serial#') IMMEDIATE;"
       },
       {
-        id: 6,
-        cat: "Databases",
-        q: "How do you troubleshoot Slow Running Queries and Performance Bottlenecks?",
-        keywords: ["slow query", "performance", "explain plan", "indexes", "full table scan", "sql tuning"],
-        hook: "When a query runs slow, I examine its Execution Plan to identify missing indexes, full table scans, or high cardinality operations...",
+        triggers: ["p1", "p2", "major incident", "critical", "bridge call", "war room", "severity", "priority"],
+        category: "Major Incident Management",
+        opener: "During a P1 major incident, my priority is rapid triage, clear stakeholder communication, and establishing an immediate workaround before root-cause analysis.",
         bullets: [
-          "Execution Plan: Run 'EXPLAIN PLAN FOR <query>' and review operations. Look out for Cost spikes and TABLE ACCESS FULL.",
-          "Indexing: Verify if WHERE clause and JOIN columns have appropriate B-Tree indexes. Avoid functions on indexed columns (e.g. UPPER(name)).",
-          "Table Statistics: Check if table optimizer statistics are stale using 'DBA_TABLES.LAST_ANALYZED'. Stale stats cause bad optimizer choices."
+          "Phase 1 (Triage & Alert): Verify business impact, raise P1 in ServiceNow, and dispatch Incident Notification email within 15 minutes.",
+          "Phase 2 (War Room Bridge): Host bridge call with Incident Manager, DBAs, Network, and Dev leads.",
+          "Phase 3 (Restore First): Implement temporary workaround (service restart, DR failover, rollback release) to recover service.",
+          "Phase 4 (Problem Handover): Facilitate Post-Incident Review (PIR) and Root Cause Analysis (RCA) with engineering."
         ],
-        cmd: "EXPLAIN PLAN FOR <query>; SELECT * FROM TABLE(DBMS_XPLAN.DISPLAY);",
-        deep: `• SQL Performance Optimization Steps:
-  1. Check Execution Plan:
-     - Oracle: EXPLAIN PLAN FOR SELECT * FROM orders WHERE customer_id = 502;
-     - Display: SELECT * FROM TABLE(DBMS_XPLAN.DISPLAY);
-     - PostgreSQL: EXPLAIN ANALYZE SELECT * FROM orders WHERE customer_id = 502;
-  2. Key Bottleneck Indicators:
-     - Table Access Full on large tables (millions of rows).
-     - Nested Loops on massive datasets instead of Hash Joins.
-     - Temporary tablespace spill (Sort / Hash Spill to disk).
-  3. Remediation Actions:
-     - Add composite index on frequently combined query filters.
-     - Rewrite non-sargable queries (e.g., replace 'WHERE date >= sysdate - 1' instead of 'WHERE to_char(date) = ...').
-     - Gather fresh statistics: EXEC DBMS_STATS.GATHER_TABLE_STATS('SCHEMA_NAME', 'TABLE_NAME');`
+        script: "The moment a P1 is confirmed, I notify leadership and dispatch an initial Incident Notification email containing the issue description, impacted systems, priority, and the next update time. On the technical bridge call, I align teams including DBAs, network engineers, and developers. I keep the focus strictly on service restoration rather than prolonged root cause debate. If rolling back a recent deployment or restarting degraded nodes restores business, we take that action first. I send updates every 30 minutes until resolution, confirm stability with users, and trigger the Problem ticket for the post-mortem.",
+        commands: "P1 SLA = 5h | Update Every 30m | Priority = Impact + Urgency"
       },
       {
-        id: 7,
-        cat: "JVM & App Server",
-        q: "How do you troubleshoot Java OutOfMemoryError (OOM) and JVM Heap Exhaustion?",
-        keywords: ["oom", "outofmemory", "heap", "heap dump", "garbage collection", "jvm", "jstack", "jmap", "gc"],
-        hook: "When a JVM hits OutOfMemoryError, I identify whether it is Heap Space, Metaspace, or GC Overhead Limit Exceeded...",
+        triggers: ["500", "502", "503", "504", "bad gateway", "gateway timeout", "http errors", "status code"],
+        category: "HTTP 5xx Server Errors",
+        opener: "HTTP 5xx status codes indicate server-side failures. I isolate between backend code crashes, reverse proxy breaks, and upstream connection timeouts.",
+        bullets: [
+          "500 Internal Error: Unhandled backend code exception or database connectivity drop. Check application/catalina logs.",
+          "502 Bad Gateway: Upstream backend service is down, crashed, or not listening on its port (Nginx cannot reach Tomcat).",
+          "503 Service Unavailable: Server overloaded, thread pool exhausted, or app is under maintenance.",
+          "504 Gateway Timeout: Upstream application took longer to respond than the proxy threshold (e.g. slow database query)."
+        ],
+        script: "For a 500 error, I immediately inspect catalina.out to catch unhandled runtime exceptions or database pool connection drops. For a 502 Bad Gateway, the reverse proxy cannot connect to the backend daemon, so I verify that Tomcat is running using ps -ef and listening on its port with netstat. For a 504 Gateway Timeout, the proxy gave up waiting for the backend, which almost always points to an expensive database query or an unresponsive third-party API. I trace the request ID across the access and application logs to pinpoint the delay.",
+        commands: "curl -Iv https://app.com | ps -ef | grep tomcat | netstat -tulnp"
+      },
+      {
+        triggers: ["oom", "outofmemory", "heap", "heap dump", "garbage collection", "jvm", "jstack", "jmap"],
+        category: "JVM & Memory Management",
+        opener: "When a JVM hits OutOfMemoryError, I identify whether it is Heap Space, Metaspace, or GC Overhead Limit Exceeded before extracting memory dumps.",
         bullets: [
           "Types of OOM: Java Heap Space (object memory leak), Metaspace (classloader leak), GC Overhead limit (98%+ time spent in GC).",
           "Dump Extraction: Configure '-XX:+HeapDumpOnOutOfMemoryError' or extract manually using 'jmap -dump:format=b,file=heap.hprof <pid>'.",
-          "Analysis: Analyze .hprof dump using Eclipse Memory Analyzer (MAT) to identify leak suspects and dominator trees."
+          "Analysis: Analyze the .hprof file using Eclipse Memory Analyzer (MAT) to identify memory leaks and dominator trees."
         ],
-        cmd: "jmap -dump:format=b,file=heap.hprof <PID> | jstack <PID> > threads.txt | -XX:+HeapDumpOnOutOfMemoryError",
-        deep: `• JVM Memory Diagnostics:
-  1. Diagnostic Dumps:
-     - Heap Dump: jmap -dump:format=b,file=/tmp/heapdump.hprof <PID>
-     - Thread Dump: jstack <PID> > /tmp/threaddump.txt
-     - Memory Statistics: jcmd <PID> GC.heap_info
-  2. Garbage Collection Log Inspection:
-     - Check GC pauses in gc.log: Look for frequent Full GC cycles failing to reclaim heap memory before crashing.
-  3. Immediate Workaround:
-     - Restart the affected application service/instance to restore traffic handling.
-     - If cluster-enabled, failover traffic to peer nodes.
-  4. Permanent Fix:
-     - Analyze Eclipse MAT Dominator Tree to locate uncollected caches, unclosed connections, or circular references.
-     - Tune JVM memory flags in startup scripts: -Xms4g -Xmx8g -XX:MetaspaceSize=512m.`
+        script: "When an application crashes with OutOfMemoryError, simply restarting it is only a temporary fix. I check the exact error message: if it says Java Heap Space, it means memory allocation exceeded the maximum heap (-Xmx) due to a memory leak. I verify whether automated heap dump generation is enabled with -XX:+HeapDumpOnOutOfMemoryError, or manually generate one using jmap. Then I restart the service to recover production, and feed the heap dump into Eclipse Memory Analyzer (MAT) to find the leaking objects for development to patch.",
+        commands: "jmap -dump:format=b,file=heap.hprof <PID> | jstack <PID> > threads.txt"
       },
       {
-        id: 8,
-        cat: "Web & APIs",
-        q: "How do you troubleshoot HTTP 500, 502, 503, and 504 status errors?",
-        keywords: ["500", "502", "503", "504", "bad gateway", "gateway timeout", "service unavailable", "http status"],
-        hook: "HTTP 5xx errors represent server-side failures. I isolate between code exceptions, reverse proxy misconfigurations, and upstream timeouts...",
+        triggers: ["sla", "ola", "service level agreement", "operational level agreement"],
+        category: "ITIL Service Agreements",
+        opener: "SLA governs our contractual commitment to business users, whereas OLA defines our internal operational agreements between technical teams.",
         bullets: [
-          "500 Internal Server Error: Unhandled backend exception or database connectivity drop. Check application/catalina logs.",
-          "502 Bad Gateway: Upstream backend service is down, crashed, or not listening on its assigned port (Nginx cannot reach Tomcat).",
-          "503 Service Unavailable: Server overloaded, thread pool exhausted, or app is under planned maintenance/warmup.",
-          "504 Gateway Timeout: Upstream application took longer to respond than reverse proxy timeout threshold (e.g., slow SQL query)."
+          "SLA (Service Level Agreement): Contract between the IT service provider and the customer defining response and resolution times.",
+          "OLA (Operational Level Agreement): Internal agreement between internal teams (Support, DBA, Network, Dev) to support the SLA.",
+          "Priority SLAs: Standard enterprise benchmarks are P1 (5 Hours), P2 (10 Hours), P3 (24 Hours), and P4 (48 Hours)."
         ],
-        cmd: "curl -Iv https://app.com | ps -ef | grep tomcat | netstat -tulnp",
-        deep: `• Systematic 5xx Triage Matrix:
-  1. HTTP 500 (Internal Server Error):
-     - Cause: Unhandled runtime NullPointerException, broken DB connection pool.
-     - Action: Check catalina.out or application error logs at the exact timestamp.
-  2. HTTP 502 (Bad Gateway):
-     - Cause: Nginx/Apache cannot connect to Tomcat backend (connection refused).
-     - Action: Run 'ps -ef | grep tomcat' and 'netstat -tulnp | grep 8080'. If dead, restart Tomcat.
-  3. HTTP 503 (Service Unavailable):
-     - Cause: Max active threads or connections reached in server.xml (e.g. maxThreads=200 saturated).
-     - Action: Check queue depths, thread dumps, and increase thread pool or scale out instances.
-  4. HTTP 504 (Gateway Timeout):
-     - Cause: Backend took >60s (default proxy_read_timeout) to process query.
-     - Action: Trace slow database execution or external third-party API dependencies.`
+        script: "A Service Level Agreement (SLA) is the formal contract between our support organization and the end business users, specifying measurable targets like uptime and resolution timelines—for instance, 5 hours for P1 and 24 hours for P3. An Operational Level Agreement (OLA) is an internal operational agreement between our internal teams—such as how quickly the DBA or Network team must respond when L2 support escalates an issue—ensuring we do not breach the customer-facing SLA.",
+        commands: "P1: 5h | P2: 10h | P3: 24h | P4: 48h | MTTR Metrics"
       },
       {
-        id: 9,
-        cat: "Web & APIs",
-        q: "How do you test and debug REST API integrations and Microservices?",
-        keywords: ["api", "rest api", "curl", "postman", "endpoint", "payload", "json", "header", "ssl handshake"],
-        hook: "I use command-line 'curl' to test endpoints directly from the application server, verifying headers, payload, latency, and SSL...",
+        triggers: ["weakness", "areas of improvement", "struggle with", "greatest weakness"],
+        category: "HR Behavioral",
+        opener: "I consider self-awareness the foundation of professional growth, and early on my main challenge was hesitating to ask for help when blocked.",
         bullets: [
-          "CLI Testing: Use 'curl -vk -X POST https://api.internal/v1/trade -H \"Content-Type: application/json\" -d '{\"id\":1}''.",
-          "SSL/TLS Debugging: Use '-v' to inspect TLS handshake, certificate validation, and cipher negotiation.",
-          "Network Isolation: Test if failure occurs at DNS, Network routing, Proxy, or Application layer."
+          "The Weakness: Tendency to spend too much time trying to solve difficult technical roadblocks alone.",
+          "The Fix: Implemented a strict '30-Minute Rule'—research independently first, then escalate with findings.",
+          "The Result: Faster issue resolution without risking SLA breaches or wasting team resources."
         ],
-        cmd: "curl -v -X POST https://api/path -H 'Content-Type: application/json' -d '{}' -w '%{time_total}s'",
-        deep: `• Real-World API Debugging SOP:
-  1. Detailed Curl Command:
-     curl -v -k -X GET "https://api.internal.com/health" \\
-       -H "Authorization: Bearer <token>" \\
-       -H "Accept: application/json" \\
-       -w "\\nHTTP Code: %{http_code}\\nTotal Time: %{time_total}s\\n"
-  2. Parameter Breakdown:
-     - -v: Verbose output (shows full HTTP request headers, response headers, and TLS handshake).
-     - -k: Bypasses untrusted internal SSL certificate checks for initial triage.
-     - -w: Formats timing breakdown (DNS lookup time, connect time, total latency).
-  3. Certificate Verification:
-     - If SSL handshake fails: openssl s_client -connect host:443 -servername host
-     - Check certificate validity dates and verify root CA chain.`
-      },
-      {
-        id: 10,
-        cat: "Linux & System",
-        q: "How do you troubleshoot network connectivity between two servers?",
-        keywords: ["network", "connectivity", "ping", "telnet", "nc", "netstat", "traceroute", "tcpdump", "firewall"],
-        hook: "I verify network health in a layered approach: ICMP ping (IP), Telnet/Netcat (Port), Netstat (Listening), and TCPDump (Packets)...",
-        bullets: [
-          "Host Reachability: Use 'ping <ip>' to test ICMP reachability. (Note: Many cloud firewalls block ICMP).",
-          "Port Reachability: Use 'nc -zv <host> <port>' or 'telnet <host> <port>' to verify if the remote port accepts connections.",
-          "Port Listening: On destination host, verify app is listening using 'netstat -tulnp | grep <port>' or 'ss -tulnp'.",
-          "Deep Packet Inspection: Use 'tcpdump -i any port <port> -nn' to check if SYN packets arrive and receive SYN-ACK responses."
-        ],
-        cmd: "nc -zv <host> <port> | ss -tulnp | tcpdump -i any port <port> -nn",
-        deep: `• Systematic Network Diagnostic Ladder:
-  1. Layer 3 (Network Layer):
-     - ping 10.20.30.40 (Checks IP routing).
-     - traceroute 10.20.30.40 (Identifies where packets drop along network hops).
-  2. Layer 4 (Transport Layer - TCP Ports):
-     - nc -zvw 3 10.20.30.40 8080
-     - If Connection timed out: Firewall / Security Group is blocking the port.
-     - If Connection refused: Firewall is open, but no application is listening on that port on the target server.
-  3. Local Listening Check:
-     - ss -tulnp | grep 8080 (Verify binding to 0.0.0.0, not just 127.0.0.1 localhost).
-  4. Packet Sniffing (TCPDump):
-     - tcpdump -i eth0 host 10.20.30.40 and port 8080 -nn -vv`
-      },
-      {
-        id: 11,
-        cat: "ITIL Operations",
-        q: "How do you handle a Major Incident (P1 / P2) from end to end?",
-        keywords: ["p1", "p2", "major incident", "critical ticket", "bridge call", "war room", "rca", "incident management"],
-        hook: "In major incidents, my priorities are rapid triage, clear stakeholder communication, and swift workarounds before root cause...",
-        bullets: [
-          "Phase 1 (Triage & Alert): Identify business impact, raise P1/P2 in ServiceNow, and trigger Incident Notification email within 15 mins.",
-          "Phase 2 (Bridge / War Room): Host bridge call with Incident Manager, DBAs, Dev, and Infrastructure teams.",
-          "Phase 3 (Restore First): Implement temporary workaround (restart, failover to DR, rollback release) to recover service.",
-          "Phase 4 (Problem Management): Facilitate Root Cause Analysis (RCA) and document Post-Incident Review (PIR)."
-        ],
-        cmd: "P1 SLA = 5h | Update Every 30m | Priority = Impact + Urgency",
-        deep: `• End-to-End P1 Incident Protocol:
-  1. 0 - 15 Minutes:
-     - Acknowledge ticket, verify impact scope (how many users/transactions affected).
-     - Notify Team Lead & Incident Manager; create ServiceNow P1 ticket.
-     - Send initial Incident Notification: Issue Summary, Impacted System, Priority, and Next Update Time (every 30 mins).
-  2. 15 - 45 Minutes (War Room Execution):
-     - Open emergency technical bridge call.
-     - Isolate affected components (database, network, microservice, storage).
-  3. Mitigation (Workaround over Root Cause):
-     - Prioritize service recovery: restart degraded services, route traffic to secondary node, or kill blocking sessions.
-  4. Verification & Closure:
-     - Confirm transaction processing resumes cleanly; get business confirmation.
-     - Send Resolution Notification.
-  5. Post-Incident Review (PIR / RCA):
-     - Create Problem ticket; conduct RCA meeting within 24-48 hours to prevent recurrence.`
-      },
-      {
-        id: 12,
-        cat: "ITIL Operations",
-        q: "Explain ITIL Change Management: Standard, Normal, Emergency, and Retrospective Changes?",
-        keywords: ["change management", "standard change", "emergency change", "normal change", "retrospective", "cab"],
-        hook: "Change Management ensures that all production modifications are risk-assessed, approved, and tracked to avoid outages...",
-        bullets: [
-          "Standard Change: Low-risk, pre-authorized, repeatable procedural changes (e.g. routine cache flush, scheduled index rebuild).",
-          "Normal Change: Requires full Change Advisory Board (CAB) review, UAT sign-off, implementation plan, and rollback plan.",
-          "Emergency Change: Urgent fix deployed during an active major incident requiring expedited Line Manager / ECAB approval.",
-          "Retrospective Change: Approved and documented post-deployment for emergency fixes where immediate action was mandatory."
-        ],
-        cmd: "CAB Review -> UAT Signoff -> Implementation Plan -> Rollback Plan",
-        deep: `• Change Management Governance:
-  1. Change Types:
-     - Standard: Pre-authorized by CAB. Lowest risk. Executed directly via standard change templates.
-     - Normal: Follows full lifecycle: Creation → UAT Testing Sign-off → Peer Review → CAB Approval → Scheduled Weekend Maintenance Window.
-     - Emergency: High risk, fast-tracked. Deployed during major outages with approval from Emergency CAB (ECAB) or Operations Director.
-     - Retrospective (RCR): Logged immediately after an emergency fix to maintain compliance records.
-  2. Deployment Checklist:
-     - Prerequisite: UAT Sign-off attached.
-     - Implementation Plan: Step-by-step rollout commands.
-     - Backout / Rollback Plan: Specific steps to revert if sanity tests fail.
-     - Post-Implementation Review: Validating error rates in telemetry dashboards.`
-      },
-      {
-        id: 13,
-        cat: "ITIL Operations",
-        q: "Batch Job Scheduling and Automation (Autosys, Control-M, Crontab)?",
-        keywords: ["autosys", "batch", "job failure", "control-m", "crontab", "dependencies", "autorep", "sendevent"],
-        hook: "We manage critical batch pipelines. When a job fails, I review logs, check dependencies, and remediate before SLA breaches...",
-        bullets: [
-          "Job States: STARTING, RUNNING, SUCCESS, FAILURE, TERMINATED, ON_HOLD, ON_NOEXEC.",
-          "Troubleshooting Flow: Check Autosys job spool logs, verify upstream feed arrivals, check file permissions and disk space.",
-          "Commands: Use 'autorep -J <job_name>' to view status and history; use 'sendevent -E FORCE_STARTJOB -J <job>' to re-run."
-        ],
-        cmd: "autorep -J job_name -d | sendevent -E FORCE_STARTJOB -J job_name",
-        deep: `• Batch Scheduling Diagnostics:
-  1. Autosys Core Commands:
-     - Check job status: autorep -J <job_name> -d
-     - View job definition: autorep -q -J <job_name>
-     - Force Start Job: sendevent -E FORCE_STARTJOB -J <job_name>
-     - Put on Hold: sendevent -E JOB_ON_HOLD -J <job_name>
-     - Take Off Hold: sendevent -E JOB_OFF_HOLD -J <job_name>
-  2. Common Batch Failure Modes:
-     - Upstream Dependency: Predecessor job failed or completed late.
-     - Missing Input File: Source flat file not delivered to SFTP/drop path.
-     - Format Mismatch: Source data contains unexpected delimiters or corrupted characters.
-     - Database Contention: Batch SQL query timed out due to deadlocks.
-  3. Crontab Syntax:
-     - * * * * * (Minute, Hour, Day of Month, Month, Day of Week).
-     - Edit: crontab -e | List: crontab -l`
-      },
-      {
-        id: 14,
-        cat: "ITIL Operations",
-        q: "Disaster Recovery (DR) and Continuity of Business (COB) Concepts?",
-        keywords: ["dr", "disaster recovery", "cob", "rto", "rpo", "failover", "failback", "dr drill"],
-        hook: "Disaster Recovery ensures that if the primary data center fails, business operations resume seamlessly at a secondary site...",
-        bullets: [
-          "RTO (Recovery Time Objective): The maximum acceptable duration the application can remain down before recovery.",
-          "RPO (Recovery Point Objective): The maximum acceptable data loss measured in time (e.g. 15 minutes of transactional data).",
-          "DR Drill Steps: Shutdown primary app/DB → sync storage/files → switch DNS/IP routing → start DR DB/app → validate sanity."
-        ],
-        cmd: "RTO (Downtime limit) | RPO (Data loss limit) | DNS Failover -> Smoke Test",
-        deep: `• 6-Phase DR Failover Drill Protocol:
-  1. Phase 1 (Graceful Shutdown): Stop upstream feeds and cleanly bring down primary web/app tiers.
-  2. Phase 2 (Database State): Ensure all pending transaction logs are committed and bring down primary database.
-  3. Phase 3 (Storage Replication): Verify SAN/NAS storage replication or mount shared file paths to DR host.
-  4. Phase 4 (DNS / Network Redirection): Update Global Traffic Manager (GTM) or DNS A-records to point user URL to secondary DC IP.
-  5. Phase 5 (Secondary Startup): Bring up DR database in read-write mode, followed by starting application servers.
-  6. Phase 6 (Sanity Testing): Run automated smoke test scripts; verify user login, balance checks, and trade processing.
-  • Soak Period: Systems typically operate on DR for 3 to 7 days before performing scheduled failback.`
-      },
-      {
-        id: 15,
-        cat: "Linux & System",
-        q: "How do you automate tasks using Shell Scripting and Cron Jobs?",
-        keywords: ["shell script", "bash", "cron", "automation", "crontab", "scripting", "exit code"],
-        hook: "I write modular bash scripts to eliminate repetitive manual work, handle error conditions, and schedule them via cron...",
-        bullets: [
-          "Script Structure: Use '#!/bin/bash', set strict modes ('set -e'), check exit status ('$?'), and log all outputs with timestamps.",
-          "Error Handling: Use conditional checks ('if [ $? -ne 0 ]; then ... fi') and validate file existence ('[ -f \"$file\" ]').",
-          "Cron Scheduling: Redirect stdout and stderr ('>> /var/log/my_job.log 2>&1') to maintain full audit trails."
-        ],
-        cmd: "chmod +x script.sh | crontab -e | find /path -mtime +30 -delete",
-        deep: `• Robust Production Shell Script Template:
-  #!/bin/bash
-  set -o pipefail
-  LOG_FILE="/var/log/app_cleanup.log"
-  echo "[$(date '+%Y-%m-%d %H:%M:%S')] Starting log cleanup job..." >> "$LOG_FILE"
-
-  # Find and delete logs older than 30 days
-  find /app/logs/ -name "*.log.gz" -type f -mtime +30 -exec rm -f {} \\; 2>&1 >> "$LOG_FILE"
-  if [ $? -eq 0 ]; then
-    echo "[$(date '+%Y-%m-%d %H:%M:%S')] Cleanup completed successfully." >> "$LOG_FILE"
-  else
-    echo "[$(date '+%Y-%m-%d %H:%M:%S')] ERROR during cleanup!" | mail -s "Cleanup Failure Alert" support@team.com
-  fi
-
-  • Crontab Entry (Runs daily at 2:30 AM):
-    30 2 * * * /app/scripts/cleanup.sh >> /var/log/cron_exec.log 2>&1`
+        script: "Earlier in my career, I had a tendency to spend too much time trying to figure out complex technical problems completely on my own because I wanted to be self-reliant. In production support, where SLAs are critical, waiting too long can create unnecessary risk. I recognized this and adopted a strict 30-minute rule: if I cannot make measurable progress on an issue within 30 minutes of checking logs and runbooks, I organize my findings, summarize what I tested, and consult a senior engineer. This ensures we resolve issues within SLA while keeping collaboration high.",
+        commands: "Behavioral: 30-Minute Rule | Structured Escalation | SLA Awareness"
       }
     ];
 
-    let currentKnowledge = [...PARAKEET_KB];
-    let selectedCategory = "All";
+    // Fallback generator for ANY unknown question
+    function generateFallbackAnswer(userQuery) {
+      const q = userQuery.toLowerCase();
+      return {
+        category: "Application Support (Tailored Triage)",
+        opener: `Whenever handling an issue regarding ${userQuery}, my approach is to isolate the scope, inspect telemetry and logs, and apply a verified workaround before root-cause investigation.`,
+        bullets: [
+          `Scope & Blast Radius: Verify whether this impacts single or multiple users, and check current SLA constraints.`,
+          `Diagnostic Step: Check relevant Linux server logs, service status, and backend database dependencies.`,
+          `Remediation & Closure: Apply a safe workaround or restart, verify health checks, and document the root cause for engineering.`
+        ],
+        script: `When investigating an issue related to ${userQuery}, I begin by assessing user impact and checking our monitoring dashboards. Next, I connect to the server environment, inspect application access and error logs to catch active exceptions, and verify that all dependent database and network connections are responsive. If production is degraded, I prioritize service restoration using our documented runbooks, confirm stability with business users, and log a problem ticket with logs attached for root-cause analysis.`,
+        commands: "ps -ef | tail -100f app.log | ss -tulnp | df -h"
+      };
+    }
+
+    // Match query against knowledge base or fallback
+    function findBestAnswer(query) {
+      const q = query.toLowerCase().trim();
+      for (const item of KNOWLEDGE_BASE) {
+        if (item.triggers.some(t => q.includes(t) || t.includes(q))) {
+          return item;
+        }
+      }
+      return generateFallbackAnswer(query);
+    }
+
+    // Render Answer Bubble
+    function renderBotResponse(answerData, userQuestion) {
+      const chatBox = document.getElementById("chatBox");
+
+      // User Bubble
+      const userBubble = document.createElement("div");
+      userBubble.className = "msg-user";
+      userBubble.innerText = userQuestion;
+      chatBox.appendChild(userBubble);
+
+      // Bot Card
+      const botCard = document.createElement("div");
+      botCard.className = "msg-bot";
+
+      const bulletsHtml = answerData.bullets.map(b => `<li>${b}</li>`).join("");
+
+      botCard.innerHTML = `
+        <div class="card-meta">
+          <span class="meta-tag">⚡ ${answerData.category}</span>
+          <button class="btn-copy" onclick="copyCard(this)">📋 Copy Script</button>
+        </div>
+
+        <div class="sec-opener">
+          <strong>💬 2-Second Opener:</strong> "${answerData.opener}"
+        </div>
+
+        <div>
+          <div class="sec-bullets-title">📌 Key Bullet Points (Glance & Speak)</div>
+          <ul class="sec-bullets">
+            ${bulletsHtml}
+          </ul>
+        </div>
+
+        <div class="sec-script-box">
+          <div class="sec-script-title">🗣️ Complete Spoken Script (Say This to HR)</div>
+          <div class="sec-script-text">"${answerData.script}"</div>
+        </div>
+
+        <div class="sec-commands">
+          <span>⚙️ Commands / Tools:</span>
+          <strong>${answerData.commands}</strong>
+        </div>
+      `;
+
+      chatBox.appendChild(botCard);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    // Chat submit handler
+    function handleChatSubmit(e) {
+      if (e) e.preventDefault();
+      const input = document.getElementById("chatInput");
+      const text = input.value.trim();
+      if (!text) return;
+
+      const answer = findBestAnswer(text);
+      renderBotResponse(answer, text);
+      input.value = "";
+    }
+
+    function submitQuickQuestion(qText) {
+      const answer = findBestAnswer(qText);
+      renderBotResponse(answer, qText);
+    }
+
+    function clearChat() {
+      document.getElementById("chatBox").innerHTML = "";
+    }
+
+    function copyCard(btn) {
+      const card = btn.closest(".msg-bot");
+      const scriptText = card.querySelector(".sec-script-text").innerText;
+      navigator.clipboard.writeText(scriptText);
+      btn.innerText = "✓ Copied!";
+      setTimeout(() => btn.innerText = "📋 Copy Script", 1600);
+    }
+
+    // Speech Recognition (Mic Mode)
     let recognition = null;
     let isListening = false;
-    let audioContext = null;
-    let analyser = null;
-    let audioDataArray = null;
 
-    // Render Cards in Sidebar / Grid
-    function renderGrid(list) {
-      const grid = document.getElementById("cardsGrid");
-      grid.innerHTML = "";
-
-      list.forEach(item => {
-        const card = document.createElement("div");
-        card.className = "card";
-        card.id = `item-${item.id}`;
-        card.onclick = () => loadPromptCard(item);
-
-        card.innerHTML = `
-          <div class="card-title">${item.q}</div>
-          <div class="card-snippet">${item.bullets[0]}</div>
-        `;
-        grid.appendChild(card);
-      });
-    }
-
-    // Load into Parakeet Floating Teleprompter HUD (0ms Delay)
-    function loadPromptCard(item) {
-      document.getElementById("hudCategory").innerText = item.cat.toUpperCase();
-      document.getElementById("hudQuestion").innerText = item.q;
-      document.getElementById("hudHook").innerHTML = `💬 <strong>2s Hook:</strong> "${item.hook}"`;
-      document.getElementById("hudBullets").innerHTML = item.bullets.map(b => `<li>${b}</li>`).join("");
-      document.getElementById("hudCommand").innerText = item.cmd;
-      document.getElementById("hudDeepText").innerText = item.deep;
-
-      document.querySelectorAll(".card").forEach(c => c.classList.remove("active"));
-      const activeCard = document.getElementById(`item-${item.id}`);
-      if (activeCard) activeCard.classList.add("active");
-
-      // Visual flash indicator
-      const prompter = document.getElementById("prompterCard");
-      prompter.style.borderColor = "var(--accent)";
-      setTimeout(() => prompter.style.borderColor = "rgba(99, 102, 241, 0.35)", 400);
-    }
-
-    // Instant Predictive Search (0ms Delay)
-    function handleSearch(term) {
-      const query = term.toLowerCase().trim();
-      let filtered = PARAKEET_KB;
-
-      if (selectedCategory !== "All") {
-        filtered = filtered.filter(item => item.cat === selectedCategory);
-      }
-
-      if (query) {
-        filtered = filtered.filter(item => {
-          const inTitle = item.q.toLowerCase().includes(query);
-          const inKeywords = item.keywords.some(k => k.toLowerCase().includes(query) || query.includes(k.toLowerCase()));
-          const inBullets = item.bullets.some(b => b.toLowerCase().includes(query));
-          const inDeep = item.deep.toLowerCase().includes(query);
-          const inCmd = item.cmd.toLowerCase().includes(query);
-          return inTitle || inKeywords || inBullets || inDeep || inCmd;
-        });
-      }
-
-      renderGrid(filtered);
-
-      if (filtered.length > 0) {
-        loadPromptCard(filtered[0]);
-      }
-    }
-
-    function filterCategory(cat, btn) {
-      selectedCategory = cat;
-      document.querySelectorAll(".chip-btn").forEach(b => b.classList.remove("active"));
-      btn.classList.add("active");
-      handleSearch(document.getElementById("promptSearch").value);
-    }
-
-    function resetToHome() {
-      document.getElementById("promptSearch").value = "";
-      filterCategory("All", document.querySelector(".chip-btn"));
-      loadPromptCard(PARAKEET_KB[0]);
-    }
-
-    function toggleStealth() {
-      document.body.classList.toggle("stealth-mode");
-    }
-
-    // Speech Recognition Engine (Parakeet Live Listener)
     function initSpeech() {
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
       if (!SpeechRecognition) {
-        alert("Microphone recognition requires Google Chrome or Microsoft Edge.");
+        alert("Speech Recognition requires Google Chrome or Microsoft Edge.");
         return null;
       }
 
       const rec = new SpeechRecognition();
       rec.continuous = true;
-      rec.interimResults = true;
+      rec.interimResults = false;
       rec.lang = "en-US";
 
       rec.onresult = (evt) => {
-        let transcript = "";
-        for (let i = evt.resultIndex; i < evt.results.length; i++) {
-          transcript += evt.results[i][0].transcript;
-        }
-
-        const clean = transcript.toLowerCase().trim();
-        document.getElementById("transcriptFeedText").innerText = clean;
-
-        // Instant Semantic Keyword Match
-        for (const item of PARAKEET_KB) {
-          for (const kw of item.keywords) {
-            if (clean.includes(kw.toLowerCase())) {
-              loadPromptCard(item);
-              return;
-            }
-          }
+        const transcript = evt.results[evt.results.length - 1][0].transcript.trim();
+        if (transcript.length > 2) {
+          const answer = findBestAnswer(transcript);
+          renderBotResponse(answer, transcript);
         }
       };
 
@@ -1023,41 +662,8 @@
       return rec;
     }
 
-    // Audio Visualizer Meter
-    async function startAudioMeter() {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        const source = audioContext.createMediaStreamSource(stream);
-        analyser = audioContext.createAnalyser();
-        analyser.fftSize = 64;
-        source.connect(analyser);
-        audioDataArray = new Uint8Array(analyser.frequencyBinCount);
-        updateVisualizer();
-      } catch (err) {
-        console.warn("Audio meter not active:", err);
-      }
-    }
-
-    function updateVisualizer() {
-      if (!isListening) {
-        document.getElementById("audioMeterBar").style.width = "0%";
-        return;
-      }
-      if (analyser && audioDataArray) {
-        analyser.getByteFrequencyData(audioDataArray);
-        let sum = 0;
-        for (let i = 0; i < audioDataArray.length; i++) sum += audioDataArray[i];
-        let average = sum / audioDataArray.length;
-        let percentage = Math.min(100, Math.max(5, (average / 128) * 100));
-        document.getElementById("audioMeterBar").style.width = percentage + "%";
-      }
-      requestAnimationFrame(updateVisualizer);
-    }
-
     function toggleMic() {
       const btn = document.getElementById("micBtn");
-
       if (!recognition) recognition = initSpeech();
       if (!recognition) return;
 
@@ -1066,33 +672,20 @@
           recognition.start();
           isListening = true;
           btn.classList.add("active");
-          btn.innerText = "🛑 Stop";
-          startAudioMeter();
+          btn.innerText = "🛑 Stop Mic";
         } catch(e) {}
       } else {
         isListening = false;
         recognition.stop();
         btn.classList.remove("active");
-        btn.innerText = "🎙️ Listen";
+        btn.innerText = "🎙️ Listen HR";
       }
     }
 
-    // Parakeet Hotkeys
-    window.addEventListener("keydown", (e) => {
-      if (e.code === "Escape") toggleStealth();
-      if (e.code === "Space" && document.activeElement !== document.getElementById("promptSearch")) {
-        e.preventDefault();
-        toggleMic();
-      }
-      if (e.key === "/" && document.activeElement !== document.getElementById("promptSearch")) {
-        e.preventDefault();
-        document.getElementById("promptSearch").focus();
-      }
+    // Load initial welcome prompt on open
+    window.addEventListener("DOMContentLoaded", () => {
+      submitQuickQuestion("Tell me about yourself and your background in Application Support.");
     });
-
-    // Start with Intro Answer loaded
-    renderGrid(PARAKEET_KB);
-    loadPromptCard(PARAKEET_KB[0]);
   </script>
 </body>
 </html>
