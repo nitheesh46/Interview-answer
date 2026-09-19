@@ -1,1 +1,1143 @@
-hi
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Parakeet AI Copilot</title>
+
+<style>
+
+:root {
+    --bg: #030712;
+    --card: rgba(17,24,39,.86);
+    --border: rgba(255,255,255,.08);
+    --primary: #38bdf8;
+    --accent: #10b981;
+    --warning: #f59e0b;
+    --text: #f9fafb;
+    --muted: #94a3b8;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        Roboto,
+        sans-serif;
+}
+
+body {
+    min-height: 100vh;
+    background:
+        radial-gradient(
+            circle at top,
+            rgba(56,189,248,.10),
+            transparent 35%
+        ),
+        var(--bg);
+
+    color: var(--text);
+
+    display: flex;
+    justify-content: center;
+
+    padding: 20px;
+}
+
+.app {
+    width: 100%;
+    max-width: 850px;
+
+    background: var(--card);
+
+    border: 1px solid var(--border);
+
+    border-radius: 18px;
+
+    overflow: hidden;
+
+    box-shadow:
+        0 25px 70px rgba(0,0,0,.65),
+        0 0 40px rgba(56,189,248,.08);
+}
+
+/* HEADER */
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    padding: 16px 20px;
+
+    border-bottom: 1px solid var(--border);
+
+    background: rgba(3,7,18,.65);
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.logo-icon {
+    width: 34px;
+    height: 34px;
+
+    border-radius: 9px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-weight: 900;
+
+    background:
+        linear-gradient(
+            135deg,
+            #38bdf8,
+            #818cf8
+        );
+
+    color: #020617;
+}
+
+.logo-title {
+    font-weight: 800;
+}
+
+.logo-subtitle {
+    color: var(--muted);
+    font-size: 11px;
+}
+
+/* CONTROLS */
+
+.controls {
+    display: flex;
+    gap: 8px;
+}
+
+button {
+    border: none;
+    cursor: pointer;
+}
+
+.btn {
+    padding: 8px 13px;
+
+    border-radius: 8px;
+
+    font-size: 13px;
+
+    font-weight: 700;
+}
+
+.listen {
+    background: var(--primary);
+    color: #020617;
+}
+
+.listen.active {
+    background: var(--accent);
+    color: white;
+}
+
+.secondary {
+    background: rgba(255,255,255,.06);
+    color: white;
+
+    border: 1px solid var(--border);
+}
+
+/* STATUS */
+
+.status {
+    padding: 11px 20px;
+
+    display: flex;
+    align-items: center;
+
+    gap: 9px;
+
+    background: rgba(0,0,0,.25);
+
+    border-bottom: 1px solid var(--border);
+
+    font-size: 13px;
+}
+
+.dot {
+    width: 8px;
+    height: 8px;
+
+    border-radius: 50%;
+
+    background: #64748b;
+}
+
+.dot.active {
+    background: var(--accent);
+
+    box-shadow:
+        0 0 12px var(--accent);
+
+    animation: pulse 1.2s infinite;
+}
+
+@keyframes pulse {
+    50% {
+        transform: scale(1.5);
+        opacity: .6;
+    }
+}
+
+#transcript {
+    color: var(--primary);
+
+    overflow: hidden;
+
+    white-space: nowrap;
+
+    text-overflow: ellipsis;
+}
+
+/* SETTINGS */
+
+.settings {
+    padding: 15px 20px;
+
+    border-bottom: 1px solid var(--border);
+
+    display: grid;
+
+    grid-template-columns: 1fr 1fr;
+
+    gap: 10px;
+}
+
+.field label {
+    display: block;
+
+    font-size: 11px;
+
+    color: var(--muted);
+
+    margin-bottom: 5px;
+}
+
+.field input {
+    width: 100%;
+
+    padding: 9px 11px;
+
+    background: rgba(0,0,0,.35);
+
+    border: 1px solid var(--border);
+
+    border-radius: 7px;
+
+    color: white;
+
+    outline: none;
+}
+
+.field input:focus {
+    border-color: var(--primary);
+}
+
+/* MAIN */
+
+.content {
+    padding: 24px;
+
+    max-height: 68vh;
+
+    overflow-y: auto;
+}
+
+.tag {
+    color: #818cf8;
+
+    font-size: 11px;
+
+    font-weight: 800;
+
+    letter-spacing: .08em;
+
+    text-transform: uppercase;
+
+    margin-bottom: 8px;
+}
+
+.question {
+    font-size: 1.35rem;
+
+    line-height: 1.4;
+
+    margin-bottom: 18px;
+}
+
+/* ANSWER */
+
+.answer-box {
+    background: rgba(56,189,248,.06);
+
+    border: 1px solid rgba(56,189,248,.15);
+
+    border-radius: 12px;
+
+    padding: 17px;
+
+    margin-bottom: 15px;
+}
+
+.answer-label {
+    color: var(--primary);
+
+    font-size: 11px;
+
+    font-weight: 800;
+
+    text-transform: uppercase;
+
+    margin-bottom: 10px;
+}
+
+.answer {
+    white-space: pre-wrap;
+
+    color: #e2e8f0;
+
+    font-size: 1rem;
+
+    line-height: 1.65;
+}
+
+/* ACTIONS */
+
+.actions {
+    display: flex;
+
+    gap: 8px;
+
+    margin-bottom: 18px;
+}
+
+.action {
+    padding: 8px 12px;
+
+    background: rgba(255,255,255,.05);
+
+    color: #cbd5e1;
+
+    border: 1px solid var(--border);
+
+    border-radius: 7px;
+
+    font-size: 12px;
+}
+
+/* QUICK */
+
+.quick-title {
+    color: var(--muted);
+
+    font-size: 11px;
+
+    text-transform: uppercase;
+
+    font-weight: 800;
+
+    margin-bottom: 9px;
+}
+
+.quick {
+    display: grid;
+
+    grid-template-columns:
+        repeat(auto-fit,minmax(190px,1fr));
+
+    gap: 8px;
+}
+
+.quick button {
+    text-align: left;
+
+    padding: 10px;
+
+    border-radius: 8px;
+
+    background: rgba(255,255,255,.035);
+
+    border: 1px solid var(--border);
+
+    color: #cbd5e1;
+
+    font-size: 12px;
+}
+
+.quick button:hover {
+    border-color: var(--primary);
+
+    color: white;
+
+    background: rgba(56,189,248,.08);
+}
+
+/* FOOTER */
+
+.footer {
+    padding: 15px 20px;
+
+    display: flex;
+
+    gap: 8px;
+
+    border-top: 1px solid var(--border);
+
+    background: rgba(3,7,18,.55);
+}
+
+#questionInput {
+    flex: 1;
+
+    padding: 11px 13px;
+
+    background: rgba(0,0,0,.4);
+
+    border: 1px solid var(--border);
+
+    border-radius: 8px;
+
+    color: white;
+
+    outline: none;
+}
+
+#questionInput:focus {
+    border-color: var(--primary);
+}
+
+.generate {
+    background: var(--primary);
+
+    color: #020617;
+
+    padding: 0 16px;
+
+    border-radius: 8px;
+
+    font-weight: 800;
+}
+
+.loading {
+    opacity: .6;
+}
+
+.hidden {
+    display: none;
+}
+
+@media(max-width:600px) {
+
+    body {
+        padding: 0;
+    }
+
+    .app {
+        min-height: 100vh;
+
+        border-radius: 0;
+    }
+
+    .header {
+        align-items: flex-start;
+    }
+
+    .controls {
+        flex-direction: column;
+    }
+
+    .settings {
+        grid-template-columns: 1fr;
+    }
+
+    .question {
+        font-size: 1.15rem;
+    }
+
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="app">
+
+    <!-- HEADER -->
+
+    <div class="header">
+
+        <div class="logo">
+
+            <div class="logo-icon">
+                P
+            </div>
+
+            <div>
+                <div class="logo-title">
+                    Parakeet AI
+                </div>
+
+                <div class="logo-subtitle">
+                    Real-Time Interview Copilot
+                </div>
+            </div>
+
+        </div>
+
+        <div class="controls">
+
+            <button
+                class="btn listen"
+                id="listenBtn"
+                onclick="toggleListening()"
+            >
+                🎙️ Start Listening
+            </button>
+
+            <button
+                class="btn secondary"
+                onclick="toggleStealth()"
+            >
+                👁️ Stealth
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <!-- STATUS -->
+
+    <div class="status">
+
+        <div
+            class="dot"
+            id="statusDot"
+        ></div>
+
+        <span>
+            Interviewer:
+        </span>
+
+        <span id="transcript">
+            Waiting for question...
+        </span>
+
+    </div>
+
+
+    <!-- SETTINGS -->
+
+    <div class="settings">
+
+        <div class="field">
+
+            <label>
+                Target Role
+            </label>
+
+            <input
+                id="role"
+                value="Finance / Business Analyst"
+            >
+
+        </div>
+
+
+        <div class="field">
+
+            <label>
+                Candidate Profile
+            </label>
+
+            <input
+                id="resume"
+                value="MBA Finance and Business Analytics fresher"
+            >
+
+        </div>
+
+    </div>
+
+
+    <!-- CONTENT -->
+
+    <div class="content">
+
+        <div
+            class="tag"
+            id="category"
+        >
+            READY
+        </div>
+
+        <h1
+            class="question"
+            id="question"
+        >
+            Ask an interview question
+        </h1>
+
+
+        <div class="answer-box">
+
+            <div class="answer-label">
+                ⚡ AI Answer
+            </div>
+
+            <div
+                class="answer"
+                id="answer"
+            >
+                Your AI-generated interview answer will appear here.
+            </div>
+
+        </div>
+
+
+        <div class="actions">
+
+            <button
+                class="action"
+                onclick="copyAnswer()"
+            >
+                📋 Copy
+            </button>
+
+            <button
+                class="action"
+                onclick="speakAnswer()"
+            >
+                🔊 Read Answer
+            </button>
+
+            <button
+                class="action"
+                onclick="stopSpeaking()"
+            >
+                ⏹ Stop Voice
+            </button>
+
+        </div>
+
+
+        <div class="quick-title">
+            Quick Questions
+        </div>
+
+        <div class="quick">
+
+            <button onclick="quickQuestion('Tell me about yourself')">
+                Tell me about yourself
+            </button>
+
+            <button onclick="quickQuestion('Why should we hire you?')">
+                Why should we hire you?
+            </button>
+
+            <button onclick="quickQuestion('What are your strengths?')">
+                What are your strengths?
+            </button>
+
+            <button onclick="quickQuestion('What is your weakness?')">
+                What is your weakness?
+            </button>
+
+            <button onclick="quickQuestion('Why do you want this job?')">
+                Why this job?
+            </button>
+
+            <button onclick="quickQuestion('Where do you see yourself in five years?')">
+                Where do you see yourself in 5 years?
+            </button>
+
+            <button onclick="quickQuestion('Explain financial statement analysis')">
+                Financial statement analysis
+            </button>
+
+            <button onclick="quickQuestion('What is working capital?')">
+                Working capital
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <!-- FOOTER -->
+
+    <div class="footer">
+
+        <input
+            id="questionInput"
+            placeholder="Type any interview question..."
+            onkeydown="handleEnter(event)"
+        >
+
+        <button
+            class="generate"
+            onclick="generateAnswer()"
+            id="generateBtn"
+        >
+            Generate
+        </button>
+
+    </div>
+
+</div>
+
+
+<script>
+
+let recognition = null;
+
+let listening = false;
+
+let lastAnswer = "";
+
+
+/* =========================
+   AI ANSWER
+========================= */
+
+async function generateAnswer(questionOverride = null) {
+
+    const input =
+        document.getElementById("questionInput");
+
+    const question =
+        questionOverride ||
+        input.value.trim();
+
+    if (!question) return;
+
+
+    document.getElementById("question")
+        .innerText = question;
+
+    document.getElementById("category")
+        .innerText = "GENERATING ANSWER";
+
+
+    document.getElementById("answer")
+        .innerText = "Thinking...";
+
+
+    document.getElementById("generateBtn")
+        .classList.add("loading");
+
+
+    try {
+
+        const response = await fetch(
+            "/api/answer",
+            {
+                method: "POST",
+
+                headers: {
+                    "Content-Type":
+                        "application/json"
+                },
+
+                body: JSON.stringify({
+
+                    question: question,
+
+                    role:
+                        document.getElementById("role").value,
+
+                    resume:
+                        document.getElementById("resume").value
+
+                })
+            }
+        );
+
+
+        const data =
+            await response.json();
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                data.error ||
+                "Server error"
+            );
+
+        }
+
+
+        lastAnswer =
+            data.answer || "";
+
+
+        document.getElementById("answer")
+            .innerText = lastAnswer;
+
+
+        document.getElementById("category")
+            .innerText = "AI GENERATED";
+
+
+    } catch (error) {
+
+        document.getElementById("answer")
+            .innerText =
+            "Error: " + error.message;
+
+    }
+
+
+    document.getElementById("generateBtn")
+        .classList.remove("loading");
+
+}
+
+
+/* =========================
+   SPEECH RECOGNITION
+========================= */
+
+function setupSpeech() {
+
+    const SpeechRecognition =
+        window.SpeechRecognition ||
+        window.webkitSpeechRecognition;
+
+
+    if (!SpeechRecognition) {
+
+        alert(
+            "Live speech recognition is supported best in Google Chrome or Microsoft Edge."
+        );
+
+        return null;
+    }
+
+
+    const rec =
+        new SpeechRecognition();
+
+
+    rec.continuous = true;
+
+    rec.interimResults = true;
+
+    rec.lang = "en-US";
+
+
+    rec.onstart = () => {
+
+        listening = true;
+
+        document
+            .getElementById("listenBtn")
+            .classList.add("active");
+
+        document
+            .getElementById("listenBtn")
+            .innerText =
+            "🟢 Listening...";
+
+
+        document
+            .getElementById("statusDot")
+            .classList.add("active");
+
+    };
+
+
+    rec.onresult = event => {
+
+        let transcript = "";
+
+
+        for (
+            let i = event.resultIndex;
+            i < event.results.length;
+            i++
+        ) {
+
+            transcript +=
+                event.results[i][0].transcript;
+
+        }
+
+
+        transcript =
+            transcript.trim();
+
+
+        document
+            .getElementById("transcript")
+            .innerText =
+            transcript;
+
+
+        /*
+          Only send FINAL speech to AI.
+          This prevents an API call for
+          every single word.
+        */
+
+        let finalText = "";
+
+
+        for (
+            let i = event.resultIndex;
+            i < event.results.length;
+            i++
+        ) {
+
+            if (event.results[i].isFinal) {
+
+                finalText +=
+                    event.results[i][0].transcript;
+
+            }
+
+        }
+
+
+        finalText =
+            finalText.trim();
+
+
+        if (finalText.length > 8) {
+
+            generateAnswer(finalText);
+
+        }
+
+    };
+
+
+    rec.onerror = event => {
+
+        console.error(
+            "Speech recognition:",
+            event.error
+        );
+
+    };
+
+
+    rec.onend = () => {
+
+        if (listening) {
+
+            try {
+                rec.start();
+            } catch(e) {}
+
+        }
+
+    };
+
+
+    return rec;
+
+}
+
+
+/* =========================
+   START / STOP
+========================= */
+
+function toggleListening() {
+
+    if (!recognition) {
+
+        recognition =
+            setupSpeech();
+
+    }
+
+
+    if (!recognition) return;
+
+
+    if (!listening) {
+
+        try {
+
+            recognition.start();
+
+        } catch(e) {
+
+            console.log(e);
+
+        }
+
+    } else {
+
+        listening = false;
+
+        recognition.stop();
+
+
+        document
+            .getElementById("listenBtn")
+            .classList.remove("active");
+
+
+        document
+            .getElementById("listenBtn")
+            .innerText =
+            "🎙️ Start Listening";
+
+
+        document
+            .getElementById("statusDot")
+            .classList.remove("active");
+
+    }
+
+}
+
+
+/* =========================
+   QUICK QUESTIONS
+========================= */
+
+function quickQuestion(question) {
+
+    document
+        .getElementById("questionInput")
+        .value = question;
+
+
+    generateAnswer(question);
+
+}
+
+
+/* =========================
+   ENTER KEY
+========================= */
+
+function handleEnter(event) {
+
+    if (event.key === "Enter") {
+
+        generateAnswer();
+
+    }
+
+}
+
+
+/* =========================
+   COPY
+========================= */
+
+async function copyAnswer() {
+
+    if (!lastAnswer) return;
+
+
+    try {
+
+        await navigator.clipboard
+            .writeText(lastAnswer);
+
+        alert("Answer copied.");
+
+    } catch(e) {
+
+        alert(
+            "Unable to copy automatically."
+        );
+
+    }
+
+}
+
+
+/* =========================
+   TEXT TO SPEECH
+========================= */
+
+function speakAnswer() {
+
+    if (!lastAnswer) return;
+
+
+    speechSynthesis.cancel();
+
+
+    const speech =
+        new SpeechSynthesisUtterance(
+            lastAnswer
+        );
+
+
+    speech.rate = 0.9;
+
+    speech.pitch = 1;
+
+
+    speechSynthesis.speak(
+        speech
+    );
+
+}
+
+
+function stopSpeaking() {
+
+    speechSynthesis.cancel();
+
+}
+
+
+/* =========================
+   STEALTH MODE
+========================= */
+
+function toggleStealth() {
+
+    const app =
+        document.querySelector(".app");
+
+
+    if (
+        app.style.opacity === "0.25"
+    ) {
+
+        app.style.opacity = "1";
+
+    } else {
+
+        app.style.opacity = "0.25";
+
+    }
+
+}
+
+</script>
+
+</body>
+</html>
