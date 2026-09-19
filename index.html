@@ -3,18 +3,17 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>OmniSearch | Ask Anything, Get Answers Instantly</title>
+  <title>Parakeet AI | Real-Time Interview Copilot</title>
   <style>
     :root {
-      --bg: #090d16;
-      --panel: #111827;
-      --card: #1e293b;
-      --border: #334155;
+      --bg: #030712;
+      --card: rgba(17, 24, 39, 0.75);
+      --border: rgba(255, 255, 255, 0.08);
       --primary: #38bdf8;
-      --accent: #22c55e;
-      --warning: #f59e0b;
-      --text: #f8fafc;
-      --text-muted: #94a3b8;
+      --accent: #10b981;
+      --text: #f9fafb;
+      --text-muted: #9ca3af;
+      --glow: rgba(56, 189, 248, 0.15);
     }
 
     * {
@@ -31,468 +30,522 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 30px 16px;
+      padding: 20px;
     }
 
-    .search-engine-container {
+    /* Parakeet Glass Container */
+    .parakeet-app {
       width: 100%;
-      max-width: 800px;
-      display: flex;
-      flex-direction: column;
-      gap: 24px;
-    }
-
-    .engine-header {
-      text-align: center;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-
-    .engine-title {
-      font-size: 2rem;
-      font-weight: 800;
-      background: linear-gradient(90deg, #38bdf8, #818cf8, #c084fc);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-
-    .engine-subtitle {
-      font-size: 0.95rem;
-      color: var(--text-muted);
-    }
-
-    /* Big Central Search Bar */
-    .search-bar-wrapper {
-      position: relative;
-      width: 100%;
-    }
-
-    #mainSearch {
-      width: 100%;
-      background: var(--panel);
-      border: 2px solid var(--border);
-      border-radius: 14px;
-      padding: 18px 24px 18px 50px;
-      color: #fff;
-      font-size: 1.15rem;
-      outline: none;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-      transition: all 0.2s ease;
-    }
-
-    #mainSearch:focus {
-      border-color: var(--primary);
-      box-shadow: 0 0 20px rgba(56, 189, 248, 0.3);
-    }
-
-    .search-icon {
-      position: absolute;
-      left: 18px;
-      top: 50%;
-      transform: translateY(-50%);
-      font-size: 1.2rem;
-      color: var(--text-muted);
-    }
-
-    /* Category Filter Pills */
-    .filter-pills {
-      display: flex;
-      gap: 8px;
-      overflow-x: auto;
-      padding-bottom: 4px;
-    }
-
-    .pill {
+      max-width: 750px;
       background: var(--card);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
       border: 1px solid var(--border);
-      color: var(--text-muted);
-      padding: 6px 14px;
-      border-radius: 20px;
-      font-size: 0.82rem;
-      font-weight: 600;
-      cursor: pointer;
-      white-space: nowrap;
-      transition: 0.15s;
-    }
-
-    .pill.active, .pill:hover {
-      background: var(--primary);
-      color: #090d16;
-      border-color: var(--primary);
-    }
-
-    /* Instant Answer Card */
-    .answer-card {
-      background: var(--panel);
-      border: 2px solid #6366f1;
       border-radius: 16px;
-      padding: 24px;
-      box-shadow: 0 8px 35px rgba(99, 102, 241, 0.2);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), 0 0 30px var(--glow);
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      overflow: hidden;
     }
 
-    .answer-meta {
+    /* Top Navigation Bar */
+    .parakeet-nav {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-size: 0.78rem;
-      text-transform: uppercase;
-      font-weight: 800;
-      color: #a5b4fc;
+      background: rgba(3, 7, 18, 0.4);
     }
 
-    .answer-question {
-      font-size: 1.4rem;
+    .logo-area {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .logo-icon {
+      width: 28px;
+      height: 28px;
+      background: linear-gradient(135deg, #38bdf8, #818cf8);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      font-size: 0.9rem;
+      color: #030712;
+    }
+
+    .logo-text {
+      font-size: 1rem;
+      font-weight: 800;
+      letter-spacing: -0.01em;
+      color: #fff;
+    }
+
+    .nav-controls {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .btn {
+      padding: 7px 14px;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+
+    .btn-listen {
+      background: var(--primary);
+      color: #030712;
+    }
+    .btn-listen.active {
+      background: var(--accent);
+      color: #fff;
+      box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);
+    }
+
+    .btn-ghost {
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+    }
+    .btn-ghost:hover { color: #fff; background: rgba(255, 255, 255, 0.1); }
+
+    /* Live Voice Stream Feed */
+    .stream-box {
+      padding: 12px 20px;
+      background: rgba(0, 0, 0, 0.3);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.85rem;
+    }
+
+    .pulsing-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--text-muted);
+    }
+    .pulsing-dot.active {
+      background: var(--accent);
+      box-shadow: 0 0 10px var(--accent);
+      animation: pulse 1.2s infinite;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(0.95); opacity: 0.8; }
+      50% { transform: scale(1.4); opacity: 1; }
+      100% { transform: scale(0.95); opacity: 0.8; }
+    }
+
+    #liveTranscript {
+      color: var(--primary);
+      font-style: italic;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* AI Response Content Area */
+    .parakeet-content {
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      max-height: 70vh;
+      overflow-y: auto;
+    }
+
+    .question-tag {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      color: #818cf8;
+    }
+
+    .ai-question {
+      font-size: 1.35rem;
       font-weight: 800;
       color: #fff;
       line-height: 1.35;
     }
 
-    .answer-hook {
-      background: rgba(245, 158, 11, 0.12);
-      border-left: 3px solid var(--warning);
-      padding: 8px 14px;
+    .ai-hook {
+      background: rgba(245, 158, 11, 0.1);
+      border-left: 3px solid #f59e0b;
+      padding: 10px 14px;
       border-radius: 6px;
       font-size: 0.92rem;
       color: #fde68a;
     }
 
-    .answer-bullets {
-      list-style-type: none;
+    .ai-points {
+      list-style: none;
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 10px;
     }
 
-    .answer-bullets li {
-      font-size: 1.05rem;
-      color: #f1f5f9;
-      line-height: 1.45;
+    .ai-points li {
+      font-size: 1.02rem;
+      color: #e2e8f0;
+      line-height: 1.5;
       display: flex;
       gap: 10px;
     }
 
-    .answer-bullets li::before {
-      content: "▶";
-      color: var(--accent);
-      font-size: 0.85rem;
-      margin-top: 3px;
+    .ai-points li::before {
+      content: "→";
+      color: var(--primary);
+      font-weight: bold;
     }
 
-    .detailed-breakdown {
-      background: #090d16;
+    .code-snippet {
+      background: #030712;
       border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 16px;
-      font-size: 0.94rem;
-      color: #cbd5e1;
-      line-height: 1.6;
-      white-space: pre-line;
-    }
-
-    .command-box {
-      background: #04060b;
-      border: 1px solid #1e293b;
       border-radius: 8px;
-      padding: 12px 16px;
+      padding: 14px;
       font-family: monospace;
-      font-size: 0.9rem;
-      color: #67e8f9;
+      font-size: 0.88rem;
+      color: #38bdf8;
+      overflow-x: auto;
     }
 
-    /* Index Suggestions Grid */
-    .suggestions-section {
+    /* Bottom Manual Search Bar */
+    .parakeet-footer {
+      padding: 16px 20px;
+      border-top: 1px solid var(--border);
+      background: rgba(3, 7, 18, 0.4);
       display: flex;
-      flex-direction: column;
       gap: 10px;
-      margin-top: 10px;
     }
 
-    .section-heading {
-      font-size: 0.8rem;
+    #manualInput {
+      flex: 1;
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 14px;
+      color: #fff;
+      font-size: 0.95rem;
+      outline: none;
+    }
+    #manualInput:focus { border-color: var(--primary); }
+
+    /* Quick Question List Drawer */
+    .drawer-header {
+      font-size: 0.75rem;
       text-transform: uppercase;
       letter-spacing: 0.05em;
       color: var(--text-muted);
+      margin-top: 10px;
       font-weight: 700;
     }
 
-    .suggestions-grid {
+    .quick-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-      gap: 10px;
+      grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+      gap: 8px;
     }
 
-    .suggestion-chip {
-      background: var(--card);
+    .quick-chip {
+      background: rgba(255, 255, 255, 0.03);
       border: 1px solid var(--border);
-      padding: 12px 14px;
-      border-radius: 10px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      font-size: 0.82rem;
+      color: #cbd5e1;
       cursor: pointer;
       transition: 0.15s;
-    }
-
-    .suggestion-chip:hover {
-      border-color: var(--primary);
-      background: rgba(56, 189, 248, 0.08);
-    }
-
-    .chip-title {
-      font-size: 0.9rem;
-      font-weight: 700;
-      color: #fff;
-      margin-bottom: 4px;
-    }
-
-    .chip-snippet {
-      font-size: 0.78rem;
-      color: var(--text-muted);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+    }
+    .quick-chip:hover {
+      background: rgba(56, 189, 248, 0.1);
+      border-color: var(--primary);
+      color: #fff;
     }
   </style>
 </head>
 <body>
 
-  <div class="search-engine-container">
+  <div class="parakeet-app">
     
-    <div class="engine-header">
-      <div class="engine-title">🔍 OmniSearch Engine</div>
-      <div class="engine-subtitle">Ask anything or search your technical knowledge base for instant structured answers.</div>
-    </div>
-
-    <!-- Search Input Bar -->
-    <div class="search-bar-wrapper">
-      <span class="search-icon">🔍</span>
-      <input 
-        type="text" 
-        id="mainSearch" 
-        placeholder="Type any question (e.g. 'how to fix disk full', 'p1 ticket steps', 'oracle blockage', 'autosys')..." 
-        autofocus
-        oninput="executeSearch(this.value)"
-      />
-    </div>
-
-    <!-- Category Filters -->
-    <div class="filter-pills">
-      <button class="pill active" onclick="filterCategory('All', this)">All Topics</button>
-      <button class="pill" onclick="filterCategory('Real-Time Issue', this)">Real-Time Issues</button>
-      <button class="pill" onclick="filterCategory('ITIL & ServiceNow', this)">ITIL & SLA</button>
-      <button class="pill" onclick="filterCategory('Database & SQL', this)">Database & SQL</button>
-      <button class="pill" onclick="filterCategory('Unix & Troubleshooting', this)">UNIX & Space</button>
-      <button class="pill" onclick="filterCategory('Monitoring & Autosys', this)">Autosys & Geneos</button>
-    </div>
-
-    <!-- Instant Answer Result Card -->
-    <div class="answer-card" id="answerCard">
-      <div class="answer-meta">
-        <span id="resCategory">INTRODUCTION</span>
-        <span style="color: var(--accent);">⚡ Instant Match</span>
+    <!-- Top Nav -->
+    <div class="parakeet-nav">
+      <div class="logo-area">
+        <div class="logo-icon">P</div>
+        <span class="logo-text">Parakeet AI Copilot</span>
       </div>
-      <div class="answer-question" id="resQuestion">Tell me about yourself / Walk me through your experience.</div>
-      <div class="answer-hook" id="resHook">
-        💬 <strong>Quick Overview:</strong> "I work as an Application Production Support Engineer handling L1 and L2 operations..."
+      <div class="nav-controls">
+        <button class="btn btn-listen" id="listenBtn" onclick="toggleListening()">
+          🎙️ Live AI Listen
+        </button>
+        <button class="btn btn-ghost" onclick="toggleStealth()">
+          👁️ Stealth
+        </button>
       </div>
-      <ul class="answer-bullets" id="resBullets">
-        <li>Role: L1/L2 Production Support Engineer maintaining system uptime and operational stability[span_0](start_span)[span_0](end_span).</li>
-        <li>Core Tools: ServiceNow, UNIX shell scripting, Oracle SQL Developer, 400+ Autosys batch jobs, and ITRS Geneos[span_1](start_span)[span_1](end_span).</li>
+    </div>
+
+    <!-- Live Stream Status -->
+    <div class="stream-box">
+      <div class="pulsing-dot" id="pulsingDot"></div>
+      <span style="color: var(--text-muted);">Interviewer Feed:</span>
+      <span id="liveTranscript">Listening for questions automatically...</span>
+    </div>
+
+    <!-- AI Output Content -->
+    <div class="parakeet-content">
+      <div>
+        <div class="question-tag" id="outCategory">INTRODUCTION & PROFILE</div>
+        <h2 class="ai-question" id="outQuestion">Tell me about yourself / Walk me through your resume.</h2>
+      </div>
+
+      <div class="ai-hook" id="outHook">
+        💬 <strong>Instant 2-Sec Hook:</strong> "Thank you for asking. I specialize in L1/L2 production support and technical troubleshooting..."
+      </div>
+
+      <ul class="ai-points" id="outPoints">
+        <li>Core Expertise: Managing ServiceNow incidents, monitoring 400+ Autosys batch jobs, and reviewing logs.</li>
+        <li>Technical Skills: UNIX shell scripting, Oracle SQL Developer query optimization, and ITRS Geneos monitoring.</li>
+        <li>Value Delivery: Eliminating database session locks and automating pre-EOD trade reconciliation checks.</li>
       </ul>
-      <div class="detailed-breakdown" id="resDetailed">
-        • Day-to-Day Operations:
-        1. Incident Management: Handling incidents reported by business users, prioritizing them based on Impact and Urgency in ServiceNow[span_2](start_span)[span_2](end_span).
-        2. Batch Monitoring: Supervising 400+ Autosys jobs and reviewing logs on failure[span_3](start_span)[span_3](end_span).
-      </div>
-      <div class="command-box" id="resCommand">
+
+      <div class="code-snippet" id="outSnippet">
         ps -ef | grep tomcat | df -h | top
       </div>
+
+      <div>
+        <div class="drawer-header">Quick Knowledge Index</div>
+        <div class="quick-grid" id="quickGrid"></div>
+      </div>
     </div>
 
-    <!-- Knowledge Index Suggestions -->
-    <div class="suggestions-section">
-      <div class="section-heading">Indexed Knowledge Base Suggestions</div>
-      <div class="suggestions-grid" id="suggestionsGrid"></div>
+    <!-- Manual Search Footer -->
+    <div class="parakeet-footer">
+      <input 
+        type="text" 
+        id="manualInput" 
+        placeholder="Type any interview question or keyword for instant AI answer..." 
+        oninput="handleSearch(this.value)"
+      />
     </div>
 
   </div>
 
   <script>
-    // COMPLETE KNOWLEDGE REPOSITORY
-    const ENGINE_DATABASE = [
+    // Parakeet AI Knowledge Repository (Production Support & Technical Roles)
+    const PARAKEET_DB = [
       {
         id: 1,
-        category: "Introduction",
-        question: "Tell me about yourself / Walk me through your experience.",
-        keywords: ["tell me about yourself", "introduce yourself", "walk me through", "background", "experience"],
-        hook: "I work as an Application Production Support Engineer managing L1 and L2 operations...",
-        bullets: [
-          "Role: L1/L2 Production Support Engineer maintaining system uptime and operational stability[span_4](start_span)[span_4](end_span).",
-          "Core Tools: ServiceNow, UNIX shell scripting, Oracle SQL Developer, 400+ Autosys batch jobs, and ITRS Geneos[span_5](start_span)[span_5](end_span)."
+        cat: "Introduction",
+        q: "Tell me about yourself / Walk me through your resume.",
+        keywords: ["tell me about yourself", "introduce yourself", "walk me through", "background", "resume"],
+        hook: "Thank you for asking. I specialize in L1/L2 production support and technical operations...",
+        points: [
+          "Core Background: Working in 24/7 rotational shifts managing enterprise application support.",
+          "Tool Stack: ServiceNow ITIL ticketing, UNIX shell scripting, Oracle SQL Developer, and Autosys scheduling.",
+          "Impact: Resolving critical P1-P4 incidents within SLA and automating file validation workflows."
         ],
-        detailed: "• Operational Scope:\n1. Shift Model: Work in 24/7 rotational shifts (Morning 6 AM - 3 PM, Afternoon 2 PM - 11 PM, Night 9 PM - 6 AM)[span_6](start_span)[span_6](end_span).\n2. Health Checks & Mailbox: Running daily morning health checks on Tomcat and database connections, and managing the team inbox[span_7](start_span)[span_7](end_span).\n3. Dynamic Reporting: Connecting to Oracle SQL Developer, writing requested queries for upstream/downstream users, and exporting output to .XLS spreadsheets[span_8](start_span)[span_8](end_span).",
-        cmd: "ps -ef | grep tomcat | df -h | top"
+        code: "ps -ef | grep tomcat | df -h | top"
       },
       {
         id: 2,
-        category: "Real-Time Issue",
-        question: "Real-Time Issue: User unable to raise Change Request in Application?",
-        keywords: ["unable to raise change request", "party_work_item_status", "party queue", "work item", "real time issue"],
-        hook: "This issue happens due to hung session records in backend queue tables...",
-        bullets: [
-          "Step 1 (Check Work Item): Query 'party_work_item_status'. If pending, have the user clear it first[span_9](start_span)[span_9](end_span).",
-          "Step 2 (Check Queue): If clear, create a P4 incident and query 'party_queue' database table[span_10](start_span)[span_10](end_span).",
-          "Step 3 (UAT Validation): Replicate and validate deleting the stuck queue in UAT first before Production[span_11](start_span)[span_11](end_span)."
+        cat: "Real-Time Troubleshooting",
+        q: "Real-Time Issue: User unable to raise Change Request in Application?",
+        keywords: ["change request", "party_work_item_status", "party queue", "work item", "unable to raise"],
+        hook: "This typically occurs due to orphaned sessions or hung work items in backend database tables...",
+        points: [
+          "Step 1: Check 'party_work_item_status' table. If an item is pending, instruct user to clear it first.",
+          "Step 2: If no work item exists, log a P4 incident and inspect the 'party_queue' table.",
+          "Step 3: Always validate and test queue deletion in the UAT environment before applying it in Production."
         ],
-        detailed: "• Investigation & Resolution Steps:\n1. Level 1: Query select * from party_work_item_status where user_id = '<user>';[span_12](start_span)[span_12](end_span)\n2. Level 2: Log P4 incident, query select * from party_queue where user_id = '<user>';[span_13](start_span)[span_13](end_span)\n3. Safe Rule: Always test queue deletion in UAT environment first before applying manual deletion in Production[span_14](start_span)[span_14](end_span).",
-        cmd: "select * from party_work_item_status; select * from party_queue;"
+        code: "select * from party_work_item_status; select * from party_queue;"
       },
       {
         id: 3,
-        category: "Real-Time Issue",
-        question: "Explain your real-time automation project (Settlement SSI Mismatch Shell Script)?",
-        keywords: ["shell script", "ssi", "omega", "cdm", "mismatch", "automation", "last faced issue"],
-        hook: "I developed a shell automation script that prevents recurring trade delays and P1/P2 settlement incidents...",
+        cat: "Shell Automation",
+        q: "Explain your real-time automation project (Settlement SSI Mismatch Script)?",
+        keywords: ["shell script", "ssi", "omega", "cdm", "mismatch", "automation"],
+        hook: "I engineered an automated pre-EOD check to eliminate trade bounce P1 incidents...",
         bullets: [
-          "Business Problem: Files from Omego client server and CDM SSI team had mismatch records, causing trade bounces[span_15](start_span)[span_15](end_span).",
-          "Script Architecture: Executed 'diff file1 file2', stored result into variable, and evaluated non-empty string via '[ -n \"$var\" ][span_16](start_span)'[span_16](end_span).",
-          "Automation Flow: If differences exist, drops automated email ('mail -s') alerting users before EOD[span_17](start_span)[span_17](end_span)."
+          "Problem: Omego client and CDM SSI files had data deviations, causing trade bounces and manual deactivations.",
+          "Script Logic: Used 'diff' with variable substitution (`res=$(diff f1 f2)`) to compare files.",
+          "Result: Automatically sent email alerts (`mail -s`) before EOD if mismatches were found, preventing trade delays."
         ],
-        detailed: "• Technical Script Breakdown:\n- Compare files: res=$(diff omego_file.txt cdm_file.txt)[span_18](start_span)[span_18](end_span)\n- Conditional: if [ -n \"$res\" ]; then[span_19](start_span)[span_19](end_span)\n- Mail alert: echo \"SSI Mismatch\" | mail -s \"URGENT: SSI Mismatch Alert\" dl@domain.com[span_20](start_span)[span_20](end_span)\n- Result: Alerts users before EOD batch run, eliminating P1/P2 settlement bounces[span_21](start_span)[span_21](end_span).",
-        cmd: "res=$(diff f1 f2); if [ -n \"$res\" ]; then echo 'Mismatch' | mail -s 'SSI Alert' dl; fi"
+        code: "res=$(diff f1 f2); if [ -n \"$res\" ]; then echo 'Mismatch' | mail -s 'SSI Alert' dl; fi"
       },
       {
         id: 4,
-        category: "Database & SQL",
-        question: "How do you find and kill Database Blockages in Oracle SQL?",
+        cat: "Database SQL",
+        q: "How do you find and kill Database Blockages in Oracle SQL?",
         keywords: ["blockage", "db blockage", "database blockage", "blocking_session", "kill session", "v$session"],
-        hook: "Database blockage occurs when a user executes a DML operation without committing, locking the row...",
+        hook: "Blockages happen when an uncommitted DML operation locks table rows for other users...",
         bullets: [
-          "Root Cause: An uncommitted transaction leaves rows locked for long periods[span_22](start_span)[span_22](end_span).",
-          "Query to Find Blockage: select * from v$session where blocking_session is not NULL order by blocking_session;[span_23](start_span)[span_23](end_span)",
-          "Command to Kill Session: alter system kill session ('sid,serial#') immediate;[span_24](start_span)[span_24](end_span)."
+          "Detection Query: Query `v$session` where `blocking_session is not NULL` to find locked sessions.",
+          "Remediation: Coordinate with the user and execute `alter system kill session` with DBA support.",
+          "Prevention: Ensure application developers always include proper commit statements in transactions."
         ],
-        detailed: "• Deep Investigation Workflow:\n1. Detect: SELECT sid, serial#, username, status, blocking_session FROM v$session WHERE blocking_session IS NOT NULL;[span_25](start_span)[span_25](end_span)\n2. Remediate: Collaborate with DBA team to execute ALTER SYSTEM KILL SESSION ('<sid>,<serial#>') IMMEDIATE;[span_26](start_span)[span_26](end_span).",
-        cmd: "select * from v$session where blocking_session is not NULL; alter system kill session ('sid,serial#') immediate;"
+        code: "select * from v$session where blocking_session is not NULL; alter system kill session ('sid,serial#') immediate;"
       },
       {
         id: 5,
-        category: "Unix & Troubleshooting",
-        question: "How do you troubleshoot Filesystem Space 75% or 100% full in UNIX?",
-        keywords: ["filesystem", "space", "75%", "100%", "disk full", "df", "du", "truncate", "cat /dev/null"],
-        hook: "When a filesystem alert triggers, I identify the saturated mount, isolate large files, and safely truncate...",
+        cat: "Unix Operations",
+        q: "How do you troubleshoot Filesystem Space 75% or 100% full in UNIX?",
+        keywords: ["filesystem", "space", "75%", "100%", "disk full", "df", "du", "truncate"],
+        hook: "I methodically locate heavy directories and safely truncate or compress logs without stopping active processes...",
         bullets: [
-          "Locate Filesystem: Run 'df -h' to check disk usage, then 'du | sort -k 1nr' inside the directory[span_27](start_span)[span_27](end_span).",
-          "Find Heavy Files: Use 'ls -lS' to list largest files. Compress inactive files with 'gzip[span_28](start_span)'[span_28](end_span).",
-          "Safe Truncation: If actively written by a running process, never delete; truncate using 'cat /dev/null > log_file_name[span_29](start_span)'[span_29](end_span)."
+          "Inspection: Run `df -h` to check the mount, then `du | sort -k 1nr` to locate the heaviest subdirectory.",
+          "Safe Truncation: If a log file is actively held by a running process, never delete it; truncate via `cat /dev/null > log_file`.",
+          "Long-term Fix: Submit a volume expansion request to the Unix Admin team."
         ],
-        detailed: "• Remediation Steps:\n1. Inspect: df -h followed by du -sk * | sort -k 1nr[span_30](start_span)[span_30](end_span)\n2. Inactive files: gzip <filename>[span_31](start_span)[span_31](end_span)\n3. Active files (Tomcat/Java logs): Clear contents safely without breaking process inode: cat /dev/null > log_file_name[span_32](start_span)[span_32](end_span).",
-        cmd: "df -h; du -sk * | sort -k 1nr; ls -lS; cat /dev/null > log_file_name"
+        code: "df -h; du -sk * | sort -k 1nr; cat /dev/null > log_file"
       },
       {
         id: 6,
-        category: "ITIL & ServiceNow",
-        question: "Difference between a Service Request and an Incident?",
-        keywords: ["service request", "incident", "difference between service request", "request ticket"],
-        hook: "The distinction lies in whether the requirement is a planned user task or an unplanned operational disruption...",
+        cat: "ITIL & ServiceNow",
+        q: "Difference between a Service Request and an Incident?",
+        keywords: ["service request", "incident", "difference", "request ticket", "unplanned"],
+        hook: "The core difference is whether the activity is a planned task or an unplanned operational outage...",
         bullets: [
-          "Service Request: Planned task requested by a user (e.g., dynamic reports, access setup). No impact, urgency, or priority[span_33](start_span)[span_33](end_span).",
-          "Incident: Unplanned interruption or reduction in quality that disrupts business flow[span_34](start_span)[span_34](end_span).",
-          "Action Required: Incidents must have Impact, Urgency, and Priority assigned in ServiceNow to track SLAs[span_35](start_span)[span_35](end_span)."
+          "Service Request: Planned user task (e.g., dynamic reports, access setup). No priority or impact needed.",
+          "Incident: Unplanned business interruption or degradation. Requires Impact and Urgency to calculate Priority.",
+          "SLA Tracking: Incidents must be resolved within strict priority windows (P1 to P4)."
         ],
-        detailed: "• ITIL Comparison:\n- Service Request: Planned routine task (Request tickets, no priority/urgency needed)[span_36](start_span)[span_36](end_span).\n- Incident: Unplanned interruption affecting business flow (Must assign Impact & Urgency to calculate Priority P1-P4)[span_37](start_span)[span_37](end_span).",
-        cmd: "Request = Planned (No Priority) | Incident = Unplanned (Impact + Urgency = Priority)"
-      },
-      {
-        id: 7,
-        category: "ITIL & ServiceNow",
-        question: "How do you handle P1 or P2 critical tickets?",
-        keywords: ["p1", "p2", "major incident", "critical ticket", "bridge call", "handle p1"],
-        hook: "For major P1/P2 incidents, rapid communication, bridge coordination, and quick workarounds take precedence...",
-        bullets: [
-          "1. Rapid Alerting: Notify Manager/TL, create ServiceNow ticket, and send out incident notification email[span_38](start_span)[span_38](end_span).",
-          "2. Bridge Operations: Sys Ops convenes a live bridge call with Affected Users, DB Dev, Unix, and Support teams[span_39](start_span)[span_39](end_span).",
-          "3. Workaround & Fix: Implement an immediate workaround to restore business flow, while Manager raises Jira ticket[span_40](start_span)[span_40](end_span)."
-        ],
-        detailed: "• P1/P2 Execution Checklist:\n- Triage & Notification within 15 mins (Description, Priority, Next Update ETA)[span_41](start_span)[span_41](end_span).\n- Bridge call setup with DBA, Unix, and Dev teams[span_42](start_span)[span_42](end_span).\n- Manager logs Jira ticket for permanent code fix[span_43](start_span)[span_43](end_span).",
-        cmd: "P1 SLA = 5h | P2 SLA = 10h | Updates every 30 mins"
-      },
-      {
-        id: 8,
-        category: "Monitoring & Autosys",
-        question: "Autosys Batch Monitoring and ITRS Geneos Work?",
-        keywords: ["autosys", "geneos", "itrs", "monitoring", "job failure", "snooze", "400+ jobs"],
-        hook: "We monitor over 400 batch jobs and real-time infrastructure alerts daily...",
-        bullets: [
-          "Autosys (400+ jobs): Review logs on job failure, raise ServiceNow incidents, notify users, and remediate[span_44](start_span)[span_44](end_span).",
-          "Failure Causes: Missing incoming feed files, filesystem space capacity, corrupt input data, or permissions[span_45](start_span)[span_45](end_span).",
-          "ITRS Geneos: Monitors disk space, feed file arrival, job state, and CPU/Memory. Warning = P4, Critical = P3[span_46](start_span)[span_46](end_span)."
-        ],
-        detailed: "• Monitoring Operations:\n- Autosys: Inspect logs on failure, identify feed/space/data errors, log ticket[span_47](start_span)[span_47](end_span).\n- Geneos: Warning = P4 ticket, Critical = P3 ticket. Always snooze alerts during maintenance releases[span_48](start_span)[span_48](end_span).",
-        cmd: "Autosys log inspection | Geneos Warning (P4) / Critical (P3)"
+        code: "Service Request = Planned | Incident = Unplanned (Impact + Urgency = Priority)"
       }
     ];
 
-    let activeFilter = "All";
+    let recognition = null;
+    let isListening = false;
 
-    function renderSuggestions(list) {
-      const grid = document.getElementById("suggestionsGrid");
+    function renderQuickGrid(list) {
+      const grid = document.getElementById("quickGrid");
       grid.innerHTML = "";
       list.forEach(item => {
         const chip = document.createElement("div");
-        chip.className = "suggestion-chip";
+        chip.className = "quick-chip";
         chip.onclick = () => displayAnswer(item);
-        chip.innerHTML = `
-          <div class="chip-title">${item.question}</div>
-          <div class="chip-snippet">${item.bullets[0]}</div>
-        `;
+        chip.innerText = item.q;
         grid.appendChild(chip);
       });
     }
 
     function displayAnswer(item) {
-      document.getElementById("resCategory").innerText = item.category.toUpperCase();
-      document.getElementById("resQuestion").innerText = item.question;
-      document.getElementById("resHook").innerHTML = `💬 <strong>Quick Overview:</strong> "${item.hook}"`;
-      document.getElementById("resBullets").innerHTML = item.bullets.map(b => `<li>${b}</li>`).join("");
-      document.getElementById("resDetailed").innerText = item.detailed;
-      document.getElementById("resCommand").innerText = item.cmd;
+      document.getElementById("outCategory").innerText = item.cat.toUpperCase();
+      document.getElementById("outQuestion").innerText = item.q;
+      document.getElementById("outHook").innerHTML = `💬 <strong>Instant Hook:</strong> "${item.hook}"`;
+      
+      const pointsList = document.getElementById("outPoints");
+      pointsList.innerHTML = item.points.map(p => `<li>${p}</li>`).join("");
+      
+      document.getElementById("outSnippet").innerText = item.code;
     }
 
-    function executeSearch(query) {
+    function handleSearch(query) {
       const q = query.toLowerCase().trim();
-      let filtered = ENGINE_DATABASE;
-
-      if (activeFilter !== "All") {
-        filtered = filtered.filter(item => item.category === activeFilter);
-      }
-
+      let filtered = PARAKEET_DB;
       if (q) {
-        filtered = filtered.filter(item => {
-          return item.question.toLowerCase().includes(q) ||
-                 item.keywords.some(k => k.toLowerCase().includes(q)) ||
-                 item.bullets.some(b => b.toLowerCase().includes(q)) ||
-                 item.detailed.toLowerCase().includes(q);
-        });
+        filtered = filtered.filter(item => 
+          item.q.toLowerCase().includes(q) || 
+          item.keywords.some(k => k.toLowerCase().includes(q)) ||
+          item.points.some(p => p.toLowerCase().includes(q))
+        );
       }
+      renderQuickGrid(filtered);
+      if (filtered.length > 0) displayAnswer(filtered[0]);
+    }
 
-      renderSuggestions(filtered);
-      if (filtered.length > 0) {
-        displayAnswer(filtered[0]);
+    function initSpeechEngine() {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) {
+        alert("Speech Recognition requires Google Chrome or Microsoft Edge.");
+        return null;
+      }
+      const rec = new SpeechRecognition();
+      rec.continuous = true;
+      rec.interimResults = true;
+      rec.lang = "en-US";
+
+      rec.onresult = (evt) => {
+        let transcript = "";
+        for (let i = evt.resultIndex; i < evt.results.length; i++) {
+          transcript += evt.results[i][0].transcript;
+        }
+        const text = transcript.toLowerCase().trim();
+        document.getElementById("liveTranscript").innerText = text;
+
+        // Auto-match AI scoring
+        let bestMatch = null;
+        let maxScore = 0;
+        for (const item of PARAKEET_DB) {
+          let score = 0;
+          for (const kw of item.keywords) {
+            if (text.includes(kw.toLowerCase())) score += kw.length;
+          }
+          if (score > maxScore) {
+            maxScore = score;
+            bestMatch = item;
+          }
+        }
+        if (bestMatch && maxScore > 3) {
+          displayAnswer(bestMatch);
+        }
+      };
+
+      rec.onend = () => {
+        if (isListening) {
+          try { rec.start(); } catch(e) {}
+        }
+      };
+      return rec;
+    }
+
+    function toggleListening() {
+      const btn = document.getElementById("listenBtn");
+      const dot = document.getElementById("pulsingDot");
+
+      if (!recognition) recognition = initSpeechEngine();
+      if (!recognition) return;
+
+      if (!isListening) {
+        try {
+          recognition.start();
+          isListening = true;
+          btn.classList.add("active");
+          btn.innerHTML = "🟢 AI Listening...";
+          dot.classList.add("active");
+        } catch(e) {}
+      } else {
+        isListening = false;
+        recognition.stop();
+        btn.classList.remove("active");
+        btn.innerHTML = "🎙️ Live AI Listen";
+        dot.classList.remove("active");
       }
     }
 
-    function filterCategory(cat, btn) {
-      activeFilter = cat;
-      document.querySelectorAll(".pill").forEach(p => p.classList.remove("active"));
-      btn.classList.add("active");
-      executeSearch(document.getElementById("mainSearch").value);
+    function toggleStealth() {
+      document.querySelector(".parakeet-app").style.opacity = 
+        document.querySelector(".parakeet-app").style.opacity === "0.2" ? "1" : "0.2";
     }
 
-    // Initialize engine on page load
-    renderSuggestions(ENGINE_DATABASE);
-    displayAnswer(ENGINE_DATABASE[0]);
+    // Initialize on load
+    renderQuickGrid(PARAKEET_DB);
+    displayAnswer(PARAKEET_DB[0]);
   </script>
 </body>
 </html>
