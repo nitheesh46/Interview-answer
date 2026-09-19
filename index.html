@@ -3,17 +3,16 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Auto-Pilot AI Interview Copilot</title>
+  <title>OmniSearch | Ask Anything, Get Answers Instantly</title>
   <style>
     :root {
-      --bg: #07090e;
-      --card-bg: rgba(18, 24, 38, 0.95);
-      --border: rgba(255, 255, 255, 0.12);
+      --bg: #090d16;
+      --panel: #111827;
+      --card: #1e293b;
+      --border: #334155;
       --primary: #38bdf8;
       --accent: #22c55e;
       --warning: #f59e0b;
-      --danger: #ef4444;
-      --purple: #a855f7;
       --text: #f8fafc;
       --text-muted: #94a3b8;
     }
@@ -31,663 +30,469 @@
       min-height: 100vh;
       display: flex;
       flex-direction: column;
-      overflow-x: hidden;
-    }
-
-    /* Auto-Pilot Header Bar */
-    header {
-      position: sticky;
-      top: 0;
-      z-index: 1000;
-      background: rgba(10, 14, 23, 0.96);
-      backdrop-filter: blur(16px);
-      border-bottom: 1px solid var(--border);
-      padding: 12px 18px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    .status-row {
-      display: flex;
-      justify-content: space-between;
       align-items: center;
+      padding: 30px 16px;
     }
 
-    .brand-group {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .live-dot {
-      width: 12px;
-      height: 12px;
-      border-radius: 50%;
-      background: #475569;
-      transition: all 0.3s;
-    }
-
-    .live-dot.active {
-      background: var(--accent);
-      box-shadow: 0 0 14px var(--accent);
-      animation: pulseWave 1.4s infinite;
-    }
-
-    @keyframes pulseWave {
-      0% { transform: scale(0.9); opacity: 0.8; }
-      50% { transform: scale(1.3); opacity: 1; }
-      100% { transform: scale(0.9); opacity: 0.8; }
-    }
-
-    .brand-title {
-      font-size: 0.9rem;
-      font-weight: 800;
-      letter-spacing: 0.05em;
-      text-transform: uppercase;
-      color: var(--primary);
-    }
-
-    .auto-mode-badge {
-      background: rgba(34, 197, 94, 0.15);
-      border: 1px solid var(--accent);
-      color: var(--accent);
-      padding: 3px 8px;
-      border-radius: 6px;
-      font-size: 0.75rem;
-      font-weight: 700;
-    }
-
-    .control-actions {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .btn {
-      padding: 7px 14px;
-      border-radius: 6px;
-      font-size: 0.82rem;
-      font-weight: 700;
-      border: none;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      transition: all 0.15s ease;
-    }
-
-    .btn-autopilot { background: var(--accent); color: #022c22; }
-    .btn-autopilot.active { background: #0284c7; color: #fff; box-shadow: 0 0 12px rgba(2, 132, 199, 0.5); }
-    .btn-stealth { background: rgba(255, 255, 255, 0.06); color: var(--text-muted); border: 1px solid var(--border); }
-    .btn-stealth:hover { color: #fff; border-color: var(--primary); }
-
-    /* Audio Visualizer Bar */
-    .audio-visualizer-bar {
-      height: 3px;
+    .search-engine-container {
       width: 100%;
-      background: rgba(255, 255, 255, 0.05);
-      border-radius: 2px;
-      overflow: hidden;
-    }
-
-    .audio-progress {
-      height: 100%;
-      width: 0%;
-      background: linear-gradient(90deg, var(--primary), var(--accent));
-      transition: width 0.08s ease;
-    }
-
-    /* Live Automated Speech Transcript Feed */
-    .stream-feed {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 0.84rem;
-      background: rgba(0, 0, 0, 0.5);
-      padding: 8px 12px;
-      border-radius: 6px;
-      border-left: 3px solid var(--purple);
-    }
-
-    .stream-feed span.label {
-      color: var(--purple);
-      font-weight: 700;
-      font-size: 0.75rem;
-      text-transform: uppercase;
-    }
-
-    #transcriptDisplay {
-      color: #e2e8f0;
-      font-style: italic;
-    }
-
-    /* AUTOMATED TELEPROMPTER HUD */
-    .parrot-hud {
-      margin: 12px 18px;
-      background: var(--card-bg);
-      border: 2px solid rgba(99, 102, 241, 0.5);
-      border-radius: 12px;
-      padding: 18px;
-      box-shadow: 0 10px 35px rgba(0, 0, 0, 0.7);
-      backdrop-filter: blur(14px);
-    }
-
-    .hud-meta {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 6px;
-    }
-
-    .hud-cat {
-      font-size: 0.75rem;
-      font-weight: 800;
-      color: var(--primary);
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-    }
-
-    .hud-match-status {
-      font-size: 0.75rem;
-      padding: 3px 8px;
-      border-radius: 4px;
-      background: rgba(34, 197, 94, 0.2);
-      color: var(--accent);
-      font-weight: 800;
-    }
-
-    .hud-query {
-      font-size: 1.25rem;
-      font-weight: 800;
-      color: #fff;
-      margin-bottom: 8px;
-      line-height: 1.35;
-    }
-
-    .hud-hook {
-      background: rgba(245, 158, 11, 0.12);
-      border-left: 3px solid var(--warning);
-      padding: 8px 12px;
-      border-radius: 4px;
-      font-size: 0.88rem;
-      color: #fde68a;
-      margin-bottom: 12px;
-    }
-
-    .hud-bullets {
-      list-style-type: none;
+      max-width: 800px;
       display: flex;
       flex-direction: column;
-      gap: 7px;
-      margin-bottom: 14px;
+      gap: 24px;
     }
 
-    .hud-bullets li {
-      font-size: 1.05rem;
-      color: #f1f5f9;
-      line-height: 1.42;
+    .engine-header {
+      text-align: center;
       display: flex;
+      flex-direction: column;
       gap: 8px;
     }
 
-    .hud-bullets li::before {
-      content: "▶";
-      color: var(--accent);
-      font-size: 0.78rem;
-      margin-top: 3px;
+    .engine-title {
+      font-size: 2rem;
+      font-weight: 800;
+      background: linear-gradient(90deg, #38bdf8, #818cf8, #c084fc);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
     }
 
-    .hud-deep {
-      background: rgba(0, 0, 0, 0.45);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 12px 14px;
-      font-size: 0.9rem;
-      color: #cbd5e1;
-      line-height: 1.55;
-      margin-bottom: 12px;
-      white-space: pre-line;
-    }
-
-    .hud-command {
-      background: #04060b;
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      padding: 10px 14px;
-      font-family: monospace;
-      font-size: 0.88rem;
-      color: #67e8f9;
-    }
-
-    /* Cards Grid */
-    main {
-      padding: 0 18px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      padding-bottom: 40px;
-    }
-
-    .grid-header {
-      font-size: 0.75rem;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
+    .engine-subtitle {
+      font-size: 0.95rem;
       color: var(--text-muted);
     }
 
-    .cards-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    /* Big Central Search Bar */
+    .search-bar-wrapper {
+      position: relative;
+      width: 100%;
+    }
+
+    #mainSearch {
+      width: 100%;
+      background: var(--panel);
+      border: 2px solid var(--border);
+      border-radius: 14px;
+      padding: 18px 24px 18px 50px;
+      color: #fff;
+      font-size: 1.15rem;
+      outline: none;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      transition: all 0.2s ease;
+    }
+
+    #mainSearch:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 20px rgba(56, 189, 248, 0.3);
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 18px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 1.2rem;
+      color: var(--text-muted);
+    }
+
+    /* Category Filter Pills */
+    .filter-pills {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+    }
+
+    .pill {
+      background: var(--card);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: 0.15s;
+    }
+
+    .pill.active, .pill:hover {
+      background: var(--primary);
+      color: #090d16;
+      border-color: var(--primary);
+    }
+
+    /* Instant Answer Card */
+    .answer-card {
+      background: var(--panel);
+      border: 2px solid #6366f1;
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 8px 35px rgba(99, 102, 241, 0.2);
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .answer-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      font-weight: 800;
+      color: #a5b4fc;
+    }
+
+    .answer-question {
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: #fff;
+      line-height: 1.35;
+    }
+
+    .answer-hook {
+      background: rgba(245, 158, 11, 0.12);
+      border-left: 3px solid var(--warning);
+      padding: 8px 14px;
+      border-radius: 6px;
+      font-size: 0.92rem;
+      color: #fde68a;
+    }
+
+    .answer-bullets {
+      list-style-type: none;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .answer-bullets li {
+      font-size: 1.05rem;
+      color: #f1f5f9;
+      line-height: 1.45;
+      display: flex;
       gap: 10px;
     }
 
-    .card {
-      background: rgba(18, 24, 38, 0.6);
+    .answer-bullets li::before {
+      content: "▶";
+      color: var(--accent);
+      font-size: 0.85rem;
+      margin-top: 3px;
+    }
+
+    .detailed-breakdown {
+      background: #090d16;
       border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+      font-size: 0.94rem;
+      color: #cbd5e1;
+      line-height: 1.6;
+      white-space: pre-line;
+    }
+
+    .command-box {
+      background: #04060b;
+      border: 1px solid #1e293b;
       border-radius: 8px;
+      padding: 12px 16px;
+      font-family: monospace;
+      font-size: 0.9rem;
+      color: #67e8f9;
+    }
+
+    /* Index Suggestions Grid */
+    .suggestions-section {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .section-heading {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      font-weight: 700;
+    }
+
+    .suggestions-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 10px;
+    }
+
+    .suggestion-chip {
+      background: var(--card);
+      border: 1px solid var(--border);
       padding: 12px 14px;
+      border-radius: 10px;
       cursor: pointer;
-      transition: all 0.15s ease;
+      transition: 0.15s;
     }
 
-    .card:hover {
+    .suggestion-chip:hover {
       border-color: var(--primary);
-      background: rgba(30, 41, 59, 0.8);
+      background: rgba(56, 189, 248, 0.08);
     }
 
-    .card.active {
-      border-color: var(--accent);
-      background: rgba(34, 197, 94, 0.12);
-    }
-
-    .card-title {
+    .chip-title {
       font-size: 0.9rem;
       font-weight: 700;
       color: #fff;
       margin-bottom: 4px;
     }
 
-    .card-snippet {
-      font-size: 0.8rem;
+    .chip-snippet {
+      font-size: 0.78rem;
       color: var(--text-muted);
-      line-height: 1.35;
-    }
-
-    /* Stealth Mode */
-    body.stealth-mode main,
-    body.stealth-mode .stream-feed {
-      display: none !important;
-    }
-    body.stealth-mode .parrot-hud {
-      margin: 8px;
-      background: rgba(7, 9, 14, 0.98);
-      border-color: rgba(255, 255, 255, 0.2);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
   </style>
 </head>
 <body>
 
-  <header>
-    <div class="status-row">
-      <div class="brand-group">
-        <div class="live-dot" id="liveDot"></div>
-        <span class="brand-title">Auto-Pilot AI Engine</span>
-        <span class="auto-mode-badge" id="modeBadge">Hands-Free Mode Ready</span>
-      </div>
-
-      <div class="control-actions">
-        <button class="btn btn-autopilot active" id="autoBtn" onclick="toggleAutoPilot()">🟢 Auto-Pilot On</button>
-        <button class="btn btn-stealth" onclick="toggleStealth()">👁️ Stealth Mode (Esc)</button>
-      </div>
-    </div>
-
-    <div class="audio-visualizer-bar">
-      <div class="audio-progress" id="audioBar"></div>
-    </div>
-
-    <div class="stream-feed">
-      <span class="label">Live HR Audio:</span>
-      <span id="transcriptDisplay">Listening to interviewer automatically... Click 'Auto-Pilot On' if needed.</span>
-    </div>
-  </header>
-
-  <!-- AUTOMATED TELEPROMPTER HUD -->
-  <div class="parrot-hud" id="hudBox">
-    <div class="hud-meta">
-      <span class="hud-cat" id="hudCat">INTRODUCTION</span>
-      <span class="hud-match-status" id="hudMatchStatus">⚡ Automated AI Match (100%)</span>
-    </div>
+  <div class="search-engine-container">
     
-    <div class="hud-query" id="hudQuestion">Tell me about yourself / Walk me through your experience.</div>
-    
-    <div class="hud-hook" id="hudHook">
-      💬 <strong>0s Automated Hook:</strong> "Thank you for asking. I work as an Application Production Support Engineer handling enterprise workflows..."
+    <div class="engine-header">
+      <div class="engine-title">🔍 OmniSearch Engine</div>
+      <div class="engine-subtitle">Ask anything or search your technical knowledge base for instant structured answers.</div>
     </div>
 
-    <ul class="hud-bullets" id="hudBullets">
-      <li><strong>Role Scope:</strong> L1/L2 production support, incident triage in ServiceNow, and daily health checks[span_0](start_span)[span_0](end_span).</li>
-      <li><strong>Technical Stack:</strong> UNIX shell scripting, Oracle SQL Developer, 400+ Autosys batch jobs, and ITRS Geneos[span_1](start_span)[span_1](end_span).</li>
-      <li><strong>Key Value:</strong> Resolving database locks, handling P1-P4 incidents within SLA, and automating SSI checks before EOD[span_2](start_span)[span_2](end_span).</li>
-    </ul>
-
-    <div class="hud-deep" id="hudDeep">
-      • Day-to-Day Operations:
-      1. Incident Management: Handling incidents reported by business users, prioritizing them based on Impact and Urgency in ServiceNow, and providing workarounds to safeguard business continuity[span_3](start_span)[span_3](end_span).
-      2. Batch Monitoring: Supervising 400+ Autosys jobs. On failure, reviewing log files, identifying feed file/data/space exceptions, and notifying users[span_4](start_span)[span_4](end_span).
+    <!-- Search Input Bar -->
+    <div class="search-bar-wrapper">
+      <span class="search-icon">🔍</span>
+      <input 
+        type="text" 
+        id="mainSearch" 
+        placeholder="Type any question (e.g. 'how to fix disk full', 'p1 ticket steps', 'oracle blockage', 'autosys')..." 
+        autofocus
+        oninput="executeSearch(this.value)"
+      />
     </div>
 
-    <div class="hud-command" id="hudCmd">
-      ps -ef | grep tomcat | df -h | top
+    <!-- Category Filters -->
+    <div class="filter-pills">
+      <button class="pill active" onclick="filterCategory('All', this)">All Topics</button>
+      <button class="pill" onclick="filterCategory('Real-Time Issue', this)">Real-Time Issues</button>
+      <button class="pill" onclick="filterCategory('ITIL & ServiceNow', this)">ITIL & SLA</button>
+      <button class="pill" onclick="filterCategory('Database & SQL', this)">Database & SQL</button>
+      <button class="pill" onclick="filterCategory('Unix & Troubleshooting', this)">UNIX & Space</button>
+      <button class="pill" onclick="filterCategory('Monitoring & Autosys', this)">Autosys & Geneos</button>
     </div>
+
+    <!-- Instant Answer Result Card -->
+    <div class="answer-card" id="answerCard">
+      <div class="answer-meta">
+        <span id="resCategory">INTRODUCTION</span>
+        <span style="color: var(--accent);">⚡ Instant Match</span>
+      </div>
+      <div class="answer-question" id="resQuestion">Tell me about yourself / Walk me through your experience.</div>
+      <div class="answer-hook" id="resHook">
+        💬 <strong>Quick Overview:</strong> "I work as an Application Production Support Engineer handling L1 and L2 operations..."
+      </div>
+      <ul class="answer-bullets" id="resBullets">
+        <li>Role: L1/L2 Production Support Engineer maintaining system uptime and operational stability[span_0](start_span)[span_0](end_span).</li>
+        <li>Core Tools: ServiceNow, UNIX shell scripting, Oracle SQL Developer, 400+ Autosys batch jobs, and ITRS Geneos[span_1](start_span)[span_1](end_span).</li>
+      </ul>
+      <div class="detailed-breakdown" id="resDetailed">
+        • Day-to-Day Operations:
+        1. Incident Management: Handling incidents reported by business users, prioritizing them based on Impact and Urgency in ServiceNow[span_2](start_span)[span_2](end_span).
+        2. Batch Monitoring: Supervising 400+ Autosys jobs and reviewing logs on failure[span_3](start_span)[span_3](end_span).
+      </div>
+      <div class="command-box" id="resCommand">
+        ps -ef | grep tomcat | df -h | top
+      </div>
+    </div>
+
+    <!-- Knowledge Index Suggestions -->
+    <div class="suggestions-section">
+      <div class="section-heading">Indexed Knowledge Base Suggestions</div>
+      <div class="suggestions-grid" id="suggestionsGrid"></div>
+    </div>
+
   </div>
 
-  <main>
-    <div class="grid-header">Knowledge Base Index (Click any card to override automatically)</div>
-    <div class="cards-grid" id="cardsGrid"></div>
-  </main>
-
   <script>
-    // FULL PRODUCTION SUPPORT AUTOMATED KNOWLEDGE DATABASE
-    const AUTO_DATABASE = [
+    // COMPLETE KNOWLEDGE REPOSITORY
+    const ENGINE_DATABASE = [
       {
         id: 1,
-        cat: "Introduction",
-        q: "Tell me about yourself / Walk me through your experience.",
-        keywords: ["tell me about yourself", "introduce yourself", "walk me through", "background", "experience", "yourself"],
-        hook: "Thank you for asking. I work as an Application Production Support Engineer managing L1 and L2 operations...",
+        category: "Introduction",
+        question: "Tell me about yourself / Walk me through your experience.",
+        keywords: ["tell me about yourself", "introduce yourself", "walk me through", "background", "experience"],
+        hook: "I work as an Application Production Support Engineer managing L1 and L2 operations...",
         bullets: [
-          "Role: L1/L2 Production Support Engineer maintaining system uptime and operational stability[span_5](start_span)[span_5](end_span).",
-          "Core Tools: ServiceNow, UNIX shell scripting, Oracle SQL Developer, 400+ Autosys batch jobs, and ITRS Geneos[span_6](start_span)[span_6](end_span).",
-          "Key Contributions: Triage P1-P4 tickets, eliminate database blockages, and automate file verification checks before EOD[span_7](start_span)[span_7](end_span)."
+          "Role: L1/L2 Production Support Engineer maintaining system uptime and operational stability[span_4](start_span)[span_4](end_span).",
+          "Core Tools: ServiceNow, UNIX shell scripting, Oracle SQL Developer, 400+ Autosys batch jobs, and ITRS Geneos[span_5](start_span)[span_5](end_span)."
         ],
-        deep: "• Operational Scope:\n1. Shift Model: Work in 24/7 rotational shifts (Morning 6 AM - 3 PM, Afternoon 2 PM - 11 PM, Night 9 PM - 6 AM)[span_8](start_span)[span_8](end_span).\n2. Health Checks & Mailbox: Running daily morning health checks on Tomcat and database connections, and managing the team inbox[span_9](start_span)[span_9](end_span).\n3. Dynamic Reporting: Connecting to Oracle SQL Developer, writing requested queries for upstream/downstream users, and exporting output to .XLS spreadsheets[span_10](start_span)[span_10](end_span).",
+        detailed: "• Operational Scope:\n1. Shift Model: Work in 24/7 rotational shifts (Morning 6 AM - 3 PM, Afternoon 2 PM - 11 PM, Night 9 PM - 6 AM)[span_6](start_span)[span_6](end_span).\n2. Health Checks & Mailbox: Running daily morning health checks on Tomcat and database connections, and managing the team inbox[span_7](start_span)[span_7](end_span).\n3. Dynamic Reporting: Connecting to Oracle SQL Developer, writing requested queries for upstream/downstream users, and exporting output to .XLS spreadsheets[span_8](start_span)[span_8](end_span).",
         cmd: "ps -ef | grep tomcat | df -h | top"
       },
       {
         id: 2,
-        cat: "Real-Time Issue",
-        q: "Real-Time Issue: User unable to raise Change Request in Application?",
-        keywords: ["change request", "party_work_item_status", "party queue", "work item", "unable to raise", "cr"],
-        hook: "This issue happens due to hung session records in backend queue tables. Here is my exact automated analysis...",
+        category: "Real-Time Issue",
+        question: "Real-Time Issue: User unable to raise Change Request in Application?",
+        keywords: ["unable to raise change request", "party_work_item_status", "party queue", "work item", "real time issue"],
+        hook: "This issue happens due to hung session records in backend queue tables...",
         bullets: [
-          "Step 1 (Check Work Item): Query 'party_work_item_status'. If a work item is pending, have the user clear it first[span_11](start_span)[span_11](end_span).",
-          "Step 2 (Check Queue): If clear, create a P4 incident and query the 'party_queue' database table for stuck entries[span_12](start_span)[span_12](end_span).",
-          "Step 3 (UAT Validation): Replicate and validate deleting the stuck queue in UAT first before implementing manual deletion in Production[span_13](start_span)[span_13](end_span)."
+          "Step 1 (Check Work Item): Query 'party_work_item_status'. If pending, have the user clear it first[span_9](start_span)[span_9](end_span).",
+          "Step 2 (Check Queue): If clear, create a P4 incident and query 'party_queue' database table[span_10](start_span)[span_10](end_span).",
+          "Step 3 (UAT Validation): Replicate and validate deleting the stuck queue in UAT first before Production[span_11](start_span)[span_11](end_span)."
         ],
-        deep: "• Investigation & Resolution Steps:\n1. Level 1: Query select * from party_work_item_status where user_id = '<user>';\n2. Level 2: Log P4 incident, query select * from party_queue where user_id = '<user>';\n3. Safe Rule: Always test queue deletion in UAT environment first before applying manual deletion in Production[span_14](start_span)[span_14](end_span).",
+        detailed: "• Investigation & Resolution Steps:\n1. Level 1: Query select * from party_work_item_status where user_id = '<user>';[span_12](start_span)[span_12](end_span)\n2. Level 2: Log P4 incident, query select * from party_queue where user_id = '<user>';[span_13](start_span)[span_13](end_span)\n3. Safe Rule: Always test queue deletion in UAT environment first before applying manual deletion in Production[span_14](start_span)[span_14](end_span).",
         cmd: "select * from party_work_item_status; select * from party_queue;"
       },
       {
         id: 3,
-        cat: "Shell Automation",
-        q: "Explain your real-time automation project (Settlement SSI Mismatch Shell Script)?",
-        keywords: ["shell script", "ssi", "omega", "cdm", "mismatch", "automation", "last faced", "script"],
+        category: "Real-Time Issue",
+        question: "Explain your real-time automation project (Settlement SSI Mismatch Shell Script)?",
+        keywords: ["shell script", "ssi", "omega", "cdm", "mismatch", "automation", "last faced issue"],
         hook: "I developed a shell automation script that prevents recurring trade delays and P1/P2 settlement incidents...",
         bullets: [
-          "Business Problem: Files from Omego client server and CDM SSI team had mismatch records, causing trade bounces and trade delays[span_15](start_span)[span_15](end_span).",
+          "Business Problem: Files from Omego client server and CDM SSI team had mismatch records, causing trade bounces[span_15](start_span)[span_15](end_span).",
           "Script Architecture: Executed 'diff file1 file2', stored result into variable, and evaluated non-empty string via '[ -n \"$var\" ][span_16](start_span)'[span_16](end_span).",
-          "Automation Flow: If differences exist, drops automated email ('mail -s') alerting users to manually deactivate mismatch records before EOD[span_17](start_span)[span_17](end_span)."
+          "Automation Flow: If differences exist, drops automated email ('mail -s') alerting users before EOD[span_17](start_span)[span_17](end_span)."
         ],
-        deep: "• Technical Script Breakdown:\n- Compare files: res=$(diff omego_file.txt cdm_file.txt)\n- Conditional: if [ -n \"$res\" ]; then\n- Mail alert: echo \"SSI Mismatch\" | mail -s \"URGENT: SSI Mismatch Alert\" dl@domain.com\n- Result: Alerts users before EOD batch run, eliminating P1/P2 settlement bounces[span_18](start_span)[span_18](end_span).",
+        detailed: "• Technical Script Breakdown:\n- Compare files: res=$(diff omego_file.txt cdm_file.txt)[span_18](start_span)[span_18](end_span)\n- Conditional: if [ -n \"$res\" ]; then[span_19](start_span)[span_19](end_span)\n- Mail alert: echo \"SSI Mismatch\" | mail -s \"URGENT: SSI Mismatch Alert\" dl@domain.com[span_20](start_span)[span_20](end_span)\n- Result: Alerts users before EOD batch run, eliminating P1/P2 settlement bounces[span_21](start_span)[span_21](end_span).",
         cmd: "res=$(diff f1 f2); if [ -n \"$res\" ]; then echo 'Mismatch' | mail -s 'SSI Alert' dl; fi"
       },
       {
         id: 4,
-        cat: "Database & SQL",
-        q: "How do you find and kill Database Blockages in Oracle SQL?",
-        keywords: ["blockage", "db blockage", "database blockage", "blocking_session", "kill session", "v$session", "lock"],
-        hook: "Database blockage occurs when a user executes a DML operation without committing, locking the row for others...",
+        category: "Database & SQL",
+        question: "How do you find and kill Database Blockages in Oracle SQL?",
+        keywords: ["blockage", "db blockage", "database blockage", "blocking_session", "kill session", "v$session"],
+        hook: "Database blockage occurs when a user executes a DML operation without committing, locking the row...",
         bullets: [
-          "Root Cause: An uncommitted transaction (INSERT, UPDATE, DELETE) leaves rows locked for long periods[span_19](start_span)[span_19](end_span).",
-          "Query to Find Blockage: select * from v$session where blocking_session is not NULL order by blocking_session;[span_20](start_span)[span_20](end_span)",
-          "Command to Kill Session: alter system kill session ('sid,serial#') immediate; (Executed with DBA coordination)[span_21](start_span)[span_21](end_span)."
+          "Root Cause: An uncommitted transaction leaves rows locked for long periods[span_22](start_span)[span_22](end_span).",
+          "Query to Find Blockage: select * from v$session where blocking_session is not NULL order by blocking_session;[span_23](start_span)[span_23](end_span)",
+          "Command to Kill Session: alter system kill session ('sid,serial#') immediate;[span_24](start_span)[span_24](end_span)."
         ],
-        deep: "• Deep Investigation Workflow:\n1. Detect: SELECT sid, serial#, username, status, blocking_session FROM v$session WHERE blocking_session IS NOT NULL;\n2. Remediate: Collaborate with DBA team to execute ALTER SYSTEM KILL SESSION ('<sid>,<serial#>') IMMEDIATE;[span_22](start_span)[span_22](end_span).",
+        detailed: "• Deep Investigation Workflow:\n1. Detect: SELECT sid, serial#, username, status, blocking_session FROM v$session WHERE blocking_session IS NOT NULL;[span_25](start_span)[span_25](end_span)\n2. Remediate: Collaborate with DBA team to execute ALTER SYSTEM KILL SESSION ('<sid>,<serial#>') IMMEDIATE;[span_26](start_span)[span_26](end_span).",
         cmd: "select * from v$session where blocking_session is not NULL; alter system kill session ('sid,serial#') immediate;"
       },
       {
         id: 5,
-        cat: "Unix Troubleshooting",
-        q: "How do you troubleshoot Filesystem Space 75% or 100% full in UNIX?",
-        keywords: ["filesystem", "space", "75%", "100%", "disk full", "df", "du", "truncate", "cat /dev/null", "disk"],
-        hook: "When a filesystem alert triggers, I identify the saturated mount, isolate large files, and safely truncate or compress...",
+        category: "Unix & Troubleshooting",
+        question: "How do you troubleshoot Filesystem Space 75% or 100% full in UNIX?",
+        keywords: ["filesystem", "space", "75%", "100%", "disk full", "df", "du", "truncate", "cat /dev/null"],
+        hook: "When a filesystem alert triggers, I identify the saturated mount, isolate large files, and safely truncate...",
         bullets: [
-          "Locate Filesystem: Run 'df -h' to check disk usage, then 'du | sort -k 1nr' inside the directory to find large folders[span_23](start_span)[span_23](end_span).",
-          "Find Heavy Files: Use 'ls -lS' to list the largest files. Compress inactive files with 'gzip[span_24](start_span)'[span_24](end_span).",
-          "Safe Truncation: If a file is actively written by a running process, never delete it; truncate using 'cat /dev/null > log_file_name[span_25](start_span)'[span_25](end_span)."
+          "Locate Filesystem: Run 'df -h' to check disk usage, then 'du | sort -k 1nr' inside the directory[span_27](start_span)[span_27](end_span).",
+          "Find Heavy Files: Use 'ls -lS' to list largest files. Compress inactive files with 'gzip[span_28](start_span)'[span_28](end_span).",
+          "Safe Truncation: If actively written by a running process, never delete; truncate using 'cat /dev/null > log_file_name[span_29](start_span)'[span_29](end_span)."
         ],
-        deep: "• Remediation Steps:\n1. Inspect: df -h followed by du -sk * | sort -k 1nr\n2. Inactive files: gzip <filename>\n3. Active files (Tomcat/Java logs): Clear contents safely without breaking process inode: cat /dev/null > log_file_name[span_26](start_span)[span_26](end_span).",
+        detailed: "• Remediation Steps:\n1. Inspect: df -h followed by du -sk * | sort -k 1nr[span_30](start_span)[span_30](end_span)\n2. Inactive files: gzip <filename>[span_31](start_span)[span_31](end_span)\n3. Active files (Tomcat/Java logs): Clear contents safely without breaking process inode: cat /dev/null > log_file_name[span_32](start_span)[span_32](end_span).",
         cmd: "df -h; du -sk * | sort -k 1nr; ls -lS; cat /dev/null > log_file_name"
       },
       {
         id: 6,
-        cat: "ITIL & ServiceNow",
-        q: "Difference between a Service Request and an Incident?",
-        keywords: ["service request", "incident", "difference", "request ticket", "unplanned", "interruption"],
+        category: "ITIL & ServiceNow",
+        question: "Difference between a Service Request and an Incident?",
+        keywords: ["service request", "incident", "difference between service request", "request ticket"],
         hook: "The distinction lies in whether the requirement is a planned user task or an unplanned operational disruption...",
         bullets: [
-          "Service Request: A planned task requested by a user (e.g., dynamic reports, access setup). No impact, urgency, or priority[span_27](start_span)[span_27](end_span).",
-          "Incident: An unplanned interruption or reduction in quality that disrupts business flow. Requires immediate triage[span_28](start_span)[span_28](end_span).",
-          "Action Required: Incidents must have Impact, Urgency, and Priority assigned in ServiceNow to track SLAs[span_29](start_span)[span_29](end_span)."
+          "Service Request: Planned task requested by a user (e.g., dynamic reports, access setup). No impact, urgency, or priority[span_33](start_span)[span_33](end_span).",
+          "Incident: Unplanned interruption or reduction in quality that disrupts business flow[span_34](start_span)[span_34](end_span).",
+          "Action Required: Incidents must have Impact, Urgency, and Priority assigned in ServiceNow to track SLAs[span_35](start_span)[span_35](end_span)."
         ],
-        deep: "• ITIL Comparison:\n- Service Request: Planned routine task (Request tickets, no priority/urgency needed)[span_30](start_span)[span_30](end_span).\n- Incident: Unplanned interruption affecting business flow (Must assign Impact & Urgency to calculate Priority P1-P4)[span_31](start_span)[span_31](end_span).",
+        detailed: "• ITIL Comparison:\n- Service Request: Planned routine task (Request tickets, no priority/urgency needed)[span_36](start_span)[span_36](end_span).\n- Incident: Unplanned interruption affecting business flow (Must assign Impact & Urgency to calculate Priority P1-P4)[span_37](start_span)[span_37](end_span).",
         cmd: "Request = Planned (No Priority) | Incident = Unplanned (Impact + Urgency = Priority)"
       },
       {
         id: 7,
-        cat: "Critical Incidents",
-        q: "How do you handle P1 or P2 critical tickets?",
-        keywords: ["p1", "p2", "critical", "major incident", "bridge call", "handle p1", "handle p2"],
+        category: "ITIL & ServiceNow",
+        question: "How do you handle P1 or P2 critical tickets?",
+        keywords: ["p1", "p2", "major incident", "critical ticket", "bridge call", "handle p1"],
         hook: "For major P1/P2 incidents, rapid communication, bridge coordination, and quick workarounds take precedence...",
         bullets: [
-          "1. Rapid Alerting: Notify Manager/TL, create ServiceNow ticket, and send out incident notification email within 15-30 mins[span_32](start_span)[span_32](end_span).",
-          "2. Bridge Operations: Sys Ops convenes a live bridge call with Affected Users, DB Dev, Unix, and Support teams[span_33](start_span)[span_33](end_span).",
-          "3. Workaround & Fix: Implement an immediate workaround to restore business flow, while Manager raises Jira ticket for dev RCA[span_34](start_span)[span_34](end_span)."
+          "1. Rapid Alerting: Notify Manager/TL, create ServiceNow ticket, and send out incident notification email[span_38](start_span)[span_38](end_span).",
+          "2. Bridge Operations: Sys Ops convenes a live bridge call with Affected Users, DB Dev, Unix, and Support teams[span_39](start_span)[span_39](end_span).",
+          "3. Workaround & Fix: Implement an immediate workaround to restore business flow, while Manager raises Jira ticket[span_40](start_span)[span_40](end_span)."
         ],
-        deep: "• P1/P2 Execution Checklist:\n- Triage & Notification within 15 mins (Description, Priority, Next Update ETA)[span_35](start_span)[span_35](end_span).\n- Bridge call setup with DBA, Unix, and Dev teams[span_36](start_span)[span_36](end_span).\n- Manager logs Jira ticket for permanent code fix[span_37](start_span)[span_37](end_span).",
+        detailed: "• P1/P2 Execution Checklist:\n- Triage & Notification within 15 mins (Description, Priority, Next Update ETA)[span_41](start_span)[span_41](end_span).\n- Bridge call setup with DBA, Unix, and Dev teams[span_42](start_span)[span_42](end_span).\n- Manager logs Jira ticket for permanent code fix[span_43](start_span)[span_43](end_span).",
         cmd: "P1 SLA = 5h | P2 SLA = 10h | Updates every 30 mins"
       },
       {
         id: 8,
-        cat: "Monitoring",
-        q: "Autosys Batch Monitoring and ITRS Geneos Work?",
-        keywords: ["autosys", "geneos", "itrs", "monitoring", "job failure", "snooze", "400+ jobs", "batch"],
+        category: "Monitoring & Autosys",
+        question: "Autosys Batch Monitoring and ITRS Geneos Work?",
+        keywords: ["autosys", "geneos", "itrs", "monitoring", "job failure", "snooze", "400+ jobs"],
         hook: "We monitor over 400 batch jobs and real-time infrastructure alerts daily...",
         bullets: [
-          "Autosys (400+ jobs): Review logs on job failure, raise ServiceNow incidents, notify users, and remediate common failure causes[span_38](start_span)[span_38](end_span).",
-          "Failure Causes: Missing incoming feed files, filesystem space capacity, corrupt input data, or file permission issues[span_39](start_span)[span_39](end_span).",
-          "ITRS Geneos: Monitors disk space, feed file arrival, job state, and CPU/Memory. Warning = P4 ticket, Critical = P3 ticket. Snooze during releases[span_40](start_span)[span_40](end_span)."
+          "Autosys (400+ jobs): Review logs on job failure, raise ServiceNow incidents, notify users, and remediate[span_44](start_span)[span_44](end_span).",
+          "Failure Causes: Missing incoming feed files, filesystem space capacity, corrupt input data, or permissions[span_45](start_span)[span_45](end_span).",
+          "ITRS Geneos: Monitors disk space, feed file arrival, job state, and CPU/Memory. Warning = P4, Critical = P3[span_46](start_span)[span_46](end_span)."
         ],
-        deep: "• Monitoring Operations:\n- Autosys: Inspect logs on failure, identify feed/space/data errors, log ticket[span_41](start_span)[span_41](end_span).\n- Geneos: Warning = P4 ticket, Critical = P3 ticket. Always snooze alerts during maintenance releases[span_42](start_span)[span_42](end_span).",
+        detailed: "• Monitoring Operations:\n- Autosys: Inspect logs on failure, identify feed/space/data errors, log ticket[span_47](start_span)[span_47](end_span).\n- Geneos: Warning = P4 ticket, Critical = P3 ticket. Always snooze alerts during maintenance releases[span_48](start_span)[span_48](end_span).",
         cmd: "Autosys log inspection | Geneos Warning (P4) / Critical (P3)"
       }
     ];
 
-    let recognition = null;
-    let isAutoPilotActive = true;
-    let audioContext = null;
-    let analyser = null;
-    let dataArray = null;
+    let activeFilter = "All";
 
-    // RENDER KNOWLEDGE CARDS
-    function renderCards(list) {
-      const grid = document.getElementById("cardsGrid");
+    function renderSuggestions(list) {
+      const grid = document.getElementById("suggestionsGrid");
       grid.innerHTML = "";
       list.forEach(item => {
-        const card = document.createElement("div");
-        card.className = "card";
-        card.id = `card-${item.id}`;
-        card.onclick = () => loadAnswerToHUD(item, "Manual Override");
-        card.innerHTML = `
-          <div class="card-title">${item.q}</div>
-          <div class="card-snippet">${item.bullets[0]}</div>
+        const chip = document.createElement("div");
+        chip.className = "suggestion-chip";
+        chip.onclick = () => displayAnswer(item);
+        chip.innerHTML = `
+          <div class="chip-title">${item.question}</div>
+          <div class="chip-snippet">${item.bullets[0]}</div>
         `;
-        grid.appendChild(card);
+        grid.appendChild(chip);
       });
     }
 
-    // LOAD ANSWER INTO AUTOMATED HUD
-    function loadAnswerToHUD(item, matchType = "Automated AI Match (100%)") {
-      document.getElementById("hudCat").innerText = item.cat.toUpperCase();
-      document.getElementById("hudMatchStatus").innerText = `⚡ ${matchType}`;
-      document.getElementById("hudQuestion").innerText = item.q;
-      document.getElementById("hudHook").innerHTML = `💬 <strong>0s Automated Hook:</strong> "${item.hook}"`;
-      document.getElementById("hudBullets").innerHTML = item.bullets.map(b => `<li>${b}</li>`).join("");
-      document.getElementById("hudDeep").innerText = item.deep;
-      document.getElementById("hudCmd").innerText = item.cmd;
-
-      document.querySelectorAll(".card").forEach(c => c.classList.remove("active"));
-      const c = document.getElementById(`card-${item.id}`);
-      if (c) c.classList.add("active");
-
-      // Flash HUD border green to indicate successful automated trigger
-      const hud = document.getElementById("hudBox");
-      hud.style.borderColor = "var(--accent)";
-      setTimeout(() => hud.style.borderColor = "rgba(99, 102, 241, 0.5)", 600);
+    function displayAnswer(item) {
+      document.getElementById("resCategory").innerText = item.category.toUpperCase();
+      document.getElementById("resQuestion").innerText = item.question;
+      document.getElementById("resHook").innerHTML = `💬 <strong>Quick Overview:</strong> "${item.hook}"`;
+      document.getElementById("resBullets").innerHTML = item.bullets.map(b => `<li>${b}</li>`).join("");
+      document.getElementById("resDetailed").innerText = item.detailed;
+      document.getElementById("resCommand").innerText = item.cmd;
     }
 
-    // AUTOMATED SPEECH RECOGNITION ENGINE
-    function initSpeechEngine() {
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      if (!SpeechRecognition) {
-        alert("Speech Recognition requires Google Chrome or Microsoft Edge.");
-        return null;
+    function executeSearch(query) {
+      const q = query.toLowerCase().trim();
+      let filtered = ENGINE_DATABASE;
+
+      if (activeFilter !== "All") {
+        filtered = filtered.filter(item => item.category === activeFilter);
       }
-      const rec = new SpeechRecognition();
-      rec.continuous = true;
-      rec.interimResults = true;
-      rec.lang = "en-US";
 
-      rec.onresult = (evt) => {
-        if (!isAutoPilotActive) return;
-
-        let transcript = "";
-        for (let i = evt.resultIndex; i < evt.results.length; i++) {
-          transcript += evt.results[i][0].transcript;
-        }
-        const text = transcript.toLowerCase().trim();
-        document.getElementById("transcriptDisplay").innerText = text;
-
-        // Automated Matching Algorithm (Scoring system)
-        let bestMatch = null;
-        let maxScore = 0;
-
-        for (const item of AUTO_DATABASE) {
-          let score = 0;
-          for (const kw of item.keywords) {
-            if (text.includes(kw.toLowerCase())) {
-              score += kw.length; // Weight longer, more specific keywords higher
-            }
-          }
-          if (score > maxScore) {
-            maxScore = score;
-            bestMatch = item;
-          }
-        }
-
-        // If score threshold is met, automatically shift the automated answer on screen!
-        if (bestMatch && maxScore > 3) {
-          loadAnswerToHUD(bestMatch, `Auto-Pilot Matched (${Math.min(99, 70 + maxScore * 3)}% Confidence)`);
-        }
-      };
-
-      rec.onend = () => {
-        if (isAutoPilotActive) {
-          try { rec.start(); } catch(e) {}
-        }
-      };
-      return rec;
-    }
-
-    // AUDIO METER SIMULATION
-    async function startAudioMeter() {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        const source = audioContext.createMediaStreamSource(stream);
-        analyser = audioContext.createAnalyser();
-        analyser.fftSize = 64;
-        source.connect(analyser);
-        dataArray = new Uint8Array(analyser.frequencyBinCount);
-        updateVisualizer();
-      } catch (err) {}
-    }
-
-    function updateVisualizer() {
-      if (!isAutoPilotActive) {
-        document.getElementById("audioBar").style.width = "0%";
-        return;
+      if (q) {
+        filtered = filtered.filter(item => {
+          return item.question.toLowerCase().includes(q) ||
+                 item.keywords.some(k => k.toLowerCase().includes(q)) ||
+                 item.bullets.some(b => b.toLowerCase().includes(q)) ||
+                 item.detailed.toLowerCase().includes(q);
+        });
       }
-      if (analyser && dataArray) {
-        analyser.getByteFrequencyData(dataArray);
-        let sum = 0;
-        for (let i = 0; i < dataArray.length; i++) sum += dataArray[i];
-        let average = sum / dataArray.length;
-        let percentage = Math.min(100, Math.max(8, (average / 128) * 100));
-        document.getElementById("audioBar").style.width = percentage + "%";
-      }
-      requestAnimationFrame(updateVisualizer);
-    }
 
-    function toggleAutoPilot() {
-      const btn = document.getElementById("autoBtn");
-      const dot = document.getElementById("liveDot");
-      const badge = document.getElementById("modeBadge");
-
-      if (!recognition) recognition = initSpeechEngine();
-      if (!recognition) return;
-
-      if (!isAutoPilotActive) {
-        try {
-          recognition.start();
-          isAutoPilotActive = true;
-          btn.classList.add("active");
-          btn.innerHTML = "🟢 Auto-Pilot On";
-          dot.classList.add("active");
-          badge.innerText = "Hands-Free Mode Active";
-          startAudioMeter();
-        } catch(e) {}
-      } else {
-        isAutoPilotActive = false;
-        recognition.stop();
-        btn.classList.remove("active");
-        btn.innerHTML = "🔴 Auto-Pilot Off";
-        dot.classList.remove("active");
-        badge.innerText = "Paused";
+      renderSuggestions(filtered);
+      if (filtered.length > 0) {
+        displayAnswer(filtered[0]);
       }
     }
 
-    function toggleStealth() {
-      document.body.classList.toggle("stealth-mode");
+    function filterCategory(cat, btn) {
+      activeFilter = cat;
+      document.querySelectorAll(".pill").forEach(p => p.classList.remove("active"));
+      btn.classList.add("active");
+      executeSearch(document.getElementById("mainSearch").value);
     }
 
-    // HOTKEYS
-    window.addEventListener("keydown", (e) => {
-      if (e.code === "Space") {
-        e.preventDefault();
-        toggleAutoPilot();
-      }
-      if (e.code === "Escape") {
-        toggleStealth();
-      }
-    });
-
-    // Start on page load automatically
-    renderCards(AUTO_DATABASE);
-    loadAnswerToHUD(AUTO_DATABASE[0]);
-    
-    // Auto-start microphone capture on load
-    window.addEventListener("load", () => {
-      setTimeout(() => {
-        if (!recognition) recognition = initSpeechEngine();
-        try {
-          recognition.start();
-          startAudioMeter();
-          document.getElementById("liveDot").classList.add("active");
-        } catch(e) {}
-      }, 1000);
-    });
+    // Initialize engine on page load
+    renderSuggestions(ENGINE_DATABASE);
+    displayAnswer(ENGINE_DATABASE[0]);
   </script>
 </body>
 </html>
