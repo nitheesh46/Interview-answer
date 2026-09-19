@@ -3,30 +3,19 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Parakeet AI | Interview Copilot</title>
-
-  <!-- PWA Manifest and Capabilities -->
-  <link rel="manifest" href="manifest.json" />
-  <meta name="mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="theme-color" content="#07090e" />
-
-  <!-- In-Browser OCR for Screen Analysis (Ctrl+K) -->
-  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
-
+  <title>Pilot & Parrot AI | Live Interview Copilot</title>
   <style>
     :root {
       --bg: #07090e;
-      --card-bg: rgba(15, 23, 42, 0.94);
+      --card-bg: rgba(18, 24, 38, 0.9);
       --border: rgba(255, 255, 255, 0.1);
       --primary: #38bdf8;
-      --accent: #10b981;
+      --accent: #22c55e;
       --warning: #f59e0b;
       --danger: #ef4444;
-      --purple: #818cf8;
+      --purple: #a855f7;
       --text: #f8fafc;
-      --text-dim: #94a3b8;
+      --text-muted: #94a3b8;
     }
 
     * {
@@ -34,7 +23,6 @@
       margin: 0;
       padding: 0;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      user-select: none;
     }
 
     body {
@@ -42,696 +30,581 @@
       color: var(--text);
       min-height: 100vh;
       display: flex;
-      justify-content: center;
-      align-items: flex-start;
-      padding: 16px;
+      flex-direction: column;
       overflow-x: hidden;
-      background-image: radial-gradient(circle at top, #1e1b4b 0%, #07090e 75%);
     }
 
-    .copilot-widget {
-      width: 840px;
-      max-width: 98vw;
-      background: var(--card-bg);
-      border: 1.5px solid rgba(129, 140, 248, 0.35);
-      border-radius: 14px;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8), 0 0 25px rgba(99, 102, 241, 0.2);
-      backdrop-filter: blur(20px);
+    /* Top Floating Header */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      background: rgba(10, 14, 23, 0.95);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+      padding: 10px 16px;
       display: flex;
       flex-direction: column;
-      overflow: hidden;
-      transition: opacity 0.2s ease, transform 0.2s ease;
+      gap: 8px;
     }
 
-    .widget-header {
-      background: rgba(11, 15, 25, 0.96);
-      border-bottom: 1px solid var(--border);
-      padding: 10px 14px;
+    .status-row {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      flex-wrap: wrap;
-      gap: 8px;
     }
 
-    .brand-wrap {
+    .brand-group {
       display: flex;
       align-items: center;
       gap: 8px;
     }
 
-    .drag-handle {
-      display: flex;
-      gap: 3px;
-      padding: 4px;
-      cursor: grab;
+    .live-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #475569;
+      transition: all 0.3s;
     }
 
-    .drag-dot {
-      width: 5px;
-      height: 5px;
-      border-radius: 50%;
-      background: #64748b;
+    .live-dot.active {
+      background: var(--accent);
+      box-shadow: 0 0 12px var(--accent);
+      animation: pulseWave 1.4s infinite;
+    }
+
+    @keyframes pulseWave {
+      0% { transform: scale(0.9); opacity: 0.8; }
+      50% { transform: scale(1.3); opacity: 1; }
+      100% { transform: scale(0.9); opacity: 0.8; }
     }
 
     .brand-title {
-      font-size: 0.88rem;
+      font-size: 0.85rem;
       font-weight: 800;
-      letter-spacing: 0.04em;
-      color: #fff;
-    }
-
-    .status-pill {
-      font-size: 0.72rem;
-      padding: 2px 8px;
-      border-radius: 10px;
-      background: rgba(16, 185, 129, 0.15);
-      color: var(--accent);
-      font-weight: 700;
-      display: flex;
-      align-items: center;
-      gap: 5px;
-    }
-
-    .pulse-dot {
-      width: 7px;
-      height: 7px;
-      border-radius: 50%;
-      background: var(--accent);
-    }
-
-    .status-pill.active-listening {
-      background: rgba(2, 132, 199, 0.25);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
       color: var(--primary);
     }
 
-    .status-pill.active-listening .pulse-dot {
-      background: var(--primary);
-      animation: pulse 1.2s infinite;
+    .shortcut-hints {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      display: flex;
+      gap: 8px;
     }
 
-    @keyframes pulse {
-      0% { transform: scale(0.9); opacity: 0.7; }
-      50% { transform: scale(1.3); opacity: 1; }
-      100% { transform: scale(0.9); opacity: 0.7; }
+    .key-badge {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--border);
+      padding: 2px 6px;
+      border-radius: 4px;
+      color: #cbd5e1;
+      font-family: monospace;
     }
 
-    .btn-group {
+    .control-actions {
       display: flex;
       align-items: center;
       gap: 6px;
-      flex-wrap: wrap;
     }
 
     .btn {
-      padding: 5px 10px;
+      padding: 6px 12px;
       border-radius: 6px;
-      font-size: 0.76rem;
+      font-size: 0.8rem;
       font-weight: 700;
-      border: 1px solid var(--border);
+      border: none;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
       gap: 5px;
-      background: rgba(255, 255, 255, 0.05);
-      color: var(--text-dim);
       transition: all 0.15s ease;
     }
 
-    .btn:hover {
-      color: #fff;
-      border-color: var(--primary);
-    }
+    .btn-mic { background: var(--danger); color: #fff; }
+    .btn-mic.listening { background: #0284c7; box-shadow: 0 0 10px rgba(2, 132, 199, 0.5); }
+    .btn-stealth { background: rgba(255, 255, 255, 0.06); color: var(--text-muted); border: 1px solid var(--border); }
+    .btn-stealth:hover { color: #fff; border-color: var(--primary); }
 
-    .btn-glow {
-      background: #4f46e5;
-      color: #fff;
-      border: none;
-    }
-    .btn-glow:hover { background: #4338ca; }
-
-    .btn-mic.listening {
-      background: #0284c7;
-      color: #fff;
-      box-shadow: 0 0 10px rgba(2, 132, 199, 0.4);
-    }
-
-    .btn-danger {
-      background: rgba(239, 68, 68, 0.15);
-      color: #f87171;
-      border-color: rgba(239, 68, 68, 0.3);
-    }
-
-    .waveform-bar {
+    /* Audio Visualizer Bar */
+    .audio-visualizer-bar {
       height: 3px;
       width: 100%;
       background: rgba(255, 255, 255, 0.05);
+      border-radius: 2px;
       overflow: hidden;
     }
 
-    .waveform-fill {
+    .audio-progress {
       height: 100%;
       width: 0%;
-      background: linear-gradient(90deg, var(--primary), var(--purple));
+      background: linear-gradient(90deg, var(--primary), var(--accent));
       transition: width 0.08s ease;
     }
 
-    .feed-bar {
-      background: rgba(8, 12, 22, 0.85);
-      border-bottom: 1px solid var(--border);
-      padding: 8px 14px;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-
-    .feed-ticker {
+    /* Live Transcript Feed */
+    .stream-feed {
       display: flex;
       align-items: center;
       gap: 8px;
-      font-size: 0.78rem;
+      font-size: 0.82rem;
+      background: rgba(0, 0, 0, 0.4);
+      padding: 6px 10px;
+      border-radius: 6px;
+      border-left: 2.5px solid var(--purple);
     }
 
-    .feed-text {
-      color: #cbd5e1;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      flex: 1;
+    .stream-feed span.label {
+      color: var(--purple);
+      font-weight: 700;
+      font-size: 0.72rem;
+      text-transform: uppercase;
+    }
+
+    #transcriptDisplay {
+      color: #e2e8f0;
       font-style: italic;
     }
 
-    .hotkey-tag {
-      font-size: 0.68rem;
-      color: #94a3b8;
-      background: rgba(255, 255, 255, 0.06);
-      padding: 2px 6px;
-      border-radius: 4px;
-      border: 1px solid var(--border);
-      font-family: monospace;
-    }
-
+    /* Search Input */
     .search-input {
       width: 100%;
-      background: rgba(18, 24, 38, 0.95);
-      border: 1.5px solid var(--border);
+      background: rgba(18, 24, 38, 0.9);
+      border: 1px solid var(--border);
       color: #fff;
       padding: 8px 12px;
       border-radius: 6px;
       font-size: 0.9rem;
       outline: none;
     }
+    .search-input:focus { border-color: var(--primary); }
 
-    .search-input:focus {
-      border-color: var(--primary);
-      box-shadow: 0 0 8px rgba(56, 189, 248, 0.25);
+    /* PARROT-STYLE TELEPROMPTER HUD */
+    .parrot-hud {
+      margin: 10px 16px;
+      background: var(--card-bg);
+      border: 1.5px solid rgba(99, 102, 241, 0.4);
+      border-radius: 10px;
+      padding: 16px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(12px);
     }
 
-    .prompter-content {
-      padding: 16px 20px;
+    .hud-meta {
       display: flex;
-      flex-direction: column;
-      gap: 12px;
-      max-height: 72vh;
-      overflow-y: auto;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
     }
 
-    .prompter-content::-webkit-scrollbar { width: 6px; }
-    .prompter-content::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
-
-    .tag-row {
-      font-size: 0.72rem;
+    .hud-cat {
+      font-size: 0.7rem;
       font-weight: 800;
       color: var(--primary);
       text-transform: uppercase;
       letter-spacing: 0.06em;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
     }
 
-    .question-title {
-      font-size: 1.25rem;
+    .hud-accuracy {
+      font-size: 0.72rem;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: rgba(34, 197, 94, 0.15);
+      color: var(--accent);
+      font-weight: 700;
+    }
+
+    .hud-query {
+      font-size: 1.2rem;
       font-weight: 800;
       color: #fff;
+      margin-bottom: 8px;
       line-height: 1.35;
     }
 
-    .sec-opener {
+    .hud-hook {
       background: rgba(245, 158, 11, 0.12);
       border-left: 3px solid var(--warning);
-      padding: 8px 12px;
+      padding: 6px 10px;
       border-radius: 4px;
-      font-size: 0.88rem;
+      font-size: 0.85rem;
       color: #fde68a;
-      line-height: 1.45;
+      margin-bottom: 10px;
     }
 
-    .sec-bullets-heading {
-      font-size: 0.74rem;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      color: var(--primary);
-      font-weight: 800;
-      margin-bottom: 4px;
-    }
-
-    .sec-bullets {
-      list-style: none;
+    .hud-bullets {
+      list-style-type: none;
       display: flex;
       flex-direction: column;
       gap: 6px;
+      margin-bottom: 12px;
     }
 
-    .sec-bullets li {
-      font-size: 0.98rem;
-      line-height: 1.45;
+    .hud-bullets li {
+      font-size: 1.02rem;
       color: #f1f5f9;
+      line-height: 1.4;
       display: flex;
-      align-items: flex-start;
       gap: 8px;
     }
 
-    .sec-bullets li::before {
+    .hud-bullets li::before {
       content: "▶";
       color: var(--accent);
       font-size: 0.75rem;
       margin-top: 3px;
     }
 
-    .sec-script {
-      background: #090e18;
+    .hud-deep {
+      background: rgba(0, 0, 0, 0.4);
       border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 12px 14px;
-    }
-
-    .sec-script-heading {
-      font-size: 0.72rem;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      font-weight: 800;
-      color: #a5b4fc;
-      margin-bottom: 6px;
-    }
-
-    .sec-script-body {
-      font-size: 0.92rem;
+      border-radius: 6px;
+      padding: 10px 12px;
+      font-size: 0.88rem;
       color: #cbd5e1;
-      line-height: 1.6;
+      line-height: 1.5;
+      margin-bottom: 10px;
+      white-space: pre-line;
     }
 
-    .sec-commands {
-      background: #04060a;
-      border: 1px solid #1e293b;
+    .hud-command {
+      background: #04060b;
+      border: 1px solid var(--border);
       border-radius: 6px;
       padding: 8px 12px;
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-      font-size: 0.82rem;
+      font-family: monospace;
+      font-size: 0.84rem;
       color: #67e8f9;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 6px;
     }
 
-    .mini-pill {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      background: rgba(15, 23, 42, 0.96);
-      border: 1.5px solid var(--primary);
-      padding: 8px 16px;
-      border-radius: 30px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
-      display: none;
-      align-items: center;
+    /* Cards Grid */
+    main {
+      padding: 0 16px;
+      display: flex;
+      flex-direction: column;
       gap: 8px;
+      padding-bottom: 30px;
+    }
+
+    .grid-header {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+    }
+
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+      gap: 10px;
+    }
+
+    .card {
+      background: rgba(18, 24, 38, 0.6);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 12px;
       cursor: pointer;
-      z-index: 9999;
-      font-size: 0.82rem;
+      transition: all 0.15s ease;
+    }
+
+    .card:hover {
+      border-color: var(--primary);
+      background: rgba(30, 41, 59, 0.7);
+    }
+
+    .card.active {
+      border-color: var(--accent);
+      background: rgba(34, 197, 94, 0.1);
+    }
+
+    .card-title {
+      font-size: 0.88rem;
       font-weight: 700;
       color: #fff;
+      margin-bottom: 4px;
     }
 
-    .stealth-active .copilot-widget { display: none !important; }
-    .stealth-active .mini-pill { display: flex !important; }
+    .card-snippet {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      line-height: 1.35;
+    }
+
+    /* Stealth Mode */
+    body.stealth-mode main,
+    body.stealth-mode .shortcut-hints,
+    body.stealth-mode .search-input {
+      display: none !important;
+    }
+    body.stealth-mode .parrot-hud {
+      margin: 8px;
+      background: rgba(7, 9, 14, 0.96);
+      border-color: rgba(255, 255, 255, 0.15);
+    }
   </style>
 </head>
 <body>
 
-  <div class="copilot-widget" id="copilotWidget">
-    <div class="widget-header">
-      <div class="brand-wrap">
-        <div class="drag-handle" title="Drag / Move">
-          <div class="drag-dot"></div>
-          <div class="drag-dot"></div>
-          <div class="drag-dot"></div>
-        </div>
-        <span class="brand-title">Parakeet Copilot</span>
-        <div class="status-pill" id="statusPill">
-          <div class="pulse-dot"></div>
-          <span id="statusLabel">Ready</span>
+  <header>
+    <div class="status-row">
+      <div class="brand-group">
+        <div class="live-dot" id="liveDot"></div>
+        <span class="brand-title">Pilot Copilot</span>
+        <div class="shortcut-hints">
+          <span><span class="key-badge">Space</span> Mic</span>
+          <span><span class="key-badge">Esc</span> Stealth</span>
+          <span><span class="key-badge">/</span> Focus</span>
         </div>
       </div>
 
-      <div class="btn-group">
-        <button class="btn btn-glow" onclick="triggerAnswer()" title="Shortcut: Ctrl+G">
-          ⚡ Answer Question
-        </button>
-        <button class="btn" onclick="triggerScreenAnalysis()" title="Shortcut: Ctrl+K">
-          📷 Analyze Screen
-        </button>
-        <button class="btn" id="micBtn" onclick="toggleMic()">
-          🎙️ Listen HR
-        </button>
-        <button class="btn" onclick="toggleStealth()" title="Shortcut: Ctrl+E or Esc">
-          👁️ Stealth Mode
-        </button>
-        <button class="btn btn-danger" onclick="resetIntro()" title="Reset to Intro">
-          ↺ Reset
-        </button>
+      <div class="control-actions">
+        <button class="btn btn-mic" id="micBtn" onclick="toggleListening()">🎙️ Listen</button>
+        <button class="btn btn-stealth" onclick="toggleStealth()">👁️ Stealth</button>
       </div>
     </div>
 
-    <div class="waveform-bar">
-      <div class="waveform-fill" id="waveformBar"></div>
+    <div class="audio-visualizer-bar">
+      <div class="audio-progress" id="audioBar"></div>
     </div>
 
-    <div class="feed-bar">
-      <div class="feed-ticker">
-        <span style="color: var(--primary); font-weight: 700; font-size: 0.75rem;">LIVE HEARD:</span>
-        <div class="feed-text" id="liveTranscript">Speech recognition ready or type keywords below...</div>
-        <div class="hotkey-tag">Ctrl+G: Answer | Ctrl+K: Screen | Ctrl+E: Hide</div>
-      </div>
-      <input 
-        type="text" 
-        id="quickSearch" 
-        class="search-input" 
-        placeholder="Type any word: e.g. cpu, memory, logs, 502, deadlock, oom, p1, autosys, curl, weakness..." 
-        autofocus 
-        oninput="handleSearch(this.value)" 
-      />
+    <div class="stream-feed">
+      <span class="label">Listening:</span>
+      <span id="transcriptDisplay">Waiting for HR interviewer to speak...</span>
     </div>
 
-    <div class="prompter-body" id="prompterBody">
-      <div class="prompter-content">
-        <div class="tag-row">
-          <span id="hudTag">INTRODUCTION & SUMMARY</span>
-          <span style="color: var(--accent);">● Verified Response</span>
-        </div>
+    <input 
+      type="text" 
+      id="quickSearch" 
+      class="search-input" 
+      placeholder="Type any keyword (e.g. work item, ssi, blockage, 75%, tomcat, sla, p1, cob) for 0s answer..."
+      oninput="handleSearch(this.value)"
+    />
+  </header>
 
-        <div class="question-title" id="hudQuestion">
-          Tell me about yourself and your background in Application Support.
-        </div>
+  <!-- PARROT-STYLE TELEPROMPTER HUD -->
+  <div class="parrot-hud" id="hudBox">
+    <div class="hud-meta">
+      <span class="hud-cat" id="hudCat">INTRODUCTION</span>
+      <span class="hud-accuracy" id="hudMatch">⚡ 100% Match</span>
+    </div>
+    
+    <div class="hud-query" id="hudQuestion">Tell me about yourself / Walk me through your profile.</div>
+    
+    <div class="hud-hook" id="hudHook">
+      💬 <strong>0s Hook:</strong> "Thank you for asking. I work as an Application Production Support Engineer handling enterprise workflows..."
+    </div>
 
-        <div class="sec-opener" id="hudOpener">
-          <strong>💬 2-Second Opener:</strong> "Thank you for asking. I specialize in L1 and L2 Application Production Support, ensuring 24/7 high availability across business-critical environments."
-        </div>
+    <ul class="hud-bullets" id="hudBullets">
+      <li><strong>Role Scope:</strong> L1/L2 production support, incident triage in ServiceNow, and daily health checks[span_0](start_span)[span_0](end_span).</li>
+      <li><strong>Technical Stack:</strong> UNIX shell scripting, Oracle SQL Developer, 400+ Autosys batch jobs, and ITRS Geneos[span_1](start_span)[span_1](end_span).</li>
+      <li><strong>Key Value:</strong> Resolving database locks, handling P1-P4 incidents within SLA, and automating SSI checks before EOD[span_2](start_span)[span_2](end_span).</li>
+    </ul>
 
-        <div>
-          <div class="sec-bullets-heading">📌 Key Bullet Points (Glance & Speak)</div>
-          <ul class="sec-bullets" id="hudBullets">
-            <li><strong>Operational Scope:</strong> Monitoring real-time telemetry, handling P1-P4 incidents, and executing daily shift sanity health checks.</li>
-            <li><strong>Technical Foundation:</strong> Linux server diagnostics, Oracle/PostgreSQL SQL queries, Apache Tomcat/Nginx, and bash automation.</li>
-            <li><strong>Support Philosophy:</strong> Prioritizing immediate temporary workarounds to stop business downtime, followed by root cause analysis with L3.</li>
-          </ul>
-        </div>
+    <div class="hud-deep" id="hudDeep">
+      • Day-to-Day Operations:
+      1. Incident Management: Handling incidents reported by business users, prioritizing them based on Impact and Urgency in ServiceNow, and providing workarounds to safeguard business continuity[span_3](start_span)[span_3](end_span).
+      2. Batch Monitoring: Supervising 400+ Autosys jobs. On failure, reviewing log files, identifying feed file/data/space exceptions, and notifying users[span_4](start_span)[span_4](end_span).
+    </div>
 
-        <div class="sec-script">
-          <div class="sec-script-heading">🗣️ Complete Spoken Script (Say This to HR)</div>
-          <div class="sec-script-body" id="hudScript">
-            "My experience centers on L1 and L2 Application Production Support. On a daily basis, I monitor application health, handle inbound incidents through our ticketing system, and perform environment sanity checks during shift handovers. Technically, I work extensively on Linux servers analyzing logs, verifying process states, and troubleshooting system resource bottlenecks. I write SQL queries to validate data integrity, troubleshoot connection pools, and assist with application deployments during maintenance windows. When critical issues occur, I coordinate with development and infrastructure teams to restore service quickly and document the post-incident root cause."
-          </div>
-        </div>
-
-        <div class="sec-commands">
-          <span>⚙️ Commands & Tools:</span>
-          <strong id="hudCommands">top | ps -ef | tail -100f app.log | df -h | netstat -tulnp</strong>
-        </div>
-      </div>
+    <div class="hud-command" id="hudCmd">
+      ps -ef | grep tomcat | df -h | top
     </div>
   </div>
 
-  <div class="mini-pill" id="miniPill" onclick="toggleStealth()">
-    <span>⚡ Parakeet Active (Click or Press Ctrl+E to Restore)</span>
-  </div>
+  <main>
+    <div class="grid-header">Knowledge Base (Click any card to load into HUD immediately)</div>
+    <div class="cards-grid" id="cardsGrid"></div>
+  </main>
 
   <script>
-    const MASTER_KB = [
+    // DEEP PRODUCTION SUPPORT KNOWLEDGE BASE
+    const COPILOT_DATA = [
       {
-        keys: ["tell me about yourself", "introduce yourself", "walk me through", "background", "experience", "profile"],
-        tag: "Introduction & Profile",
-        question: "Tell me about yourself and your background in Application Support.",
-        opener: "Thank you for asking. I specialize in L1 and L2 Application Production Support, maintaining 24/7 high availability across business-critical environments.",
+        id: 1,
+        cat: "Introduction",
+        q: "Tell me about yourself / Walk me through your experience.",
+        keywords: ["tell me about yourself", "introduce yourself", "walk me through", "background", "experience"],
+        hook: "Thank you for asking. I work as an Application Production Support Engineer managing L1 and L2 operations...",
         bullets: [
-          "Operational Scope: Monitoring real-time telemetry, handling P1-P4 incidents, and executing daily shift sanity health checks.",
-          "Technical Foundation: Linux server diagnostics, Oracle/PostgreSQL SQL queries, Apache Tomcat/Nginx, and bash automation.",
-          "Support Philosophy: Prioritizing immediate temporary workarounds to stop business downtime, followed by root cause analysis with L3."
+          "Role: L1/L2 Production Support Engineer maintaining system uptime and operational stability[span_5](start_span)[span_5](end_span).",
+          "Core Tools: ServiceNow, UNIX shell scripting, Oracle SQL Developer, 400+ Autosys batch jobs, and ITRS Geneos[span_6](start_span)[span_6](end_span).",
+          "Key Contributions: Triage P1-P4 tickets, eliminate database blockages, and automate file verification checks before EOD[span_7](start_span)[span_7](end_span)."
         ],
-        script: "My experience centers on L1 and L2 Application Production Support. On a daily basis, I monitor application health, handle inbound incidents through our ticketing system, and perform environment sanity checks during shift handovers. Technically, I work extensively on Linux servers analyzing logs, verifying process states, and troubleshooting system resource bottlenecks. I write SQL queries to validate data integrity, troubleshoot connection pools, and assist with application deployments during maintenance windows. When critical issues occur, I coordinate with development and infrastructure teams to restore service quickly and document the post-incident root cause.",
-        commands: "top | ps -ef | tail -100f app.log | df -h | netstat -tulnp"
+        deep: "• Operational Scope:\n1. Shift Model: Work in 24/7 rotational shifts (Morning 6 AM - 3 PM, Afternoon 2 PM - 11 PM, Night 9 PM - 6 AM)[span_8](start_span)[span_8](end_span).\n2. Health Checks & Mailbox: Running daily morning health checks on Tomcat and database connections, and managing the team inbox[span_9](start_span)[span_9](end_span).\n3. Dynamic Reporting: Connecting to Oracle SQL Developer, writing requested queries for upstream/downstream users, and exporting output to .XLS spreadsheets[span_10](start_span)[span_10](end_span).",
+        cmd: "ps -ef | grep tomcat | df -h | top"
       },
       {
-        keys: ["slow", "slowness", "latency", "performance", "taking long"],
-        tag: "Performance Troubleshooting",
-        question: "How do you troubleshoot an application slowness issue?",
-        opener: "Whenever slowness is reported, my approach is to systematically isolate whether the bottleneck is at the client network, server OS, JVM thread pool, or database layer.",
+        id: 2,
+        cat: "Real-Time Issue",
+        q: "Real-Time Issue: User unable to raise Change Request in Application?",
+        keywords: ["unable to raise change request", "party_work_item_status", "party queue", "work item", "real time issue"],
+        hook: "This issue happens due to hung session records in backend queue tables. Here is my exact investigation flow...",
         bullets: [
-          "Blast Radius: Confirm whether slowness impacts a single user (browser cache/VPN) or all users globally.",
-          "Host Resource Check: Run 'top', 'uptime', and 'vmstat' to check Load Average, CPU saturation, and memory swapping.",
-          "App Server / Threading: Inspect Tomcat catalina logs, thread pool saturation (maxThreads reached), and GC pauses.",
-          "Database Contention: Check active database sessions for uncommitted transactions holding row-level locks."
+          "Step 1 (Check Work Item): Query 'party_work_item_status'. If a work item is pending, have the user clear it first[span_11](start_span)[span_11](end_span).",
+          "Step 2 (Check Queue): If clear, create a P4 incident and query the 'party_queue' database table for stuck entries[span_12](start_span)[span_12](end_span).",
+          "Step 3 (UAT Validation): Replicate and validate deleting the stuck queue in UAT first before implementing manual deletion in Production[span_13](start_span)[span_13](end_span)."
         ],
-        script: "First, I check the scope: if only one user is affected, I verify their network connectivity, VPN, and browser cache. If it affects everyone, I log into the Linux host and run top and vmstat to verify CPU load, memory utilization, and swap activity. Next, I inspect the application layer to verify whether active threads have hit the ceiling or if Garbage Collection is stalling the application. At the database layer, I check for blocking sessions or uncommitted transactions holding row locks. Once the bottleneck is isolated, I terminate runaway locks or restart the degraded instance, and then hand over logs to development for root cause analysis.",
-        commands: "top -b -n 1 | vmstat 1 5 | iostat -xz 1 5 | v$session"
+        deep: "• Investigation & Resolution Steps:\n1. Level 1: Query select * from party_work_item_status where user_id = '<user>';\n2. Level 2: Log P4 incident, query select * from party_queue where user_id = '<user>';\n3. Safe Rule: Always test queue deletion in UAT environment first before applying manual deletion in Production[span_14](start_span)[span_14](end_span).",
+        cmd: "select * from party_work_item_status; select * from party_queue;"
       },
       {
-        keys: ["cpu", "memory", "load average", "high cpu", "swap", "ram"],
-        tag: "Linux Diagnostics",
-        question: "How do you troubleshoot high CPU or Memory utilization on Linux?",
-        opener: "When server resources spike, I immediately isolate whether the bottleneck is process-bound, stuck on disk I/O wait, or caused by memory swapping.",
+        id: 3,
+        cat: "Shell Automation",
+        q: "Explain your real-time automation project (Settlement SSI Mismatch Shell Script)?",
+        keywords: ["shell script", "ssi", "omega", "cdm", "mismatch", "automation", "last faced issue"],
+        hook: "I developed a shell automation script that prevents recurring trade delays and P1/P2 settlement incidents...",
         bullets: [
-          "CPU Triage: Run 'top' or 'uptime' to check Load Average. Press 'P' to sort by CPU; run 'ps aux --sort=-%cpu | head -10' to isolate the rogue PID.",
-          "Memory & Swap: Run 'free -m' and 'vmstat 1 5' to check 'si' (swap in) and 'so' (swap out). Active swap I/O indicates physical RAM exhaustion.",
-          "Remediation: If Java, capture thread dumps (jstack) before terminating; terminate cleanly with 'kill -15', or 'kill -9' if completely hung."
+          "Business Problem: Files from Omego client server and CDM SSI team had mismatch records, causing trade bounces and trade delays[span_15](start_span)[span_15](end_span).",
+          "Script Architecture: Executed 'diff file1 file2', stored result into variable, and evaluated non-empty string via '[ -n \"$var\" ][span_16](start_span)'[span_16](end_span).",
+          "Automation Flow: If differences exist, drops automated email ('mail -s') alerting users to manually deactivate mismatch records before EOD[span_17](start_span)[span_17](end_span)."
         ],
-        script: "I start by running top to check the system load average. If load average is significantly higher than the number of CPU cores, the system is bottlenecked. I look at the %wa metric: if I/O wait is high, the CPU is waiting on slow disk or network calls. If user CPU is high, I press Shift+P in top or run ps aux --sort=-%cpu | head -10 to find the exact Process ID consuming the cycles. For memory issues, I run free -h and vmstat 1 5 to verify swapping. If the process is Java, I take a quick thread dump using jstack before recycling the service so engineering can identify the runaway thread.",
-        commands: "top | ps aux --sort=-%cpu | head -10 | free -m | vmstat 1 5 | jstack <pid>"
+        deep: "• Technical Script Breakdown:\n- Compare files: res=$(diff omego_file.txt cdm_file.txt)\n- Conditional: if [ -n \"$res\" ]; then\n- Mail alert: echo \"SSI Mismatch\" | mail -s \"URGENT: SSI Mismatch Alert\" dl@domain.com\n- Result: Alerts users before EOD batch run, eliminating P1/P2 settlement bounces[span_18](start_span)[span_18](end_span).",
+        cmd: "res=$(diff f1 f2); if [ -n \"$res\" ]; then echo 'Mismatch' | mail -s 'SSI Alert' dl; fi"
       },
       {
-        keys: ["log", "logs", "grep", "tail", "exception", "catalina", "trace"],
-        tag: "Log Analysis",
-        question: "How do you investigate production application logs like an expert?",
-        opener: "Log analysis is my primary diagnostic tool. I use real-time tailing, contextual grep searching, and compressed log utilities to trace root causes.",
+        id: 4,
+        cat: "Database & SQL",
+        q: "How do you find and kill Database Blockages in Oracle SQL?",
+        keywords: ["blockage", "db blockage", "database blockage", "blocking_session", "kill session", "v$session"],
+        hook: "Database blockage occurs when a user executes a DML operation without committing, locking the row for others...",
         bullets: [
-          "Live Monitoring: Run 'tail -100f app.log | grep -iE \"ERROR|FATAL|Exception\"' to monitor incoming production failures.",
-          "Context Search: Use 'grep -i -C 5 \"NullPointer\" app.log' to extract 5 lines before and after the crash to inspect stack traces.",
-          "Compressed Archives: Use 'zgrep', 'zcat', or 'zless' to search archived .gz logs without decompressing them to disk."
+          "Root Cause: An uncommitted transaction (INSERT, UPDATE, DELETE) leaves rows locked for long periods[span_19](start_span)[span_19](end_span).",
+          "Query to Find Blockage: select * from v$session where blocking_session is not NULL order by blocking_session;[span_20](start_span)[span_20](end_span)",
+          "Command to Kill Session: alter system kill session ('sid,serial#') immediate; (Executed with DBA coordination)[span_21](start_span)[span_21](end_span)."
         ],
-        script: "In production support, I treat logs as the single source of truth. I start by running tail -f on the catalina or application error log piped through a grep filter for errors and exceptions. When an error is spotted, I run grep with -C 5 to capture context lines above and below the error, revealing the originating class and line number. For historical investigations across rotated logs, I use zgrep directly on the compressed .gz archives so I don't waste disk space by extracting them.",
-        commands: "tail -100f app.log | grep -i -C 5 'Exception' | zgrep -i 'timeout' *.gz"
+        deep: "• Deep Investigation Workflow:\n1. Detect: SELECT sid, serial#, username, status, blocking_session FROM v$session WHERE blocking_session IS NOT NULL;\n2. Remediate: Collaborate with DBA team to execute ALTER SYSTEM KILL SESSION ('<sid>,<serial#>') IMMEDIATE;[span_22](start_span)[span_22](end_span).",
+        cmd: "select * from v$session where blocking_session is not NULL; alter system kill session ('sid,serial#') immediate;"
       },
       {
-        keys: ["disk", "space", "filesystem", "100%", "75%", "df", "du", "truncate"],
-        tag: "Filesystem & Disk",
-        question: "How do you troubleshoot a 100% full Filesystem (Disk Space)?",
-        opener: "When a filesystem saturates, I identify heavy files, handle open file descriptors safely, and truncate without killing active processes.",
+        id: 5,
+        cat: "Unix Troubleshooting",
+        q: "How do you troubleshoot Filesystem Space 75% or 100% full in UNIX?",
+        keywords: ["filesystem", "space", "75%", "100%", "disk full", "df", "du", "truncate", "cat /dev/null"],
+        hook: "When a filesystem alert triggers, I identify the saturated mount, isolate large files, and safely truncate or compress...",
         bullets: [
-          "Locate Mount: Run 'df -h' to identify the saturated volume. Enter directory and run 'du -sk * | sort -k 1nr | head -10'.",
-          "Identify Heaviest Files: Run 'ls -lS' to find large target logs. Gzip inactive archive files.",
-          "The lsof Trap: If a deleted file still consumes space, check 'lsof | grep deleted'. Truncate active logs with 'cat /dev/null > file.log'."
+          "Locate Filesystem: Run 'df -h' to check disk usage, then 'du | sort -k 1nr' inside the directory to find large folders[span_23](start_span)[span_23](end_span).",
+          "Find Heavy Files: Use 'ls -lS' to list the largest files. Compress inactive files with 'gzip[span_24](start_span)'[span_24](end_span).",
+          "Safe Truncation: If a file is actively written by a running process, never delete it; truncate using 'cat /dev/null > log_file_name[span_25](start_span)'[span_25](end_span)."
         ],
-        script: "I first run df -h to determine which mount point has saturated. Next, I navigate to that directory and run du -sh * | sort -hr | head -10 to pinpoint the largest subdirectory, followed by ls -lS to identify the biggest files. If a log is actively open by a running Tomcat or Java process, deleting it with 'rm' will not free disk space because the operating system holds the open file handle. Instead, I safely truncate it using 'cat /dev/null > logfile.log'. If space was deleted but not freed, I run 'lsof | grep deleted' to identify the process holding the inode and reload the process.",
-        commands: "df -h; du -sh * | sort -hr | head -10; lsof | grep deleted; > app.log"
+        deep: "• Remediation Steps:\n1. Inspect: df -h followed by du -sk * | sort -k 1nr\n2. Inactive files: gzip <filename>\n3. Active files (Tomcat/Java logs): Clear contents safely without breaking process inode: cat /dev/null > log_file_name[span_26](start_span)[span_26](end_span).",
+        cmd: "df -h; du -sk * | sort -k 1nr; ls -lS; cat /dev/null > log_file_name"
       },
       {
-        keys: ["deadlock", "lock", "locks", "blockage", "blocking session", "v$session"],
-        tag: "Database Locks",
-        question: "How do you identify and resolve Database Deadlocks and Session Blockages?",
-        opener: "Database session blockages happen when an uncommitted transaction locks rows needed by concurrent requests, queuing downstream transactions.",
+        id: 6,
+        cat: "ITIL & ServiceNow",
+        q: "Difference between a Service Request and an Incident?",
+        keywords: ["service request", "incident", "difference between service request", "request ticket", "unplanned"],
+        hook: "The distinction lies in whether the requirement is a planned user task or an unplanned operational disruption...",
         bullets: [
-          "Detection: In Oracle, query 'v$session' where blocking_session is not null. In PostgreSQL, query 'pg_stat_activity' for wait_event_type = 'Lock'.",
-          "Triage: Identify the root holding session SID, query details, username, and duration in seconds.",
-          "Resolution: Contact the holding user or coordinate with DBA to terminate the holding session using ALTER SYSTEM KILL SESSION."
+          "Service Request: A planned task requested by a user (e.g., dynamic reports, access setup). No impact, urgency, or priority[span_27](start_span)[span_27](end_span).",
+          "Incident: An unplanned interruption or reduction in quality that disrupts business flow. Requires immediate triage[span_28](start_span)[span_28](end_span).",
+          "Action Required: Incidents must have Impact, Urgency, and Priority assigned in ServiceNow to track SLAs[span_29](start_span)[span_29](end_span)."
         ],
-        script: "Database blockages occur when a transaction executes an UPDATE or DELETE without issuing a COMMIT or ROLLBACK. This locks table rows and forces subsequent queries into a wait state. I detect this by querying v$session in Oracle for non-null blocking_session records, identifying the root parent SID. Once identified, I confirm whether the session is orphaned or frozen, coordinate with the DBA or user, and execute alter system kill session immediate to clear the backlog and resume transaction processing.",
-        commands: "SELECT * FROM v$session WHERE blocking_session IS NOT NULL; ALTER SYSTEM KILL SESSION ('sid,serial#') IMMEDIATE;"
+        deep: "• ITIL Comparison:\n- Service Request: Planned routine task (Request tickets, no priority/urgency needed)[span_30](start_span)[span_30](end_span).\n- Incident: Unplanned interruption affecting business flow (Must assign Impact & Urgency to calculate Priority P1-P4)[span_31](start_span)[span_31](end_span).",
+        cmd: "Request = Planned (No Priority) | Incident = Unplanned (Impact + Urgency = Priority)"
       },
       {
-        keys: ["p1", "p2", "major incident", "critical", "bridge call", "war room"],
-        tag: "Major Incident Management",
-        question: "How do you handle a Major Incident (P1 / P2) bridge call?",
-        opener: "During a P1 major incident, my priority is rapid triage, clear stakeholder communication, and establishing an immediate workaround before root-cause analysis.",
+        id: 7,
+        cat: "Critical Incidents",
+        q: "How do you handle P1 or P2 critical tickets?",
+        keywords: ["p1", "p2", "critical", "major incident", "bridge call", "handle p1"],
+        hook: "For major P1/P2 incidents, rapid communication, bridge coordination, and quick workarounds take precedence...",
         bullets: [
-          "Phase 1 (Triage & Alert): Verify business impact, raise P1 in ServiceNow, and dispatch Incident Notification email within 15 minutes.",
-          "Phase 2 (War Room Bridge): Host bridge call with Incident Manager, DBAs, Network, and Dev leads.",
-          "Phase 3 (Restore First): Implement temporary workaround (service restart, DR failover, rollback release) to recover service.",
-          "Phase 4 (Problem Handover): Facilitate Post-Incident Review (PIR) and Root Cause Analysis (RCA) with engineering."
+          "1. Rapid Alerting: Notify Manager/TL, create ServiceNow ticket, and send out incident notification email within 15-30 mins[span_32](start_span)[span_32](end_span).",
+          "2. Bridge Operations: Sys Ops convenes a live bridge call with Affected Users, DB Dev, Unix, and Support teams[span_33](start_span)[span_33](end_span).",
+          "3. Workaround & Fix: Implement an immediate workaround to restore business flow, while Manager raises Jira ticket for dev RCA[span_34](start_span)[span_34](end_span)."
         ],
-        script: "The moment a P1 is confirmed, I notify leadership and dispatch an initial Incident Notification email containing the issue description, impacted systems, priority, and the next update time. On the technical bridge call, I align teams including DBAs, network engineers, and developers. I keep the focus strictly on service restoration rather than prolonged root cause debate. If rolling back a recent deployment or restarting degraded nodes restores business, we take that action first. I send updates every 30 minutes until resolution, confirm stability with users, and trigger the Problem ticket for the post-mortem.",
-        commands: "P1 SLA = 5h | Update Every 30m | Priority = Impact + Urgency"
+        deep: "• P1/P2 Execution Checklist:\n- Triage & Notification within 15 mins (Description, Priority, Next Update ETA)[span_35](start_span)[span_35](end_span).\n- Bridge call setup with DBA, Unix, and Dev teams[span_36](start_span)[span_36](end_span).\n- Manager logs Jira ticket for permanent code fix[span_37](start_span)[span_37](end_span).",
+        cmd: "P1 SLA = 5h | P2 SLA = 10h | Updates every 30 mins"
       },
       {
-        keys: ["500", "502", "503", "504", "bad gateway", "gateway timeout"],
-        tag: "HTTP 5xx Server Errors",
-        question: "How do you troubleshoot HTTP 500, 502, 503, and 504 errors?",
-        opener: "HTTP 5xx status codes indicate server-side failures. I isolate between backend code crashes, reverse proxy breaks, and upstream connection timeouts.",
+        id: 8,
+        cat: "Monitoring",
+        q: "Autosys Batch Monitoring and ITRS Geneos Work?",
+        keywords: ["autosys", "geneos", "itrs", "monitoring", "job failure", "snooze", "400+ jobs"],
+        hook: "We monitor over 400 batch jobs and real-time infrastructure alerts daily...",
         bullets: [
-          "500 Internal Error: Unhandled backend code exception or database connectivity drop. Check application/catalina logs.",
-          "502 Bad Gateway: Upstream backend service is down, crashed, or not listening on its port (Nginx cannot reach Tomcat).",
-          "503 Service Unavailable: Server overloaded, thread pool exhausted, or app is under maintenance.",
-          "504 Gateway Timeout: Upstream application took longer to respond than the proxy threshold (e.g. slow database query)."
+          "Autosys (400+ jobs): Review logs on job failure, raise ServiceNow incidents, notify users, and remediate common failure causes[span_38](start_span)[span_38](end_span).",
+          "Failure Causes: Missing incoming feed files, filesystem space capacity, corrupt input data, or file permission issues[span_39](start_span)[span_39](end_span).",
+          "ITRS Geneos: Monitors disk space, feed file arrival, job state, and CPU/Memory. Warning = P4 ticket, Critical = P3 ticket. Snooze during releases[span_40](start_span)[span_40](end_span)."
         ],
-        script: "For a 500 error, I immediately inspect catalina.out to catch unhandled runtime exceptions or database pool connection drops. For a 502 Bad Gateway, the reverse proxy cannot connect to the backend daemon, so I verify that Tomcat is running using ps -ef and listening on its port with netstat. For a 504 Gateway Timeout, the proxy gave up waiting for the backend, which almost always points to an expensive database query or an unresponsive third-party API. I trace the request ID across the access and application logs to pinpoint the delay.",
-        commands: "curl -Iv https://app.com | ps -ef | grep tomcat | netstat -tulnp"
-      },
-      {
-        keys: ["oom", "outofmemory", "heap", "heap dump", "garbage collection", "jvm", "jstack", "jmap"],
-        tag: "JVM & Memory Management",
-        question: "How do you troubleshoot Java OutOfMemoryError (OOM) and JVM Heap Exhaustion?",
-        opener: "When a JVM hits OutOfMemoryError, I identify whether it is Heap Space, Metaspace, or GC Overhead Limit Exceeded before extracting memory dumps.",
-        bullets: [
-          "Types of OOM: Java Heap Space (object memory leak), Metaspace (classloader leak), GC Overhead limit (98%+ time spent in GC).",
-          "Dump Extraction: Configure '-XX:+HeapDumpOnOutOfMemoryError' or extract manually using 'jmap -dump:format=b,file=heap.hprof <pid>'.",
-          "Analysis: Analyze the .hprof file using Eclipse Memory Analyzer (MAT) to identify memory leaks and dominator trees."
-        ],
-        script: "When an application crashes with OutOfMemoryError, simply restarting it is only a temporary fix. I check the exact error message: if it says Java Heap Space, it means memory allocation exceeded the maximum heap (-Xmx) due to a memory leak. I verify whether automated heap dump generation is enabled with -XX:+HeapDumpOnOutOfMemoryError, or manually generate one using jmap. Then I restart the service to recover production, and feed the heap dump into Eclipse Memory Analyzer (MAT) to find the leaking objects for development to patch.",
-        commands: "jmap -dump:format=b,file=heap.hprof <PID> | jstack <PID> > threads.txt"
-      },
-      {
-        keys: ["sla", "ola", "service level agreement", "operational level agreement"],
-        tag: "ITIL Service Agreements",
-        question: "What is SLA, OLA, and what are your SLA priority timelines?",
-        opener: "SLA governs our contractual commitment to business users, whereas OLA defines our internal operational agreements between technical teams.",
-        bullets: [
-          "SLA (Service Level Agreement): Contract between the IT service provider and the customer defining response and resolution times.",
-          "OLA (Operational Level Agreement): Internal agreement between internal teams (Support, DBA, Network, Dev) to support the SLA.",
-          "Priority SLAs: Standard enterprise benchmarks are P1 (5 Hours), P2 (10 Hours), P3 (24 Hours), and P4 (48 Hours)."
-        ],
-        script: "A Service Level Agreement (SLA) is the formal contract between our support organization and the end business users, specifying measurable targets like uptime and resolution timelines—for instance, 5 hours for P1 and 24 hours for P3. An Operational Level Agreement (OLA) is an internal operational agreement between our internal teams—such as how quickly the DBA or Network team must respond when L2 support escalates an issue—ensuring we do not breach the customer-facing SLA.",
-        commands: "P1: 5h | P2: 10h | P3: 24h | P4: 48h | MTTR Metrics"
-      },
-      {
-        keys: ["weakness", "areas of improvement", "struggle with", "greatest weakness"],
-        tag: "HR Behavioral",
-        question: "What is your biggest weakness?",
-        opener: "I consider self-awareness the foundation of professional growth, and early on my main challenge was hesitating to ask for help when blocked.",
-        bullets: [
-          "The Weakness: Tendency to spend too much time trying to solve difficult technical roadblocks alone.",
-          "The Fix: Implemented a strict '30-Minute Rule'—research independently first, then escalate with findings.",
-          "The Result: Faster issue resolution without risking SLA breaches or wasting team resources."
-        ],
-        script: "Earlier in my career, I had a tendency to spend too much time trying to figure out complex technical problems completely on my own because I wanted to be self-reliant. In production support, where SLAs are critical, waiting too long can create unnecessary risk. I recognized this and adopted a strict 30-minute rule: if I cannot make measurable progress on an issue within 30 minutes of checking logs and runbooks, I organize my findings, summarize what I tested, and consult a senior engineer. This ensures we resolve issues within SLA while keeping collaboration high.",
-        commands: "Behavioral: 30-Minute Rule | Structured Escalation | SLA Awareness"
+        deep: "• Monitoring Operations:\n- Autosys: Inspect logs on failure, identify feed/space/data errors, log ticket[span_41](start_span)[span_41](end_span).\n- Geneos: Warning = P4 ticket, Critical = P3 ticket. Always snooze alerts during maintenance releases[span_42](start_span)[span_42](end_span).",
+        cmd: "Autosys log inspection | Geneos Warning (P4) / Critical (P3)"
       }
     ];
 
-    let currentTranscript = "Tell me about yourself";
     let recognition = null;
     let isListening = false;
+    let audioContext = null;
+    let analyser = null;
+    let dataArray = null;
 
-    function displayPrompterAnswer(data) {
-      document.getElementById("hudTag").innerText = data.tag.toUpperCase();
-      document.getElementById("hudQuestion").innerText = data.question;
-      document.getElementById("hudOpener").innerHTML = `<strong>💬 2-Second Opener:</strong> "${data.opener}"`;
-      document.getElementById("hudBullets").innerHTML = data.bullets.map(b => `<li>${b}</li>`).join("");
-      document.getElementById("hudScript").innerText = `"${data.script}"`;
-      document.getElementById("hudCommands").innerText = data.commands;
-
-      const widget = document.getElementById("copilotWidget");
-      widget.style.borderColor = "var(--accent)";
-      setTimeout(() => widget.style.borderColor = "rgba(129, 140, 248, 0.35)", 400);
+    // RENDER CARDS
+    function renderCards(list) {
+      const grid = document.getElementById("cardsGrid");
+      grid.innerHTML = "";
+      list.forEach(item => {
+        const card = document.createElement("div");
+        card.className = "card";
+        card.id = `card-${item.id}`;
+        card.onclick = () => loadAnswerToHUD(item);
+        card.innerHTML = `
+          <div class="card-title">${item.q}</div>
+          <div class="card-snippet">${item.bullets[0]}</div>
+        `;
+        grid.appendChild(card);
+      });
     }
 
-    function findBestMatch(text) {
-      const q = text.toLowerCase();
-      for (const item of MASTER_KB) {
-        if (item.keys.some(k => q.includes(k))) return item;
+    // LOAD ANSWER INTO TELEPROMPTER HUD
+    function loadAnswerToHUD(item) {
+      document.getElementById("hudCat").innerText = item.cat.toUpperCase();
+      document.getElementById("hudQuestion").innerText = item.q;
+      document.getElementById("hudHook").innerHTML = `💬 <strong>0s Hook:</strong> "${item.hook}"`;
+      document.getElementById("hudBullets").innerHTML = item.bullets.map(b => `<li>${b}</li>`).join("");
+      document.getElementById("hudDeep").innerText = item.deep;
+      document.getElementById("hudCmd").innerText = item.cmd;
+
+      document.querySelectorAll(".card").forEach(c => c.classList.remove("active"));
+      const c = document.getElementById(`card-${item.id}`);
+      if (c) c.classList.add("active");
+
+      const hud = document.getElementById("hudBox");
+      hud.style.borderColor = "var(--accent)";
+      setTimeout(() => hud.style.borderColor = "rgba(99, 102, 241, 0.4)", 500);
+    }
+
+    // KEYWORD SEARCH
+    function handleSearch(val) {
+      const q = val.toLowerCase().trim();
+      if (!q) {
+        renderCards(COPILOT_DATA);
+        return;
       }
-      return {
-        tag: "Production Triage",
-        question: text,
-        opener: `Regarding this scenario, my approach is to verify the user blast radius, inspect host telemetry and logs, and apply a verified workaround before root cause analysis.`,
-        bullets: [
-          "Check Scope: Determine if the problem affects a single user or all systems globally.",
-          "Investigate Logs: Review application and server logs to isolate the exact error code or stack trace.",
-          "Remediate: Apply a safe service restart or failover, verify end-to-end functionality, and document the root cause."
-        ],
-        script: `When dealing with this issue, I first confirm the impact and check our monitoring dashboards. Next, I connect to the server environment, inspect application access and error logs to catch active exceptions, and verify that all dependent database and network connections are responsive. If production is degraded, I prioritize service restoration using our documented runbooks, confirm stability with business users, and log a problem ticket with logs attached for root-cause analysis.`,
-        commands: "ps -ef | tail -100f app.log | ss -tulnp | df -h"
-      };
-    }
+      const matches = COPILOT_DATA.filter(item => {
+        return item.q.toLowerCase().includes(q) ||
+               item.keywords.some(k => k.toLowerCase().includes(q)) ||
+               item.bullets.some(b => b.toLowerCase().includes(q)) ||
+               item.deep.toLowerCase().includes(q) ||
+               item.cmd.toLowerCase().includes(q);
+      });
 
-    function triggerAnswer() {
-      const answer = findBestMatch(currentTranscript);
-      displayPrompterAnswer(answer);
-    }
-
-    function handleSearch(term) {
-      if (!term.trim()) return;
-      currentTranscript = term.trim();
-      document.getElementById("liveTranscript").innerText = `Search: "${term}"`;
-      triggerAnswer();
-    }
-
-    async function triggerScreenAnalysis() {
-      const statusLabel = document.getElementById("statusLabel");
-      const transcript = document.getElementById("liveTranscript");
-
-      try {
-        statusLabel.innerText = "Analyzing Screen...";
-        transcript.innerText = "Selecting screen window...";
-
-        const stream = await navigator.mediaDevices.getDisplayMedia({ video: { cursor: "always" }, audio: false });
-        const track = stream.getVideoTracks()[0];
-        const imageCapture = new ImageCapture(track);
-        const bitmap = await imageCapture.grabFrame();
-        track.stop();
-
-        const canvas = document.createElement("canvas");
-        canvas.width = bitmap.width;
-        canvas.height = bitmap.height;
-        const ctx = canvas.getContext("2d");
-        ctx.drawImage(bitmap, 0, 0);
-
-        transcript.innerText = "Extracting text with OCR...";
-        const { data: { text } } = await Tesseract.recognize(canvas, 'eng');
-        const cleanText = text.trim();
-
-        if (cleanText.length > 4) {
-          transcript.innerText = `Screen Detected: "${cleanText.substring(0, 60)}..."`;
-          currentTranscript = cleanText;
-          const match = findBestMatch(cleanText);
-          displayPrompterAnswer(match);
-        } else {
-          transcript.innerText = "No readable text found on screen.";
-        }
-        statusLabel.innerText = "Ready";
-      } catch (err) {
-        statusLabel.innerText = "Ready";
-        transcript.innerText = "Screen analysis cancelled.";
+      renderCards(matches);
+      if (matches.length > 0) {
+        loadAnswerToHUD(matches[0]);
       }
     }
 
-    function toggleStealth() {
-      document.body.classList.toggle("stealth-active");
-    }
-
-    function resetIntro() {
-      displayPrompterAnswer(MASTER_KB[0]);
-      document.getElementById("quickSearch").value = "";
-      document.getElementById("liveTranscript").innerText = "Speech recognition ready or type keywords below...";
-    }
-
-    function initSpeech() {
+    // SPEECH RECOGNITION ENGINE
+    function initSpeechEngine() {
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
       if (!SpeechRecognition) {
-        alert("Microphone recognition requires Google Chrome or Microsoft Edge.");
+        alert("Speech Recognition requires Google Chrome or Microsoft Edge.");
         return null;
       }
-
       const rec = new SpeechRecognition();
       rec.continuous = true;
       rec.interimResults = true;
@@ -742,11 +615,16 @@
         for (let i = evt.resultIndex; i < evt.results.length; i++) {
           transcript += evt.results[i][0].transcript;
         }
-        if (transcript.trim().length > 0) {
-          document.getElementById("liveTranscript").innerText = transcript;
-          currentTranscript = transcript;
-          document.getElementById("waveformBar").style.width = Math.min(100, transcript.length * 4) + "%";
-          triggerAnswer();
+        const text = transcript.toLowerCase().trim();
+        document.getElementById("transcriptDisplay").innerText = text;
+
+        for (const item of COPILOT_DATA) {
+          for (const kw of item.keywords) {
+            if (text.includes(kw.toLowerCase())) {
+              loadAnswerToHUD(item);
+              return;
+            }
+          }
         }
       };
 
@@ -755,16 +633,44 @@
           try { rec.start(); } catch(e) {}
         }
       };
-
       return rec;
     }
 
-    function toggleMic() {
-      const btn = document.getElementById("micBtn");
-      const pill = document.getElementById("statusPill");
-      const label = document.getElementById("statusLabel");
+    // AUDIO VISUALIZER
+    async function startAudioMeter() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const source = audioContext.createMediaStreamSource(stream);
+        analyser = audioContext.createAnalyser();
+        analyser.fftSize = 64;
+        source.connect(analyser);
+        dataArray = new Uint8Array(analyser.frequencyBinCount);
+        updateVisualizer();
+      } catch (err) {}
+    }
 
-      if (!recognition) recognition = initSpeech();
+    function updateVisualizer() {
+      if (!isListening) {
+        document.getElementById("audioBar").style.width = "0%";
+        return;
+      }
+      if (analyser && dataArray) {
+        analyser.getByteFrequencyData(dataArray);
+        let sum = 0;
+        for (let i = 0; i < dataArray.length; i++) sum += dataArray[i];
+        let average = sum / dataArray.length;
+        let percentage = Math.min(100, Math.max(8, (average / 128) * 100));
+        document.getElementById("audioBar").style.width = percentage + "%";
+      }
+      requestAnimationFrame(updateVisualizer);
+    }
+
+    function toggleListening() {
+      const btn = document.getElementById("micBtn");
+      const dot = document.getElementById("liveDot");
+
+      if (!recognition) recognition = initSpeechEngine();
       if (!recognition) return;
 
       if (!isListening) {
@@ -772,50 +678,40 @@
           recognition.start();
           isListening = true;
           btn.classList.add("listening");
-          btn.innerText = "🛑 Stop Mic";
-          pill.classList.add("active-listening");
-          label.innerText = "Listening...";
+          btn.innerText = "🛑 Stop";
+          dot.classList.add("active");
+          startAudioMeter();
         } catch(e) {}
       } else {
         isListening = false;
         recognition.stop();
         btn.classList.remove("listening");
-        btn.innerText = "🎙️ Listen HR";
-        pill.classList.remove("active-listening");
-        label.innerText = "Ready";
-        document.getElementById("waveformBar").style.width = "0%";
+        btn.innerText = "🎙️ Listen";
+        dot.classList.remove("active");
       }
     }
 
+    function toggleStealth() {
+      document.body.classList.toggle("stealth-mode");
+    }
+
+    // HOTKEYS
     window.addEventListener("keydown", (e) => {
-      const isCmdOrCtrl = e.metaKey || e.ctrlKey;
-
-      if (isCmdOrCtrl && e.key.toLowerCase() === "g") {
+      if (e.code === "Space" && document.activeElement !== document.getElementById("quickSearch")) {
         e.preventDefault();
-        triggerAnswer();
+        toggleListening();
       }
-
-      if (isCmdOrCtrl && e.key.toLowerCase() === "k") {
-        e.preventDefault();
-        triggerScreenAnalysis();
-      }
-
-      if ((isCmdOrCtrl && e.key.toLowerCase() === "e") || e.key === "Escape") {
-        e.preventDefault();
+      if (e.code === "Escape") {
         toggleStealth();
       }
-
       if (e.key === "/" && document.activeElement !== document.getElementById("quickSearch")) {
         e.preventDefault();
         document.getElementById("quickSearch").focus();
       }
     });
 
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('./sw.js').catch(() => {});
-    }
-
-    displayPrompterAnswer(MASTER_KB[0]);
+    renderCards(COPILOT_DATA);
+    loadAnswerToHUD(COPILOT_DATA[0]);
   </script>
 </body>
 </html>
