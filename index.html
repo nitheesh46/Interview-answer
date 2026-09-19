@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Pilot & Parrot AI | Live Interview Copilot</title>
+  <title>Auto-Pilot AI Interview Copilot</title>
   <style>
     :root {
       --bg: #07090e;
-      --card-bg: rgba(18, 24, 38, 0.9);
-      --border: rgba(255, 255, 255, 0.1);
+      --card-bg: rgba(18, 24, 38, 0.95);
+      --border: rgba(255, 255, 255, 0.12);
       --primary: #38bdf8;
       --accent: #22c55e;
       --warning: #f59e0b;
@@ -34,18 +34,18 @@
       overflow-x: hidden;
     }
 
-    /* Top Floating Header */
+    /* Auto-Pilot Header Bar */
     header {
       position: sticky;
       top: 0;
       z-index: 1000;
-      background: rgba(10, 14, 23, 0.95);
+      background: rgba(10, 14, 23, 0.96);
       backdrop-filter: blur(16px);
       border-bottom: 1px solid var(--border);
-      padding: 10px 16px;
+      padding: 12px 18px;
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 10px;
     }
 
     .status-row {
@@ -57,12 +57,12 @@
     .brand-group {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
     }
 
     .live-dot {
-      width: 10px;
-      height: 10px;
+      width: 12px;
+      height: 12px;
       border-radius: 50%;
       background: #475569;
       transition: all 0.3s;
@@ -70,7 +70,7 @@
 
     .live-dot.active {
       background: var(--accent);
-      box-shadow: 0 0 12px var(--accent);
+      box-shadow: 0 0 14px var(--accent);
       animation: pulseWave 1.4s infinite;
     }
 
@@ -81,50 +81,44 @@
     }
 
     .brand-title {
-      font-size: 0.85rem;
+      font-size: 0.9rem;
       font-weight: 800;
       letter-spacing: 0.05em;
       text-transform: uppercase;
       color: var(--primary);
     }
 
-    .shortcut-hints {
-      font-size: 0.72rem;
-      color: var(--text-muted);
-      display: flex;
-      gap: 8px;
-    }
-
-    .key-badge {
-      background: rgba(255, 255, 255, 0.08);
-      border: 1px solid var(--border);
-      padding: 2px 6px;
-      border-radius: 4px;
-      color: #cbd5e1;
-      font-family: monospace;
+    .auto-mode-badge {
+      background: rgba(34, 197, 94, 0.15);
+      border: 1px solid var(--accent);
+      color: var(--accent);
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 700;
     }
 
     .control-actions {
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 8px;
     }
 
     .btn {
-      padding: 6px 12px;
+      padding: 7px 14px;
       border-radius: 6px;
-      font-size: 0.8rem;
+      font-size: 0.82rem;
       font-weight: 700;
       border: none;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
-      gap: 5px;
+      gap: 6px;
       transition: all 0.15s ease;
     }
 
-    .btn-mic { background: var(--danger); color: #fff; }
-    .btn-mic.listening { background: #0284c7; box-shadow: 0 0 10px rgba(2, 132, 199, 0.5); }
+    .btn-autopilot { background: var(--accent); color: #022c22; }
+    .btn-autopilot.active { background: #0284c7; color: #fff; box-shadow: 0 0 12px rgba(2, 132, 199, 0.5); }
     .btn-stealth { background: rgba(255, 255, 255, 0.06); color: var(--text-muted); border: 1px solid var(--border); }
     .btn-stealth:hover { color: #fff; border-color: var(--primary); }
 
@@ -144,22 +138,22 @@
       transition: width 0.08s ease;
     }
 
-    /* Live Transcript Feed */
+    /* Live Automated Speech Transcript Feed */
     .stream-feed {
       display: flex;
       align-items: center;
       gap: 8px;
-      font-size: 0.82rem;
-      background: rgba(0, 0, 0, 0.4);
-      padding: 6px 10px;
+      font-size: 0.84rem;
+      background: rgba(0, 0, 0, 0.5);
+      padding: 8px 12px;
       border-radius: 6px;
-      border-left: 2.5px solid var(--purple);
+      border-left: 3px solid var(--purple);
     }
 
     .stream-feed span.label {
       color: var(--purple);
       font-weight: 700;
-      font-size: 0.72rem;
+      font-size: 0.75rem;
       text-transform: uppercase;
     }
 
@@ -168,28 +162,15 @@
       font-style: italic;
     }
 
-    /* Search Input */
-    .search-input {
-      width: 100%;
-      background: rgba(18, 24, 38, 0.9);
-      border: 1px solid var(--border);
-      color: #fff;
-      padding: 8px 12px;
-      border-radius: 6px;
-      font-size: 0.9rem;
-      outline: none;
-    }
-    .search-input:focus { border-color: var(--primary); }
-
-    /* PARROT-STYLE TELEPROMPTER HUD */
+    /* AUTOMATED TELEPROMPTER HUD */
     .parrot-hud {
-      margin: 10px 16px;
+      margin: 12px 18px;
       background: var(--card-bg);
-      border: 1.5px solid rgba(99, 102, 241, 0.4);
-      border-radius: 10px;
-      padding: 16px;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
-      backdrop-filter: blur(12px);
+      border: 2px solid rgba(99, 102, 241, 0.5);
+      border-radius: 12px;
+      padding: 18px;
+      box-shadow: 0 10px 35px rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(14px);
     }
 
     .hud-meta {
@@ -200,24 +181,24 @@
     }
 
     .hud-cat {
-      font-size: 0.7rem;
+      font-size: 0.75rem;
       font-weight: 800;
       color: var(--primary);
       text-transform: uppercase;
       letter-spacing: 0.06em;
     }
 
-    .hud-accuracy {
-      font-size: 0.72rem;
-      padding: 2px 6px;
+    .hud-match-status {
+      font-size: 0.75rem;
+      padding: 3px 8px;
       border-radius: 4px;
-      background: rgba(34, 197, 94, 0.15);
+      background: rgba(34, 197, 94, 0.2);
       color: var(--accent);
-      font-weight: 700;
+      font-weight: 800;
     }
 
     .hud-query {
-      font-size: 1.2rem;
+      font-size: 1.25rem;
       font-weight: 800;
       color: #fff;
       margin-bottom: 8px;
@@ -227,25 +208,25 @@
     .hud-hook {
       background: rgba(245, 158, 11, 0.12);
       border-left: 3px solid var(--warning);
-      padding: 6px 10px;
+      padding: 8px 12px;
       border-radius: 4px;
-      font-size: 0.85rem;
+      font-size: 0.88rem;
       color: #fde68a;
-      margin-bottom: 10px;
+      margin-bottom: 12px;
     }
 
     .hud-bullets {
       list-style-type: none;
       display: flex;
       flex-direction: column;
-      gap: 6px;
-      margin-bottom: 12px;
+      gap: 7px;
+      margin-bottom: 14px;
     }
 
     .hud-bullets li {
-      font-size: 1.02rem;
+      font-size: 1.05rem;
       color: #f1f5f9;
-      line-height: 1.4;
+      line-height: 1.42;
       display: flex;
       gap: 8px;
     }
@@ -253,19 +234,19 @@
     .hud-bullets li::before {
       content: "▶";
       color: var(--accent);
-      font-size: 0.75rem;
+      font-size: 0.78rem;
       margin-top: 3px;
     }
 
     .hud-deep {
-      background: rgba(0, 0, 0, 0.4);
+      background: rgba(0, 0, 0, 0.45);
       border: 1px solid var(--border);
-      border-radius: 6px;
-      padding: 10px 12px;
-      font-size: 0.88rem;
+      border-radius: 8px;
+      padding: 12px 14px;
+      font-size: 0.9rem;
       color: #cbd5e1;
-      line-height: 1.5;
-      margin-bottom: 10px;
+      line-height: 1.55;
+      margin-bottom: 12px;
       white-space: pre-line;
     }
 
@@ -273,23 +254,23 @@
       background: #04060b;
       border: 1px solid var(--border);
       border-radius: 6px;
-      padding: 8px 12px;
+      padding: 10px 14px;
       font-family: monospace;
-      font-size: 0.84rem;
+      font-size: 0.88rem;
       color: #67e8f9;
     }
 
     /* Cards Grid */
     main {
-      padding: 0 16px;
+      padding: 0 18px;
       display: flex;
       flex-direction: column;
-      gap: 8px;
-      padding-bottom: 30px;
+      gap: 10px;
+      padding-bottom: 40px;
     }
 
     .grid-header {
-      font-size: 0.72rem;
+      font-size: 0.75rem;
       text-transform: uppercase;
       letter-spacing: 0.05em;
       color: var(--text-muted);
@@ -297,7 +278,7 @@
 
     .cards-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
       gap: 10px;
     }
 
@@ -305,44 +286,43 @@
       background: rgba(18, 24, 38, 0.6);
       border: 1px solid var(--border);
       border-radius: 8px;
-      padding: 10px 12px;
+      padding: 12px 14px;
       cursor: pointer;
       transition: all 0.15s ease;
     }
 
     .card:hover {
       border-color: var(--primary);
-      background: rgba(30, 41, 59, 0.7);
+      background: rgba(30, 41, 59, 0.8);
     }
 
     .card.active {
       border-color: var(--accent);
-      background: rgba(34, 197, 94, 0.1);
+      background: rgba(34, 197, 94, 0.12);
     }
 
     .card-title {
-      font-size: 0.88rem;
+      font-size: 0.9rem;
       font-weight: 700;
       color: #fff;
       margin-bottom: 4px;
     }
 
     .card-snippet {
-      font-size: 0.78rem;
+      font-size: 0.8rem;
       color: var(--text-muted);
       line-height: 1.35;
     }
 
     /* Stealth Mode */
     body.stealth-mode main,
-    body.stealth-mode .shortcut-hints,
-    body.stealth-mode .search-input {
+    body.stealth-mode .stream-feed {
       display: none !important;
     }
     body.stealth-mode .parrot-hud {
       margin: 8px;
-      background: rgba(7, 9, 14, 0.96);
-      border-color: rgba(255, 255, 255, 0.15);
+      background: rgba(7, 9, 14, 0.98);
+      border-color: rgba(255, 255, 255, 0.2);
     }
   </style>
 </head>
@@ -352,17 +332,13 @@
     <div class="status-row">
       <div class="brand-group">
         <div class="live-dot" id="liveDot"></div>
-        <span class="brand-title">Pilot Copilot</span>
-        <div class="shortcut-hints">
-          <span><span class="key-badge">Space</span> Mic</span>
-          <span><span class="key-badge">Esc</span> Stealth</span>
-          <span><span class="key-badge">/</span> Focus</span>
-        </div>
+        <span class="brand-title">Auto-Pilot AI Engine</span>
+        <span class="auto-mode-badge" id="modeBadge">Hands-Free Mode Ready</span>
       </div>
 
       <div class="control-actions">
-        <button class="btn btn-mic" id="micBtn" onclick="toggleListening()">🎙️ Listen</button>
-        <button class="btn btn-stealth" onclick="toggleStealth()">👁️ Stealth</button>
+        <button class="btn btn-autopilot active" id="autoBtn" onclick="toggleAutoPilot()">🟢 Auto-Pilot On</button>
+        <button class="btn btn-stealth" onclick="toggleStealth()">👁️ Stealth Mode (Esc)</button>
       </div>
     </div>
 
@@ -371,30 +347,22 @@
     </div>
 
     <div class="stream-feed">
-      <span class="label">Listening:</span>
-      <span id="transcriptDisplay">Waiting for HR interviewer to speak...</span>
+      <span class="label">Live HR Audio:</span>
+      <span id="transcriptDisplay">Listening to interviewer automatically... Click 'Auto-Pilot On' if needed.</span>
     </div>
-
-    <input 
-      type="text" 
-      id="quickSearch" 
-      class="search-input" 
-      placeholder="Type any keyword (e.g. work item, ssi, blockage, 75%, tomcat, sla, p1, cob) for 0s answer..."
-      oninput="handleSearch(this.value)"
-    />
   </header>
 
-  <!-- PARROT-STYLE TELEPROMPTER HUD -->
+  <!-- AUTOMATED TELEPROMPTER HUD -->
   <div class="parrot-hud" id="hudBox">
     <div class="hud-meta">
       <span class="hud-cat" id="hudCat">INTRODUCTION</span>
-      <span class="hud-accuracy" id="hudMatch">⚡ 100% Match</span>
+      <span class="hud-match-status" id="hudMatchStatus">⚡ Automated AI Match (100%)</span>
     </div>
     
-    <div class="hud-query" id="hudQuestion">Tell me about yourself / Walk me through your profile.</div>
+    <div class="hud-query" id="hudQuestion">Tell me about yourself / Walk me through your experience.</div>
     
     <div class="hud-hook" id="hudHook">
-      💬 <strong>0s Hook:</strong> "Thank you for asking. I work as an Application Production Support Engineer handling enterprise workflows..."
+      💬 <strong>0s Automated Hook:</strong> "Thank you for asking. I work as an Application Production Support Engineer handling enterprise workflows..."
     </div>
 
     <ul class="hud-bullets" id="hudBullets">
@@ -415,18 +383,18 @@
   </div>
 
   <main>
-    <div class="grid-header">Knowledge Base (Click any card to load into HUD immediately)</div>
+    <div class="grid-header">Knowledge Base Index (Click any card to override automatically)</div>
     <div class="cards-grid" id="cardsGrid"></div>
   </main>
 
   <script>
-    // DEEP PRODUCTION SUPPORT KNOWLEDGE BASE
-    const COPILOT_DATA = [
+    // FULL PRODUCTION SUPPORT AUTOMATED KNOWLEDGE DATABASE
+    const AUTO_DATABASE = [
       {
         id: 1,
         cat: "Introduction",
         q: "Tell me about yourself / Walk me through your experience.",
-        keywords: ["tell me about yourself", "introduce yourself", "walk me through", "background", "experience"],
+        keywords: ["tell me about yourself", "introduce yourself", "walk me through", "background", "experience", "yourself"],
         hook: "Thank you for asking. I work as an Application Production Support Engineer managing L1 and L2 operations...",
         bullets: [
           "Role: L1/L2 Production Support Engineer maintaining system uptime and operational stability[span_5](start_span)[span_5](end_span).",
@@ -440,8 +408,8 @@
         id: 2,
         cat: "Real-Time Issue",
         q: "Real-Time Issue: User unable to raise Change Request in Application?",
-        keywords: ["unable to raise change request", "party_work_item_status", "party queue", "work item", "real time issue"],
-        hook: "This issue happens due to hung session records in backend queue tables. Here is my exact investigation flow...",
+        keywords: ["change request", "party_work_item_status", "party queue", "work item", "unable to raise", "cr"],
+        hook: "This issue happens due to hung session records in backend queue tables. Here is my exact automated analysis...",
         bullets: [
           "Step 1 (Check Work Item): Query 'party_work_item_status'. If a work item is pending, have the user clear it first[span_11](start_span)[span_11](end_span).",
           "Step 2 (Check Queue): If clear, create a P4 incident and query the 'party_queue' database table for stuck entries[span_12](start_span)[span_12](end_span).",
@@ -454,7 +422,7 @@
         id: 3,
         cat: "Shell Automation",
         q: "Explain your real-time automation project (Settlement SSI Mismatch Shell Script)?",
-        keywords: ["shell script", "ssi", "omega", "cdm", "mismatch", "automation", "last faced issue"],
+        keywords: ["shell script", "ssi", "omega", "cdm", "mismatch", "automation", "last faced", "script"],
         hook: "I developed a shell automation script that prevents recurring trade delays and P1/P2 settlement incidents...",
         bullets: [
           "Business Problem: Files from Omego client server and CDM SSI team had mismatch records, causing trade bounces and trade delays[span_15](start_span)[span_15](end_span).",
@@ -468,7 +436,7 @@
         id: 4,
         cat: "Database & SQL",
         q: "How do you find and kill Database Blockages in Oracle SQL?",
-        keywords: ["blockage", "db blockage", "database blockage", "blocking_session", "kill session", "v$session"],
+        keywords: ["blockage", "db blockage", "database blockage", "blocking_session", "kill session", "v$session", "lock"],
         hook: "Database blockage occurs when a user executes a DML operation without committing, locking the row for others...",
         bullets: [
           "Root Cause: An uncommitted transaction (INSERT, UPDATE, DELETE) leaves rows locked for long periods[span_19](start_span)[span_19](end_span).",
@@ -482,7 +450,7 @@
         id: 5,
         cat: "Unix Troubleshooting",
         q: "How do you troubleshoot Filesystem Space 75% or 100% full in UNIX?",
-        keywords: ["filesystem", "space", "75%", "100%", "disk full", "df", "du", "truncate", "cat /dev/null"],
+        keywords: ["filesystem", "space", "75%", "100%", "disk full", "df", "du", "truncate", "cat /dev/null", "disk"],
         hook: "When a filesystem alert triggers, I identify the saturated mount, isolate large files, and safely truncate or compress...",
         bullets: [
           "Locate Filesystem: Run 'df -h' to check disk usage, then 'du | sort -k 1nr' inside the directory to find large folders[span_23](start_span)[span_23](end_span).",
@@ -496,7 +464,7 @@
         id: 6,
         cat: "ITIL & ServiceNow",
         q: "Difference between a Service Request and an Incident?",
-        keywords: ["service request", "incident", "difference between service request", "request ticket", "unplanned"],
+        keywords: ["service request", "incident", "difference", "request ticket", "unplanned", "interruption"],
         hook: "The distinction lies in whether the requirement is a planned user task or an unplanned operational disruption...",
         bullets: [
           "Service Request: A planned task requested by a user (e.g., dynamic reports, access setup). No impact, urgency, or priority[span_27](start_span)[span_27](end_span).",
@@ -510,7 +478,7 @@
         id: 7,
         cat: "Critical Incidents",
         q: "How do you handle P1 or P2 critical tickets?",
-        keywords: ["p1", "p2", "critical", "major incident", "bridge call", "handle p1"],
+        keywords: ["p1", "p2", "critical", "major incident", "bridge call", "handle p1", "handle p2"],
         hook: "For major P1/P2 incidents, rapid communication, bridge coordination, and quick workarounds take precedence...",
         bullets: [
           "1. Rapid Alerting: Notify Manager/TL, create ServiceNow ticket, and send out incident notification email within 15-30 mins[span_32](start_span)[span_32](end_span).",
@@ -524,7 +492,7 @@
         id: 8,
         cat: "Monitoring",
         q: "Autosys Batch Monitoring and ITRS Geneos Work?",
-        keywords: ["autosys", "geneos", "itrs", "monitoring", "job failure", "snooze", "400+ jobs"],
+        keywords: ["autosys", "geneos", "itrs", "monitoring", "job failure", "snooze", "400+ jobs", "batch"],
         hook: "We monitor over 400 batch jobs and real-time infrastructure alerts daily...",
         bullets: [
           "Autosys (400+ jobs): Review logs on job failure, raise ServiceNow incidents, notify users, and remediate common failure causes[span_38](start_span)[span_38](end_span).",
@@ -537,12 +505,12 @@
     ];
 
     let recognition = null;
-    let isListening = false;
+    let isAutoPilotActive = true;
     let audioContext = null;
     let analyser = null;
     let dataArray = null;
 
-    // RENDER CARDS
+    // RENDER KNOWLEDGE CARDS
     function renderCards(list) {
       const grid = document.getElementById("cardsGrid");
       grid.innerHTML = "";
@@ -550,7 +518,7 @@
         const card = document.createElement("div");
         card.className = "card";
         card.id = `card-${item.id}`;
-        card.onclick = () => loadAnswerToHUD(item);
+        card.onclick = () => loadAnswerToHUD(item, "Manual Override");
         card.innerHTML = `
           <div class="card-title">${item.q}</div>
           <div class="card-snippet">${item.bullets[0]}</div>
@@ -559,11 +527,12 @@
       });
     }
 
-    // LOAD ANSWER INTO TELEPROMPTER HUD
-    function loadAnswerToHUD(item) {
+    // LOAD ANSWER INTO AUTOMATED HUD
+    function loadAnswerToHUD(item, matchType = "Automated AI Match (100%)") {
       document.getElementById("hudCat").innerText = item.cat.toUpperCase();
+      document.getElementById("hudMatchStatus").innerText = `⚡ ${matchType}`;
       document.getElementById("hudQuestion").innerText = item.q;
-      document.getElementById("hudHook").innerHTML = `💬 <strong>0s Hook:</strong> "${item.hook}"`;
+      document.getElementById("hudHook").innerHTML = `💬 <strong>0s Automated Hook:</strong> "${item.hook}"`;
       document.getElementById("hudBullets").innerHTML = item.bullets.map(b => `<li>${b}</li>`).join("");
       document.getElementById("hudDeep").innerText = item.deep;
       document.getElementById("hudCmd").innerText = item.cmd;
@@ -572,33 +541,13 @@
       const c = document.getElementById(`card-${item.id}`);
       if (c) c.classList.add("active");
 
+      // Flash HUD border green to indicate successful automated trigger
       const hud = document.getElementById("hudBox");
       hud.style.borderColor = "var(--accent)";
-      setTimeout(() => hud.style.borderColor = "rgba(99, 102, 241, 0.4)", 500);
+      setTimeout(() => hud.style.borderColor = "rgba(99, 102, 241, 0.5)", 600);
     }
 
-    // KEYWORD SEARCH
-    function handleSearch(val) {
-      const q = val.toLowerCase().trim();
-      if (!q) {
-        renderCards(COPILOT_DATA);
-        return;
-      }
-      const matches = COPILOT_DATA.filter(item => {
-        return item.q.toLowerCase().includes(q) ||
-               item.keywords.some(k => k.toLowerCase().includes(q)) ||
-               item.bullets.some(b => b.toLowerCase().includes(q)) ||
-               item.deep.toLowerCase().includes(q) ||
-               item.cmd.toLowerCase().includes(q);
-      });
-
-      renderCards(matches);
-      if (matches.length > 0) {
-        loadAnswerToHUD(matches[0]);
-      }
-    }
-
-    // SPEECH RECOGNITION ENGINE
+    // AUTOMATED SPEECH RECOGNITION ENGINE
     function initSpeechEngine() {
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
       if (!SpeechRecognition) {
@@ -611,6 +560,8 @@
       rec.lang = "en-US";
 
       rec.onresult = (evt) => {
+        if (!isAutoPilotActive) return;
+
         let transcript = "";
         for (let i = evt.resultIndex; i < evt.results.length; i++) {
           transcript += evt.results[i][0].transcript;
@@ -618,25 +569,38 @@
         const text = transcript.toLowerCase().trim();
         document.getElementById("transcriptDisplay").innerText = text;
 
-        for (const item of COPILOT_DATA) {
+        // Automated Matching Algorithm (Scoring system)
+        let bestMatch = null;
+        let maxScore = 0;
+
+        for (const item of AUTO_DATABASE) {
+          let score = 0;
           for (const kw of item.keywords) {
             if (text.includes(kw.toLowerCase())) {
-              loadAnswerToHUD(item);
-              return;
+              score += kw.length; // Weight longer, more specific keywords higher
             }
           }
+          if (score > maxScore) {
+            maxScore = score;
+            bestMatch = item;
+          }
+        }
+
+        // If score threshold is met, automatically shift the automated answer on screen!
+        if (bestMatch && maxScore > 3) {
+          loadAnswerToHUD(bestMatch, `Auto-Pilot Matched (${Math.min(99, 70 + maxScore * 3)}% Confidence)`);
         }
       };
 
       rec.onend = () => {
-        if (isListening) {
+        if (isAutoPilotActive) {
           try { rec.start(); } catch(e) {}
         }
       };
       return rec;
     }
 
-    // AUDIO VISUALIZER
+    // AUDIO METER SIMULATION
     async function startAudioMeter() {
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -651,7 +615,7 @@
     }
 
     function updateVisualizer() {
-      if (!isListening) {
+      if (!isAutoPilotActive) {
         document.getElementById("audioBar").style.width = "0%";
         return;
       }
@@ -666,28 +630,31 @@
       requestAnimationFrame(updateVisualizer);
     }
 
-    function toggleListening() {
-      const btn = document.getElementById("micBtn");
+    function toggleAutoPilot() {
+      const btn = document.getElementById("autoBtn");
       const dot = document.getElementById("liveDot");
+      const badge = document.getElementById("modeBadge");
 
       if (!recognition) recognition = initSpeechEngine();
       if (!recognition) return;
 
-      if (!isListening) {
+      if (!isAutoPilotActive) {
         try {
           recognition.start();
-          isListening = true;
-          btn.classList.add("listening");
-          btn.innerText = "🛑 Stop";
+          isAutoPilotActive = true;
+          btn.classList.add("active");
+          btn.innerHTML = "🟢 Auto-Pilot On";
           dot.classList.add("active");
+          badge.innerText = "Hands-Free Mode Active";
           startAudioMeter();
         } catch(e) {}
       } else {
-        isListening = false;
+        isAutoPilotActive = false;
         recognition.stop();
-        btn.classList.remove("listening");
-        btn.innerText = "🎙️ Listen";
+        btn.classList.remove("active");
+        btn.innerHTML = "🔴 Auto-Pilot Off";
         dot.classList.remove("active");
+        badge.innerText = "Paused";
       }
     }
 
@@ -697,21 +664,30 @@
 
     // HOTKEYS
     window.addEventListener("keydown", (e) => {
-      if (e.code === "Space" && document.activeElement !== document.getElementById("quickSearch")) {
+      if (e.code === "Space") {
         e.preventDefault();
-        toggleListening();
+        toggleAutoPilot();
       }
       if (e.code === "Escape") {
         toggleStealth();
       }
-      if (e.key === "/" && document.activeElement !== document.getElementById("quickSearch")) {
-        e.preventDefault();
-        document.getElementById("quickSearch").focus();
-      }
     });
 
-    renderCards(COPILOT_DATA);
-    loadAnswerToHUD(COPILOT_DATA[0]);
+    // Start on page load automatically
+    renderCards(AUTO_DATABASE);
+    loadAnswerToHUD(AUTO_DATABASE[0]);
+    
+    // Auto-start microphone capture on load
+    window.addEventListener("load", () => {
+      setTimeout(() => {
+        if (!recognition) recognition = initSpeechEngine();
+        try {
+          recognition.start();
+          startAudioMeter();
+          document.getElementById("liveDot").classList.add("active");
+        } catch(e) {}
+      }, 1000);
+    });
   </script>
 </body>
 </html>
